@@ -1,0 +1,39 @@
+{
+  "title": {
+    "text": "Gauge Segmented Axis Line"
+  },
+  "series": [
+    {
+      "type": "gauge",
+      "min": 0,
+      "max": 100,
+      "splitNumber": 5,
+      "axisLine": {
+        "lineStyle": {
+          "width": 18,
+          "color": [
+            [0.4, "#22c55e"],
+            [0.75, "#f59e0b"],
+            [1.0, "#ef4444"]
+          ]
+        }
+      },
+      "pointer": {
+        "width": 4,
+        "itemStyle": {
+          "color": "#0f172a"
+        }
+      },
+      "detail": {
+        "formatter": "{value} pts",
+        "fontSize": 20
+      },
+      "data": [
+        {
+          "value": 68,
+          "name": "Health"
+        }
+      ]
+    }
+  ]
+}

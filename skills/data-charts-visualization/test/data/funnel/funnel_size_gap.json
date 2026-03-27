@@ -1,0 +1,33 @@
+{
+  "title": {
+    "text": "Funnel Min Max Size And Gap"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "series": [
+    {
+      "name": "Pipeline",
+      "type": "funnel",
+      "sort": "descending",
+      "minSize": "18%",
+      "maxSize": "92%",
+      "gap": 10,
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b}: {c}"
+      },
+      "itemStyle": {
+        "borderColor": "#ffffff",
+        "borderWidth": 2
+      },
+      "data": [
+        {"name": "Exposure", "value": 1200},
+        {"name": "Visit", "value": 880},
+        {"name": "Signup", "value": 460},
+        {"name": "Purchase", "value": 180}
+      ]
+    }
+  ]
+}

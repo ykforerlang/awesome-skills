@@ -1,0 +1,27 @@
+{
+  "title": {
+    "text": "Pie Center Offset"
+  },
+  "legend": {
+    "left": "right",
+    "orient": "vertical"
+  },
+  "series": [
+    {
+      "type": "pie",
+      "center": ["40%", "55%"],
+      "radius": ["30%", "62%"],
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b}"
+      },
+      "data": [
+        {"name": "A", "value": 35},
+        {"name": "B", "value": 28},
+        {"name": "C", "value": 22},
+        {"name": "D", "value": 15}
+      ]
+    }
+  ]
+}

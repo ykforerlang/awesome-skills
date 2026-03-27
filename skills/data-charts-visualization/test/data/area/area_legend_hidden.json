@@ -1,0 +1,34 @@
+{
+  "title": {
+    "text": "Area Legend Hidden"
+  },
+  "legend": {
+    "show": false
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu", "Fri"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Users"
+  },
+  "series": [
+    {
+      "name": "App",
+      "type": "line",
+      "areaStyle": {
+        "opacity": 0.28
+      },
+      "data": [120, 134, 148, 166, 182]
+    },
+    {
+      "name": "Web",
+      "type": "line",
+      "areaStyle": {
+        "opacity": 0.18
+      },
+      "data": [92, 101, 113, 124, 136]
+    }
+  ]
+}

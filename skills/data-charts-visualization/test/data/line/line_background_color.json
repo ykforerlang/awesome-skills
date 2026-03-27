@@ -1,0 +1,24 @@
+{
+  "title": {
+    "text": "Line Background Color"
+  },
+  "backgroundColor": "#f7fbff",
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu", "Fri"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Sales"
+  },
+  "series": [
+    {
+      "name": "App",
+      "type": "line",
+      "data": [120, 134, 142, 158, 172]
+    }
+  ]
+}

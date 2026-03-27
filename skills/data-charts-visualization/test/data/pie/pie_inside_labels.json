@@ -1,0 +1,27 @@
+{
+  "title": {
+    "text": "Pie Inside Labels"
+  },
+  "legend": {
+    "left": "right",
+    "orient": "vertical"
+  },
+  "series": [
+    {
+      "type": "pie",
+      "label": {
+        "show": true,
+        "position": "inside",
+        "color": "#ffffff",
+        "fontSize": 10,
+        "formatter": "{b}\n{d}%"
+      },
+      "data": [
+        {"name": "North", "value": 320},
+        {"name": "South", "value": 280},
+        {"name": "West", "value": 190},
+        {"name": "East", "value": 210}
+      ]
+    }
+  ]
+}

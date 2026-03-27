@@ -1,0 +1,36 @@
+{
+  "title": {
+    "text": "Scatter Object Labels"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "value",
+    "name": "Sessions"
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Retention"
+  },
+  "series": [
+    {
+      "name": "Markets",
+      "type": "scatter",
+      "symbol": "triangle",
+      "symbolSize": 84,
+      "label": {
+        "show": true,
+        "fontSize": 9,
+        "color": "#0f172a",
+        "formatter": "{b}"
+      },
+      "data": [
+        {"name": "JP", "value": [120, 48]},
+        {"name": "US", "value": [145, 52]},
+        {"name": "BR", "value": [108, 43]},
+        {"name": "DE", "value": [132, 50]}
+      ]
+    }
+  ]
+}

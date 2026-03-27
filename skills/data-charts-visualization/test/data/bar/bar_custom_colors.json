@@ -1,0 +1,29 @@
+{
+  "title": {
+    "text": "Custom Bar Colors"
+  },
+  "legend": {
+    "show": false
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["A", "B", "C", "D", "E"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Score"
+  },
+  "series": [
+    {
+      "name": "Score",
+      "type": "bar",
+      "data": [
+        {"name": "A", "value": 88, "itemStyle": {"color": "#2563eb"}},
+        {"name": "B", "value": 92, "itemStyle": {"color": "#16a34a"}},
+        {"name": "C", "value": 76, "itemStyle": {"color": "#ea580c"}},
+        {"name": "D", "value": 95, "itemStyle": {"color": "#dc2626"}},
+        {"name": "E", "value": 84, "itemStyle": {"color": "#7c3aed"}}
+      ]
+    }
+  ]
+}

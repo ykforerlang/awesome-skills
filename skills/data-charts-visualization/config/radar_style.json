@@ -1,0 +1,22 @@
+{
+  "legend": {
+    "top": "top"
+  },
+  "radar": {
+    "shape": "polygon",
+    "splitNumber": 5
+  },
+  "series": [
+    {
+      "type": "radar",
+      "symbol": "circle",
+      "symbolSize": 5,
+      "lineStyle": {
+        "width": 2.4
+      },
+      "areaStyle": {
+        "opacity": 0.22
+      }
+    }
+  ]
+}

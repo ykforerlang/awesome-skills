@@ -1,0 +1,40 @@
+{
+  "title": {
+    "text": "Orders vs Revenue (Right Legend)"
+  },
+  "legend": {
+    "left": "right",
+    "orient": "vertical"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu", "Fri"]
+  },
+  "yAxis": [
+    {
+      "type": "value",
+      "name": "Orders"
+    },
+    {
+      "type": "value",
+      "name": "Revenue"
+    }
+  ],
+  "series": [
+    {
+      "name": "Orders",
+      "type": "bar",
+      "data": [12, 18, 15, 20, 17]
+    },
+    {
+      "name": "Revenue",
+      "type": "line",
+      "yAxisIndex": 1,
+      "symbol": "circle",
+      "lineStyle": {
+        "width": 3
+      },
+      "data": [1200, 1800, 1600, 2100, 1950]
+    }
+  ]
+}

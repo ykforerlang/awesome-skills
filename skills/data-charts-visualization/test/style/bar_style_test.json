@@ -1,0 +1,23 @@
+{
+  "xAxis": {
+    "axisLabel": {
+      "rotate": 15,
+      "color": "#475569"
+    }
+  },
+  "series": [
+    {
+      "type": "bar",
+      "itemStyle": {
+        "opacity": 0.82,
+        "borderColor": "#1d4ed8",
+        "borderWidth": 1.2
+      },
+      "label": {
+        "show": true,
+        "color": "#0f172a",
+        "formatter": "{c}"
+      }
+    }
+  ]
+}

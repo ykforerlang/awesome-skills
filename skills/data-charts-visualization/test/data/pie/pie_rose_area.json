@@ -1,0 +1,28 @@
+{
+  "title": {
+    "text": "Rose Chart Area Mode"
+  },
+  "legend": {
+    "left": "right",
+    "orient": "vertical"
+  },
+  "series": [
+    {
+      "type": "pie",
+      "roseType": "area",
+      "radius": ["18%", "70%"],
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b} {d}%"
+      },
+      "data": [
+        {"name": "Video", "value": 42},
+        {"name": "Live", "value": 36},
+        {"name": "Search", "value": 30},
+        {"name": "Mall", "value": 18},
+        {"name": "Ads", "value": 12}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "title": {
+    "text": "Radar Circle Shape"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "radar": {
+    "shape": "circle",
+    "splitNumber": 4,
+    "indicator": [
+      {"name": "Stability", "min": 0, "max": 5},
+      {"name": "Scalability", "min": 0, "max": 5},
+      {"name": "Usability", "min": 0, "max": 5},
+      {"name": "Coverage", "min": 0, "max": 5},
+      {"name": "Velocity", "min": 0, "max": 5}
+    ]
+  },
+  "series": [
+    {
+      "type": "radar",
+      "data": [
+        {"name": "SDK", "value": [4.2, 3.8, 4.5, 4.0, 3.6]}
+      ]
+    }
+  ]
+}

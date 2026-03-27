@@ -1,0 +1,25 @@
+{
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category"
+  },
+  "yAxis": {
+    "type": "value"
+  },
+  "series": [
+    {
+      "type": "line",
+      "symbol": "circle",
+      "symbolSize": 5,
+      "lineStyle": {
+        "width": 3.0,
+        "type": "-"
+      },
+      "label": {
+        "show": true
+      }
+    }
+  ]
+}

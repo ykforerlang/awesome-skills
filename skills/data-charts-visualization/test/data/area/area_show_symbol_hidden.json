@@ -1,0 +1,33 @@
+{
+  "title": {
+    "text": "Area Without Point Symbols"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Users"
+  },
+  "series": [
+    {
+      "name": "Users",
+      "type": "line",
+      "showSymbol": false,
+      "smooth": true,
+      "lineStyle": {
+        "width": 2.8,
+        "color": "#1d4ed8"
+      },
+      "areaStyle": {
+        "color": "#93c5fd",
+        "opacity": 0.34
+      },
+      "data": [98, 132, 145, 176, 210, 228, 242]
+    }
+  ]
+}

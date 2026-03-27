@@ -1,0 +1,28 @@
+{
+  "title": {
+    "text": "Rose Chart Radius Mode"
+  },
+  "legend": {
+    "left": "right",
+    "orient": "vertical"
+  },
+  "series": [
+    {
+      "type": "pie",
+      "roseType": "radius",
+      "radius": ["18%", "68%"],
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b} {c}"
+      },
+      "data": [
+        {"name": "A", "value": 40},
+        {"name": "B", "value": 33},
+        {"name": "C", "value": 28},
+        {"name": "D", "value": 22},
+        {"name": "E", "value": 16}
+      ]
+    }
+  ]
+}

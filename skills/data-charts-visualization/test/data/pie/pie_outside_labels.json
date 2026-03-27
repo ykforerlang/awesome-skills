@@ -1,0 +1,26 @@
+{
+  "title": {
+    "text": "Pie Outside Labels"
+  },
+  "legend": {
+    "left": "right",
+    "orient": "vertical"
+  },
+  "series": [
+    {
+      "type": "pie",
+      "label": {
+        "show": true,
+        "position": "outside",
+        "fontSize": 10,
+        "formatter": "{b}: {d}%"
+      },
+      "data": [
+        {"name": "Organic", "value": 48},
+        {"name": "Paid", "value": 22},
+        {"name": "Referral", "value": 18},
+        {"name": "Social", "value": 12}
+      ]
+    }
+  ]
+}

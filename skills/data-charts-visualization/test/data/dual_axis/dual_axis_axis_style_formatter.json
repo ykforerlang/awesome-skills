@@ -1,0 +1,97 @@
+{
+  "backgroundColor": "#f7f9fc",
+  "title": {
+    "text": "Axis Styling + Formatter"
+  },
+  "grid": {
+    "left": 80,
+    "right": 80,
+    "top": 90,
+    "bottom": 60
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Q1", "Q2", "Q3", "Q4"],
+    "axisLabel": {
+      "rotate": 0,
+      "color": "#4b5563"
+    }
+  },
+  "yAxis": [
+    {
+      "type": "value",
+      "name": "Orders",
+      "min": 0,
+      "max": 240,
+      "nameTextStyle": {
+        "color": "#5470c6",
+        "fontSize": 12
+      },
+      "axisLabel": {
+        "color": "#5470c6",
+        "fontSize": 10,
+        "formatter": "{value} pcs"
+      },
+      "axisLine": {
+        "show": true,
+        "lineStyle": {
+          "color": "#5470c6"
+        }
+      },
+      "splitLine": {
+        "show": true,
+        "lineStyle": {
+          "type": "dashed",
+          "color": "#d7dce6",
+          "opacity": 0.9
+        }
+      }
+    },
+    {
+      "type": "value",
+      "name": "Revenue",
+      "min": 0,
+      "max": 4200,
+      "nameTextStyle": {
+        "color": "#ee6666",
+        "fontSize": 12
+      },
+      "axisLabel": {
+        "color": "#ee6666",
+        "fontSize": 10,
+        "formatter": "${value}"
+      },
+      "axisLine": {
+        "show": true,
+        "lineStyle": {
+          "color": "#ee6666"
+        }
+      }
+    }
+  ],
+  "series": [
+    {
+      "name": "Orders",
+      "type": "bar",
+      "itemStyle": {
+        "color": "#73c0de",
+        "opacity": 0.9
+      },
+      "data": [160, 182, 191, 214]
+    },
+    {
+      "name": "Revenue",
+      "type": "line",
+      "yAxisIndex": 1,
+      "symbol": "triangle",
+      "lineStyle": {
+        "width": 3,
+        "type": "solid"
+      },
+      "data": [2800, 3250, 3380, 3920]
+    }
+  ]
+}

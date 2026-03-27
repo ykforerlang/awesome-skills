@@ -1,0 +1,35 @@
+{
+  "title": {
+    "text": "Dual Axis Style Config Override"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu"]
+  },
+  "yAxis": [
+    {
+      "type": "value",
+      "name": "Orders"
+    },
+    {
+      "type": "value",
+      "name": "Revenue"
+    }
+  ],
+  "series": [
+    {
+      "name": "Orders",
+      "type": "bar",
+      "data": [120, 132, 101, 134]
+    },
+    {
+      "name": "Revenue",
+      "type": "line",
+      "yAxisIndex": 1,
+      "data": [1800, 1960, 1710, 2150]
+    }
+  ]
+}

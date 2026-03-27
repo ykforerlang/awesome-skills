@@ -1,0 +1,38 @@
+{
+  "title": {
+    "text": "Scatter Dataset Table"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "dataset": {
+    "source": [
+      ["latency", "ctr"],
+      [18, 2.4],
+      [22, 2.7],
+      [27, 2.9],
+      [33, 3.1],
+      [37, 3.35]
+    ]
+  },
+  "xAxis": {
+    "type": "value",
+    "name": "Latency"
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "CTR"
+  },
+  "series": [
+    {
+      "name": "CTR",
+      "type": "scatter",
+      "encode": {
+        "x": "latency",
+        "y": "ctr"
+      },
+      "symbol": "circle",
+      "symbolSize": 72
+    }
+  ]
+}

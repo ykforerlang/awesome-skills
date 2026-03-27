@@ -1,0 +1,27 @@
+{
+  "title": {
+    "text": "Funnel Inside Labels"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "series": [
+    {
+      "name": "Conversion",
+      "type": "funnel",
+      "sort": "descending",
+      "label": {
+        "show": true,
+        "position": "inside",
+        "color": "#ffffff",
+        "formatter": "{b}"
+      },
+      "data": [
+        {"name": "Exposure", "value": 960},
+        {"name": "Click", "value": 620},
+        {"name": "Install", "value": 340},
+        {"name": "Pay", "value": 156}
+      ]
+    }
+  ]
+}

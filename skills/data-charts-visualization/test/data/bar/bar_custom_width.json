@@ -1,0 +1,27 @@
+{
+  "title": {
+    "text": "Custom Bar Width"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Jan", "Feb", "Mar", "Apr"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Shipments"
+  },
+  "series": [
+    {
+      "name": "Shipments",
+      "type": "bar",
+      "barWidth": "55%",
+      "itemStyle": {
+        "color": "#0ea5e9"
+      },
+      "data": [180, 210, 196, 240]
+    }
+  ]
+}

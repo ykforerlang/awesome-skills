@@ -1,0 +1,24 @@
+{
+  "title": {
+    "text": "Pie Legend Hidden"
+  },
+  "legend": {
+    "show": false
+  },
+  "series": [
+    {
+      "type": "pie",
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b}: {c}"
+      },
+      "data": [
+        {"name": "Search", "value": 40},
+        {"name": "Feed", "value": 28},
+        {"name": "Mall", "value": 18},
+        {"name": "Live", "value": 14}
+      ]
+    }
+  ]
+}

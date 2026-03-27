@@ -1,0 +1,31 @@
+{
+  "title": {
+    "text": "Area Connect Nulls"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Signups"
+  },
+  "series": [
+    {
+      "name": "Signups",
+      "type": "line",
+      "connectNulls": true,
+      "areaStyle": {
+        "opacity": 0.3
+      },
+      "label": {
+        "show": true,
+        "formatter": "{c}"
+      },
+      "data": [120, null, 126, 149, null, 172]
+    }
+  ]
+}

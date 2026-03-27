@@ -1,0 +1,26 @@
+{
+  "title": {
+    "text": "Basic Area Chart"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Jan", "Feb", "Mar", "Apr", "May"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Visits"
+  },
+  "series": [
+    {
+      "name": "Organic",
+      "type": "line",
+      "areaStyle": {
+        "opacity": 0.35
+      },
+      "data": [320, 412, 501, 534, 620]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "title": {
+    "text": "Pie Style Config Override"
+  },
+  "series": [
+    {
+      "type": "pie",
+      "data": [
+        {"name": "Search", "value": 1048},
+        {"name": "Direct", "value": 735},
+        {"name": "Email", "value": 580},
+        {"name": "Affiliate", "value": 484}
+      ]
+    }
+  ]
+}

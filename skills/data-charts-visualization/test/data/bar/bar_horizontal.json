@@ -1,0 +1,32 @@
+{
+  "title": {
+    "text": "Horizontal Bar Chart"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "value",
+    "name": "Orders"
+  },
+  "yAxis": {
+    "type": "category",
+    "data": ["North", "South", "West", "East"],
+    "name": "Region"
+  },
+  "series": [
+    {
+      "name": "Orders",
+      "type": "bar",
+      "itemStyle": {
+        "color": "#2563eb"
+      },
+      "label": {
+        "show": true,
+        "position": "right",
+        "formatter": "{c}"
+      },
+      "data": [120, 200, 150, 80]
+    }
+  ]
+}

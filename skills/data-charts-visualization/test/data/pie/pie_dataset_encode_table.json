@@ -1,0 +1,32 @@
+{
+  "title": {
+    "text": "Pie Dataset Table"
+  },
+  "legend": {
+    "left": "right",
+    "orient": "vertical"
+  },
+  "dataset": {
+    "source": [
+      ["channel", "value"],
+      ["Search", 1048],
+      ["Direct", 735],
+      ["Email", 580],
+      ["Affiliate", 484]
+    ]
+  },
+  "series": [
+    {
+      "type": "pie",
+      "encode": {
+        "itemName": "channel",
+        "value": "value"
+      },
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b} {d}%"
+      }
+    }
+  ]
+}

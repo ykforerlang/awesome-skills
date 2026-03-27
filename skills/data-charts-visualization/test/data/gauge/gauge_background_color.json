@@ -1,0 +1,28 @@
+{
+  "title": {
+    "text": "Gauge Background Color"
+  },
+  "backgroundColor": "#f6f9ff",
+  "series": [
+    {
+      "type": "gauge",
+      "axisLine": {
+        "lineStyle": {
+          "width": 18,
+          "color": [
+            [1.0, "#cbd5e1"]
+          ]
+        }
+      },
+      "detail": {
+        "formatter": "{value}"
+      },
+      "data": [
+        {
+          "value": 68,
+          "name": "Score"
+        }
+      ]
+    }
+  ]
+}

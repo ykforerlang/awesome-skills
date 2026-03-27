@@ -1,0 +1,28 @@
+{
+  "title": {
+    "text": "Line Without Point Symbols"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Revenue"
+  },
+  "series": [
+    {
+      "name": "Revenue",
+      "type": "line",
+      "showSymbol": false,
+      "lineStyle": {
+        "width": 2.8,
+        "color": "#0f766e"
+      },
+      "data": [128, 156, 149, 182, 195, 224, 238]
+    }
+  ]
+}

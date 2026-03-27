@@ -1,0 +1,41 @@
+{
+  "title": {
+    "text": "Radar Custom Styles"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "radar": {
+    "indicator": [
+      {"name": "Quality", "max": 100},
+      {"name": "Growth", "max": 100},
+      {"name": "Cost", "max": 100},
+      {"name": "Speed", "max": 100},
+      {"name": "Risk", "max": 100}
+    ]
+  },
+  "series": [
+    {
+      "type": "radar",
+      "symbol": "diamond",
+      "symbolSize": 6,
+      "lineStyle": {
+        "width": 2.8,
+        "type": "dashed",
+        "color": "#2563eb"
+      },
+      "areaStyle": {
+        "color": "#93c5fd",
+        "opacity": 0.3
+      },
+      "label": {
+        "show": true,
+        "color": "#0f172a",
+        "formatter": "{c}"
+      },
+      "data": [
+        {"name": "Platform", "value": [78, 84, 62, 75, 49]}
+      ]
+    }
+  ]
+}

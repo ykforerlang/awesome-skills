@@ -1,0 +1,36 @@
+{
+  "title": {
+    "text": "Dual Axis Null Gap"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  },
+  "yAxis": [
+    {
+      "type": "value",
+      "name": "Orders"
+    },
+    {
+      "type": "value",
+      "name": "Revenue"
+    }
+  ],
+  "series": [
+    {
+      "name": "Orders",
+      "type": "bar",
+      "data": [120, 138, 126, 149, 163, 172]
+    },
+    {
+      "name": "Revenue",
+      "type": "line",
+      "yAxisIndex": 1,
+      "symbol": "circle",
+      "data": [1800, null, 1710, 2150, null, 2680]
+    }
+  ]
+}

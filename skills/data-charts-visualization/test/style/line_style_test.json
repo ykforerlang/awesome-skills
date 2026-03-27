@@ -1,0 +1,29 @@
+{
+  "xAxis": {
+    "axisLabel": {
+      "rotate": 20,
+      "color": "#475569"
+    }
+  },
+  "yAxis": {
+    "axisLabel": {
+      "formatter": "{value}%"
+    }
+  },
+  "series": [
+    {
+      "type": "line",
+      "symbol": "triangle",
+      "symbolSize": 7,
+      "lineStyle": {
+        "width": 3.5,
+        "type": "dashed"
+      },
+      "label": {
+        "show": true,
+        "color": "#0f172a",
+        "formatter": "{c}"
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "title": {
+    "text": "Pie Start Angle"
+  },
+  "legend": {
+    "left": "right",
+    "orient": "vertical"
+  },
+  "series": [
+    {
+      "type": "pie",
+      "startAngle": 180,
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b}"
+      },
+      "data": [
+        {"name": "Chrome", "value": 62},
+        {"name": "Safari", "value": 19},
+        {"name": "Edge", "value": 11},
+        {"name": "Firefox", "value": 8}
+      ]
+    }
+  ]
+}

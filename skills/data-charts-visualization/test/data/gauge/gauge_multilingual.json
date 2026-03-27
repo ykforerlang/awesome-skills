@@ -1,0 +1,31 @@
+{
+  "title": {
+    "text": "服务健康度 / Service Health"
+  },
+  "series": [
+    {
+      "type": "gauge",
+      "min": 0,
+      "max": 100,
+      "axisLine": {
+        "lineStyle": {
+          "width": 18,
+          "color": [
+            [0.5, "#ef4444"],
+            [0.8, "#f59e0b"],
+            [1.0, "#22c55e"]
+          ]
+        }
+      },
+      "detail": {
+        "formatter": "{c}%"
+      },
+      "data": [
+        {
+          "value": 91,
+          "name": "健康度 Health"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,65 @@
+{
+  "title": {
+    "text": "Stacked Orders + AOV"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu"]
+  },
+  "yAxis": [
+    {
+      "type": "value",
+      "name": "Orders"
+    },
+    {
+      "type": "value",
+      "name": "AOV"
+    }
+  ],
+  "series": [
+    {
+      "name": "Organic",
+      "type": "bar",
+      "stack": "orders",
+      "label": {
+        "show": true,
+        "position": "inside",
+        "color": "#ffffff",
+        "formatter": "{c}"
+      },
+      "data": [80, 96, 88, 92]
+    },
+    {
+      "name": "Paid",
+      "type": "bar",
+      "stack": "orders",
+      "label": {
+        "show": true,
+        "position": "inside",
+        "color": "#ffffff",
+        "formatter": "{c}"
+      },
+      "itemStyle": {
+        "opacity": 0.88,
+        "borderColor": "#2b5aac",
+        "borderWidth": 1
+      },
+      "data": [26, 31, 22, 28]
+    },
+    {
+      "name": "AOV",
+      "type": "line",
+      "yAxisIndex": 1,
+      "symbol": "circle",
+      "label": {
+        "show": true,
+        "color": "#ee6666",
+        "formatter": "${c}"
+      },
+      "data": [45, 47, 46, 49]
+    }
+  ]
+}

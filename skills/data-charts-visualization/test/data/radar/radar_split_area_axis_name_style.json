@@ -1,0 +1,54 @@
+{
+  "title": {
+    "text": "Radar Split Area And Axis Name"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "radar": {
+    "shape": "polygon",
+    "splitNumber": 5,
+    "axisName": {
+      "color": "#1e293b",
+      "fontSize": 10,
+      "fontWeight": "bold"
+    },
+    "axisLine": {
+      "lineStyle": {
+        "color": "#64748b",
+        "width": 1.1
+      }
+    },
+    "splitLine": {
+      "lineStyle": {
+        "color": "#cbd5e1",
+        "type": "dashed",
+        "width": 0.9
+      }
+    },
+    "splitArea": {
+      "areaStyle": {
+        "opacity": 0.9,
+        "color": ["#f8fafc", "#e2e8f0"]
+      }
+    },
+    "indicator": [
+      {"name": "Quality", "min": 0, "max": 100},
+      {"name": "Scale", "min": 0, "max": 100},
+      {"name": "Profit", "min": 0, "max": 100},
+      {"name": "Speed", "min": 0, "max": 100},
+      {"name": "Risk", "min": 0, "max": 100}
+    ]
+  },
+  "series": [
+    {
+      "type": "radar",
+      "data": [
+        {
+          "name": "System",
+          "value": [78, 83, 69, 81, 42]
+        }
+      ]
+    }
+  ]
+}

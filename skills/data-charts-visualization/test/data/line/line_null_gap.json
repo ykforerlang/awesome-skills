@@ -1,0 +1,24 @@
+{
+  "title": {
+    "text": "Line Null Gap"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Signups"
+  },
+  "series": [
+    {
+      "name": "Signups",
+      "type": "line",
+      "symbol": "circle",
+      "data": [120, null, 126, 149, null, 172]
+    }
+  ]
+}

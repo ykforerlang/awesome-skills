@@ -1,0 +1,65 @@
+{
+  "title": {
+    "text": "Signups vs Conversion Trend"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  },
+  "yAxis": [
+    {
+      "type": "value",
+      "name": "Signups"
+    },
+    {
+      "type": "value",
+      "name": "Conversion"
+    }
+  ],
+  "series": [
+    {
+      "name": "Signups",
+      "type": "bar",
+      "itemStyle": {
+        "color": "#91cc75",
+        "opacity": 0.88
+      },
+      "data": [120, 138, 126, 149, 163, 172]
+    },
+    {
+      "name": "Conversion Rate",
+      "type": "line",
+      "yAxisIndex": 1,
+      "smooth": true,
+      "symbol": "circle",
+      "symbolSize": 5,
+      "lineStyle": {
+        "width": 2.8
+      },
+      "areaStyle": {
+        "opacity": 0.24,
+        "color": {
+          "type": "linear",
+          "x": 0,
+          "y": 0,
+          "x2": 0,
+          "y2": 1,
+          "colorStops": [
+            {
+              "offset": 0,
+              "color": "#5470c6"
+            },
+            {
+              "offset": 1,
+              "color": "#dbe7ff"
+            }
+          ]
+        }
+      },
+      "data": [2.4, 2.7, 2.6, 3.0, 3.2, 3.4]
+    }
+  ]
+}

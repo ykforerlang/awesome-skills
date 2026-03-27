@@ -1,0 +1,50 @@
+{
+  "title": {
+    "text": "Dataset Table Dual Axis"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "dataset": {
+    "source": [
+      ["day", "orders", "revenue"],
+      ["Mon", 120, 1800],
+      ["Tue", 132, 1960],
+      ["Wed", 101, 1710],
+      ["Thu", 134, 2150],
+      ["Fri", 190, 2680]
+    ]
+  },
+  "xAxis": {
+    "type": "category"
+  },
+  "yAxis": [
+    {
+      "type": "value",
+      "name": "Orders"
+    },
+    {
+      "type": "value",
+      "name": "Revenue"
+    }
+  ],
+  "series": [
+    {
+      "name": "Orders",
+      "type": "bar",
+      "encode": {
+        "x": "day",
+        "y": "orders"
+      }
+    },
+    {
+      "name": "Revenue",
+      "type": "line",
+      "yAxisIndex": 1,
+      "encode": {
+        "x": "day",
+        "y": "revenue"
+      }
+    }
+  ]
+}

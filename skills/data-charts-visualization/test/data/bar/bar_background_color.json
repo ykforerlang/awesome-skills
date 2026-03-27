@@ -1,0 +1,24 @@
+{
+  "title": {
+    "text": "Bar Background Color"
+  },
+  "backgroundColor": "#f8fcf7",
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Q1", "Q2", "Q3", "Q4"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Revenue"
+  },
+  "series": [
+    {
+      "name": "Revenue",
+      "type": "bar",
+      "data": [126, 138, 152, 168]
+    }
+  ]
+}

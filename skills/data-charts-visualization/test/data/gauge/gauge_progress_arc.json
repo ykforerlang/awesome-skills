@@ -1,0 +1,36 @@
+{
+  "title": {
+    "text": "Gauge Progress Arc"
+  },
+  "series": [
+    {
+      "type": "gauge",
+      "min": 0,
+      "max": 100,
+      "axisLine": {
+        "lineStyle": {
+          "width": 22,
+          "color": [
+            [1.0, "#e5e7eb"]
+          ]
+        }
+      },
+      "progress": {
+        "show": true,
+        "width": 22,
+        "itemStyle": {
+          "color": "#10b981"
+        }
+      },
+      "detail": {
+        "formatter": "{c}%"
+      },
+      "data": [
+        {
+          "value": 74,
+          "name": "Completion"
+        }
+      ]
+    }
+  ]
+}

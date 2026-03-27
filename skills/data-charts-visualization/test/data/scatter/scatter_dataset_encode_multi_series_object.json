@@ -1,0 +1,47 @@
+{
+  "title": {
+    "text": "Scatter Dataset Object Multi Series"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "dataset": {
+    "source": [
+      {"latency": 16, "search_ctr": 2.2, "feed_ctr": 1.7},
+      {"latency": 21, "search_ctr": 2.5, "feed_ctr": 1.9},
+      {"latency": 26, "search_ctr": 2.8, "feed_ctr": 2.1},
+      {"latency": 31, "search_ctr": 3.0, "feed_ctr": 2.35},
+      {"latency": 35, "search_ctr": 3.2, "feed_ctr": 2.55}
+    ]
+  },
+  "xAxis": {
+    "type": "value",
+    "name": "Latency"
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "CTR"
+  },
+  "series": [
+    {
+      "name": "Search",
+      "type": "scatter",
+      "symbol": "circle",
+      "symbolSize": 74,
+      "encode": {
+        "x": "latency",
+        "y": "search_ctr"
+      }
+    },
+    {
+      "name": "Feed",
+      "type": "scatter",
+      "symbol": "diamond",
+      "symbolSize": 74,
+      "encode": {
+        "x": "latency",
+        "y": "feed_ctr"
+      }
+    }
+  ]
+}

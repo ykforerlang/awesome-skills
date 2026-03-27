@@ -1,0 +1,20 @@
+{
+  "series": [
+    {
+      "type": "gauge",
+      "progress": {
+        "show": true
+      },
+      "axisLine": {
+        "lineStyle": {
+          "width": 24
+        }
+      },
+      "detail": {
+        "formatter": "{c}%",
+        "color": "#0f172a",
+        "fontSize": 18
+      }
+    }
+  ]
+}

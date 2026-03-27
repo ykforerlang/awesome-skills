@@ -1,0 +1,36 @@
+{
+  "title": {
+    "text": "活跃用户趋势 / Active User Trend",
+    "subtext": "多语言面积图测试 · Multilingual Area"
+  },
+  "legend": {
+    "top": "top",
+    "left": "center"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["一月", "二月", "三月", "四月", "五月", "六月"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "用户数 Users"
+  },
+  "series": [
+    {
+      "name": "移动端 Mobile",
+      "type": "line",
+      "areaStyle": {
+        "opacity": 0.28
+      },
+      "data": [860, 905, 944, 1012, 1088, 1154]
+    },
+    {
+      "name": "网页端 Web",
+      "type": "line",
+      "areaStyle": {
+        "opacity": 0.2
+      },
+      "data": [620, 655, 688, 721, 768, 804]
+    }
+  ]
+}

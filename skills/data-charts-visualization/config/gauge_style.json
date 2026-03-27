@@ -1,0 +1,33 @@
+{
+  "series": [
+    {
+      "type": "gauge",
+      "min": 0,
+      "max": 100,
+      "startAngle": 225,
+      "endAngle": -45,
+      "axisLine": {
+        "lineStyle": {
+          "width": 20,
+          "color": [
+            [0.4, "#ee6666"],
+            [0.75, "#fac858"],
+            [1.0, "#91cc75"]
+          ]
+        }
+      },
+      "title": {
+        "show": true,
+        "fontSize": 12,
+        "color": "#6e7079"
+      },
+      "detail": {
+        "show": true,
+        "fontSize": 22,
+        "fontWeight": "bold",
+        "color": "#464646",
+        "formatter": "{c}%"
+      }
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "series": [
+    {
+      "type": "funnel",
+      "sort": "descending",
+      "label": {
+        "show": true,
+        "position": "inside",
+        "color": "#ffffff",
+        "formatter": "{b}"
+      },
+      "itemStyle": {
+        "borderColor": "#ffffff",
+        "borderWidth": 2,
+        "opacity": 0.92
+      }
+    }
+  ]
+}

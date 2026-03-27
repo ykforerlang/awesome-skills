@@ -1,0 +1,32 @@
+{
+  "title": {
+    "text": "Area Labels"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Jan", "Feb", "Mar", "Apr"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Revenue"
+  },
+  "series": [
+    {
+      "name": "Revenue",
+      "type": "line",
+      "areaStyle": {
+        "opacity": 0.3
+      },
+      "label": {
+        "show": true,
+        "fontSize": 10,
+        "color": "#1f2937",
+        "formatter": "{c}"
+      },
+      "data": [120, 156, 184, 210]
+    }
+  ]
+}

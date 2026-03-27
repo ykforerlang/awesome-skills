@@ -1,0 +1,18 @@
+{
+  "legend": {
+    "left": "right",
+    "orient": "vertical"
+  },
+  "series": [
+    {
+      "type": "pie",
+      "radius": ["42%", "70%"],
+      "startAngle": 90,
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b} {d}%"
+      }
+    }
+  ]
+}

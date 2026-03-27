@@ -1,0 +1,54 @@
+{
+  "title": {
+    "text": "Scatter Item Style Details"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "value",
+    "name": "Engagement"
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Conversion"
+  },
+  "series": [
+    {
+      "name": "Segments",
+      "type": "scatter",
+      "data": [
+        {
+          "name": "A",
+          "value": [12, 1.6, 90],
+          "itemStyle": {
+            "color": "#2563eb",
+            "opacity": 0.85,
+            "borderColor": "#1e3a8a",
+            "borderWidth": 1.5
+          }
+        },
+        {
+          "name": "B",
+          "value": [18, 2.0, 120],
+          "itemStyle": {
+            "color": "#16a34a",
+            "opacity": 0.7,
+            "borderColor": "#14532d",
+            "borderWidth": 2
+          }
+        },
+        {
+          "name": "C",
+          "value": [24, 2.35, 150],
+          "itemStyle": {
+            "color": "#ea580c",
+            "opacity": 0.6,
+            "borderColor": "#9a3412",
+            "borderWidth": 2.5
+          }
+        }
+      ]
+    }
+  ]
+}

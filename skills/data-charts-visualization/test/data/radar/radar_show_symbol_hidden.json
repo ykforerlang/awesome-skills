@@ -1,0 +1,37 @@
+{
+  "title": {
+    "text": "Radar Hidden Symbols"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "radar": {
+    "indicator": [
+      {"name": "Quality", "max": 100},
+      {"name": "Scale", "max": 100},
+      {"name": "Efficiency", "max": 100},
+      {"name": "Speed", "max": 100},
+      {"name": "Risk", "max": 100}
+    ]
+  },
+  "series": [
+    {
+      "type": "radar",
+      "showSymbol": false,
+      "lineStyle": {
+        "width": 2.6,
+        "color": "#2563eb"
+      },
+      "areaStyle": {
+        "color": "#93c5fd",
+        "opacity": 0.26
+      },
+      "data": [
+        {
+          "name": "Platform",
+          "value": [76, 82, 68, 80, 44]
+        }
+      ]
+    }
+  ]
+}

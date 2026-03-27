@@ -1,0 +1,28 @@
+{
+  "title": {
+    "text": "Bar Legend Hidden"
+  },
+  "legend": {
+    "show": false
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Q1", "Q2", "Q3", "Q4"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Revenue"
+  },
+  "series": [
+    {
+      "name": "Search",
+      "type": "bar",
+      "data": [120, 136, 149, 161]
+    },
+    {
+      "name": "Ads",
+      "type": "bar",
+      "data": [98, 108, 122, 133]
+    }
+  ]
+}

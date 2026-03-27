@@ -1,0 +1,40 @@
+{
+  "title": {
+    "text": "Gauge Pointer Visibility"
+  },
+  "series": [
+    {
+      "type": "gauge",
+      "min": 0,
+      "max": 100,
+      "axisLine": {
+        "lineStyle": {
+          "width": 20,
+          "color": [
+            [1.0, "#e5e7eb"]
+          ]
+        }
+      },
+      "progress": {
+        "show": true,
+        "width": 20,
+        "itemStyle": {
+          "color": "#14b8a6"
+        }
+      },
+      "pointer": {
+        "show": false,
+        "length": "55%"
+      },
+      "detail": {
+        "formatter": "{value}%"
+      },
+      "data": [
+        {
+          "value": 61,
+          "name": "Progress"
+        }
+      ]
+    }
+  ]
+}

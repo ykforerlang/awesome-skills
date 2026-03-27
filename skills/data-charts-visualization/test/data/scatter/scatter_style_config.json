@@ -1,0 +1,28 @@
+{
+  "title": {
+    "text": "Scatter Style Config"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "value",
+    "name": "Time"
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Rate"
+  },
+  "series": [
+    {
+      "name": "Styled",
+      "type": "scatter",
+      "data": [
+        {"name": "A", "value": [14, 1.8]},
+        {"name": "B", "value": [19, 2.1]},
+        {"name": "C", "value": [24, 2.4]},
+        {"name": "D", "value": [29, 2.9]}
+      ]
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "legend": {
+    "top": "top"
+  },
+  "series": [
+    {
+      "type": "funnel",
+      "sort": "descending",
+      "label": {
+        "show": true,
+        "position": "outside"
+      },
+      "itemStyle": {
+        "borderColor": "#ffffff",
+        "borderWidth": 2
+      }
+    }
+  ]
+}

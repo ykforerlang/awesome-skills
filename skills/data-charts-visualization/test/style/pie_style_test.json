@@ -1,0 +1,21 @@
+{
+  "legend": {
+    "left": "right",
+    "orient": "vertical"
+  },
+  "series": [
+    {
+      "type": "pie",
+      "radius": [
+        "35%",
+        "70%"
+      ],
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b} {d}%"
+      },
+      "selectedOffset": 14
+    }
+  ]
+}

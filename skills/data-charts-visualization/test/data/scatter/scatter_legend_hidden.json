@@ -1,0 +1,31 @@
+{
+  "title": {
+    "text": "Scatter Legend Hidden"
+  },
+  "legend": {
+    "show": false
+  },
+  "xAxis": {
+    "type": "value",
+    "name": "Latency"
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "CTR"
+  },
+  "series": [
+    {
+      "name": "Search",
+      "type": "scatter",
+      "symbolSize": 72,
+      "data": [[16, 2.2], [20, 2.5], [24, 2.8], [30, 3.0]]
+    },
+    {
+      "name": "Feed",
+      "type": "scatter",
+      "symbol": "diamond",
+      "symbolSize": 72,
+      "data": [[18, 1.8], [22, 2.0], [27, 2.2], [32, 2.5]]
+    }
+  ]
+}

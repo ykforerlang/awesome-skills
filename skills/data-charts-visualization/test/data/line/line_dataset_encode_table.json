@@ -1,0 +1,46 @@
+{
+  "title": {
+    "text": "Weekly Signups (Dataset Table)"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "dataset": {
+    "source": [
+      ["day", "app", "web"],
+      ["Mon", 120, 90],
+      ["Tue", 132, 101],
+      ["Wed", 101, 84],
+      ["Thu", 134, 109],
+      ["Fri", 190, 120]
+    ]
+  },
+  "xAxis": {
+    "type": "category"
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Signups"
+  },
+  "series": [
+    {
+      "name": "App",
+      "type": "line",
+      "encode": {
+        "x": "day",
+        "y": "app"
+      }
+    },
+    {
+      "name": "Web",
+      "type": "line",
+      "encode": {
+        "x": "day",
+        "y": "web"
+      },
+      "lineStyle": {
+        "type": "dashed"
+      }
+    }
+  ]
+}

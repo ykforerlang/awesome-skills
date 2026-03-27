@@ -1,0 +1,31 @@
+{
+  "title": {
+    "text": "Line Legend Hidden"
+  },
+  "legend": {
+    "show": false
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu", "Fri"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Sales"
+  },
+  "series": [
+    {
+      "name": "App",
+      "type": "line",
+      "data": [120, 132, 141, 156, 168]
+    },
+    {
+      "name": "Web",
+      "type": "line",
+      "lineStyle": {
+        "type": "dashed"
+      },
+      "data": [98, 106, 118, 123, 137]
+    }
+  ]
+}

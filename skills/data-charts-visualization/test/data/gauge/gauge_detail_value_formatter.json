@@ -1,0 +1,34 @@
+{
+  "title": {
+    "text": "Gauge Value Formatter"
+  },
+  "series": [
+    {
+      "type": "gauge",
+      "min": 0,
+      "max": 10,
+      "splitNumber": 5,
+      "axisLine": {
+        "lineStyle": {
+          "width": 16,
+          "color": [
+            [1.0, "#cbd5e1"]
+          ]
+        }
+      },
+      "axisLabel": {
+        "show": true,
+        "formatter": "{value}x"
+      },
+      "detail": {
+        "formatter": "{value}x"
+      },
+      "data": [
+        {
+          "value": 7.5,
+          "name": "Multiplier"
+        }
+      ]
+    }
+  ]
+}

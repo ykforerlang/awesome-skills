@@ -1,0 +1,18 @@
+{
+  "xAxis": {
+    "type": "value"
+  },
+  "yAxis": {
+    "type": "value"
+  },
+  "series": [
+    {
+      "type": "scatter",
+      "symbol": "circle",
+      "symbolSize": 64,
+      "label": {
+        "show": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "title": {
+    "text": "Funnel Ascending"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "series": [
+    {
+      "name": "Pipeline",
+      "type": "funnel",
+      "sort": "ascending",
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b}"
+      },
+      "data": [
+        {"name": "Closed", "value": 180},
+        {"name": "Proposal", "value": 260},
+        {"name": "Qualified", "value": 420},
+        {"name": "Leads", "value": 760}
+      ]
+    }
+  ]
+}

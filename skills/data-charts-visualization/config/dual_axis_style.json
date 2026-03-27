@@ -1,0 +1,29 @@
+{
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category"
+  },
+  "yAxis": [
+    {
+      "type": "value"
+    },
+    {
+      "type": "value"
+    }
+  ],
+  "series": [
+    {
+      "type": "bar"
+    },
+    {
+      "type": "line",
+      "yAxisIndex": 1,
+      "symbol": "circle",
+      "lineStyle": {
+        "width": 3
+      }
+    }
+  ]
+}

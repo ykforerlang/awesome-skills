@@ -1,0 +1,25 @@
+{
+  "title": {
+    "text": "Scatter Background Color"
+  },
+  "backgroundColor": "#f3fbf7",
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "value",
+    "name": "Latency"
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "CTR"
+  },
+  "series": [
+    {
+      "name": "Search",
+      "type": "scatter",
+      "symbolSize": 72,
+      "data": [[16, 2.2], [20, 2.5], [25, 2.85], [31, 3.05]]
+    }
+  ]
+}

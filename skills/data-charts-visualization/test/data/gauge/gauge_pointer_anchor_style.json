@@ -1,0 +1,42 @@
+{
+  "title": {
+    "text": "Pointer And Anchor Style"
+  },
+  "series": [
+    {
+      "type": "gauge",
+      "min": 0,
+      "max": 100,
+      "axisLine": {
+        "lineStyle": {
+          "width": 18,
+          "color": [
+            [1.0, "#dbeafe"]
+          ]
+        }
+      },
+      "pointer": {
+        "width": 5,
+        "itemStyle": {
+          "color": "#1d4ed8"
+        }
+      },
+      "anchor": {
+        "show": true,
+        "size": 90,
+        "itemStyle": {
+          "color": "#0f172a"
+        }
+      },
+      "detail": {
+        "formatter": "{c}%"
+      },
+      "data": [
+        {
+          "value": 64,
+          "name": "Utilization"
+        }
+      ]
+    }
+  ]
+}

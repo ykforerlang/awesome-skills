@@ -1,0 +1,32 @@
+{
+  "title": {
+    "text": "Gauge Center And Radius"
+  },
+  "series": [
+    {
+      "type": "gauge",
+      "center": ["42%", "58%"],
+      "radius": "82%",
+      "min": 0,
+      "max": 100,
+      "axisLine": {
+        "lineStyle": {
+          "width": 16,
+          "color": [
+            [0.6, "#38bdf8"],
+            [1.0, "#2563eb"]
+          ]
+        }
+      },
+      "detail": {
+        "formatter": "{value}%"
+      },
+      "data": [
+        {
+          "value": 73,
+          "name": "Capacity"
+        }
+      ]
+    }
+  ]
+}

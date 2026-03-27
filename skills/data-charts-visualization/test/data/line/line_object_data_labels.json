@@ -1,0 +1,34 @@
+{
+  "title": {
+    "text": "Line Labels With Object Data"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category"
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Conversion Rate"
+  },
+  "series": [
+    {
+      "name": "Campaign A",
+      "type": "line",
+      "symbol": "circle",
+      "label": {
+        "show": true,
+        "color": "#2563eb",
+        "formatter": "{b}: {c}%"
+      },
+      "data": [
+        {"name": "Week 1", "value": 2.8},
+        {"name": "Week 2", "value": 3.2},
+        {"name": "Week 3", "value": 3.1},
+        {"name": "Week 4", "value": 3.6},
+        {"name": "Week 5", "value": 3.9}
+      ]
+    }
+  ]
+}

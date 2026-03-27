@@ -1,0 +1,52 @@
+{
+  "title": {
+    "text": "Scatter Axis Style"
+  },
+  "grid": {
+    "left": 90,
+    "right": 40,
+    "top": 90,
+    "bottom": 70
+  },
+  "xAxis": {
+    "type": "value",
+    "name": "Latency",
+    "min": 10,
+    "max": 40,
+    "axisLabel": {
+      "formatter": "{value} ms",
+      "color": "#475569"
+    },
+    "axisLine": {
+      "lineStyle": {
+        "color": "#64748b"
+      }
+    }
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Conversion",
+    "min": 1.5,
+    "max": 3.5,
+    "axisLabel": {
+      "formatter": "{value}%",
+      "color": "#475569"
+    },
+    "splitLine": {
+      "show": true,
+      "lineStyle": {
+        "color": "#cbd5e1",
+        "type": "dashed"
+      }
+    }
+  },
+  "series": [
+    {
+      "name": "Group",
+      "type": "scatter",
+      "symbol": "rect",
+      "symbolSize": 78,
+      "data": [[16, 1.9], [21, 2.2], [27, 2.7], [30, 3.0], [35, 3.25]]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "title": {
+    "text": "Bar Chart Dataset + Encode"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "dataset": {
+    "source": [
+      {"month": "Jan", "sales": 120},
+      {"month": "Feb", "sales": 132},
+      {"month": "Mar", "sales": 101},
+      {"month": "Apr", "sales": 134}
+    ]
+  },
+  "xAxis": {
+    "type": "category"
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Sales"
+  },
+  "series": [
+    {
+      "name": "Sales",
+      "type": "bar",
+      "encode": {
+        "x": "month",
+        "y": "sales"
+      },
+      "itemStyle": {
+        "color": "#0ea5e9"
+      }
+    }
+  ]
+}

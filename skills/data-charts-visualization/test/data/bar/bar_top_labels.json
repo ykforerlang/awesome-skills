@@ -1,0 +1,33 @@
+{
+  "title": {
+    "text": "Bar Top Labels"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["P1", "P2", "P3", "P4"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "KPI"
+  },
+  "series": [
+    {
+      "name": "KPI",
+      "type": "bar",
+      "itemStyle": {
+        "color": "#f59e0b"
+      },
+      "label": {
+        "show": true,
+        "position": "top",
+        "fontSize": 10,
+        "color": "#1f2937",
+        "formatter": "{c}"
+      },
+      "data": [46, 58, 63, 71]
+    }
+  ]
+}

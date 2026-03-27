@@ -1,0 +1,26 @@
+{
+  "title": {
+    "text": "Funnel Sort None Preserve Order"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "series": [
+    {
+      "name": "Pipeline",
+      "type": "funnel",
+      "sort": "none",
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b}"
+      },
+      "data": [
+        {"name": "Signup", "value": 420},
+        {"name": "Exposure", "value": 1000},
+        {"name": "Purchase", "value": 180},
+        {"name": "Visit", "value": 760}
+      ]
+    }
+  ]
+}

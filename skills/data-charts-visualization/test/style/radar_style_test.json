@@ -1,0 +1,29 @@
+{
+  "radar": {
+    "shape": "circle",
+    "splitNumber": 4,
+    "axisName": {
+      "color": "#334155",
+      "fontSize": 10
+    }
+  },
+  "series": [
+    {
+      "type": "radar",
+      "symbol": "diamond",
+      "symbolSize": 6,
+      "lineStyle": {
+        "width": 2.8,
+        "type": "dashed"
+      },
+      "areaStyle": {
+        "opacity": 0.18
+      },
+      "label": {
+        "show": true,
+        "color": "#0f172a",
+        "formatter": "{c}"
+      }
+    }
+  ]
+}

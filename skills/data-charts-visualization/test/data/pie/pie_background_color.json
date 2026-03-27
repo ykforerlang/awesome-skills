@@ -1,0 +1,20 @@
+{
+  "title": {
+    "text": "Pie Background Color"
+  },
+  "backgroundColor": "#fff9f2",
+  "legend": {
+    "top": "top"
+  },
+  "series": [
+    {
+      "type": "pie",
+      "data": [
+        {"name": "Search", "value": 38},
+        {"name": "Feed", "value": 30},
+        {"name": "Mall", "value": 20},
+        {"name": "Live", "value": 12}
+      ]
+    }
+  ]
+}

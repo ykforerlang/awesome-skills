@@ -1,0 +1,40 @@
+{
+  "title": {
+    "text": "Gauge Text Styling"
+  },
+  "series": [
+    {
+      "type": "gauge",
+      "min": 0,
+      "max": 10,
+      "axisLine": {
+        "lineStyle": {
+          "width": 18,
+          "color": [
+            [1.0, "#a5b4fc"]
+          ]
+        }
+      },
+      "title": {
+        "show": true,
+        "fontSize": 14,
+        "color": "#475569",
+        "offsetCenter": ["0%", "-18%"]
+      },
+      "detail": {
+        "show": true,
+        "fontSize": 26,
+        "fontWeight": "normal",
+        "color": "#111827",
+        "formatter": "{c}/10",
+        "offsetCenter": ["0%", "18%"]
+      },
+      "data": [
+        {
+          "value": 8.6,
+          "name": "Quality"
+        }
+      ]
+    }
+  ]
+}

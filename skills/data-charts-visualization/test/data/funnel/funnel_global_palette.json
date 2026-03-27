@@ -1,0 +1,27 @@
+{
+  "title": {
+    "text": "Funnel Descending (Global Palette)"
+  },
+  "color": ["#0f766e", "#0284c7", "#f59e0b", "#dc2626"],
+  "legend": {
+    "top": "top"
+  },
+  "series": [
+    {
+      "name": "Leads",
+      "type": "funnel",
+      "sort": "descending",
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b}: {c}"
+      },
+      "data": [
+        {"name": "Exposure", "value": 1000},
+        {"name": "Visit", "value": 760},
+        {"name": "Signup", "value": 420},
+        {"name": "Purchase", "value": 210}
+      ]
+    }
+  ]
+}

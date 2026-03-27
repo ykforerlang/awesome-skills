@@ -1,0 +1,20 @@
+{
+  "title": {
+    "text": "Funnel Style Config"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "series": [
+    {
+      "name": "Styled",
+      "type": "funnel",
+      "data": [
+        {"name": "Awareness", "value": 820},
+        {"name": "Interest", "value": 610},
+        {"name": "Intent", "value": 390},
+        {"name": "Action", "value": 170}
+      ]
+    }
+  ]
+}

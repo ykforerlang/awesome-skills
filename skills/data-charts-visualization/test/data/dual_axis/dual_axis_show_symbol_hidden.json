@@ -1,0 +1,41 @@
+{
+  "title": {
+    "text": "Orders And Conversion"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  },
+  "yAxis": [
+    {
+      "type": "value",
+      "name": "Orders"
+    },
+    {
+      "type": "value",
+      "name": "Conversion"
+    }
+  ],
+  "series": [
+    {
+      "name": "Orders",
+      "type": "bar",
+      "data": [320, 348, 336, 372, 401, 428]
+    },
+    {
+      "name": "Conversion",
+      "type": "line",
+      "yAxisIndex": 1,
+      "showSymbol": false,
+      "smooth": true,
+      "lineStyle": {
+        "width": 2.8,
+        "color": "#dc2626"
+      },
+      "data": [2.8, 3.0, 2.9, 3.3, 3.5, 3.7]
+    }
+  ]
+}

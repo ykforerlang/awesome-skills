@@ -1,0 +1,31 @@
+{
+  "title": {
+    "text": "Pie Dataset + Encode"
+  },
+  "legend": {
+    "left": "right",
+    "orient": "vertical"
+  },
+  "dataset": {
+    "source": [
+      {"channel": "Search", "value": 1048},
+      {"channel": "Direct", "value": 735},
+      {"channel": "Email", "value": 580},
+      {"channel": "Affiliate", "value": 484}
+    ]
+  },
+  "series": [
+    {
+      "type": "pie",
+      "encode": {
+        "itemName": "channel",
+        "value": "value"
+      },
+      "label": {
+        "show": true,
+        "position": "outside",
+        "formatter": "{b} {d}%"
+      }
+    }
+  ]
+}

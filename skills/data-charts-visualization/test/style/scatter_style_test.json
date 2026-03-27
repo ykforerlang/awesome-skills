@@ -1,0 +1,26 @@
+{
+  "xAxis": {
+    "axisLabel": {
+      "formatter": "{value} ms",
+      "color": "#475569"
+    }
+  },
+  "yAxis": {
+    "axisLabel": {
+      "formatter": "{value}%",
+      "color": "#475569"
+    }
+  },
+  "series": [
+    {
+      "type": "scatter",
+      "symbol": "diamond",
+      "symbolSize": 90,
+      "label": {
+        "show": true,
+        "color": "#0f172a",
+        "formatter": "{b}"
+      }
+    }
+  ]
+}

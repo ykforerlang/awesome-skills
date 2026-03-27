@@ -1,0 +1,75 @@
+{
+  "title": {
+    "text": "Net Flow Stacked Bars + Balance"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Jan", "Feb", "Mar", "Apr", "May"]
+  },
+  "yAxis": [
+    {
+      "type": "value",
+      "name": "Net Flow"
+    },
+    {
+      "type": "value",
+      "name": "Balance"
+    }
+  ],
+  "series": [
+    {
+      "name": "Cash In",
+      "type": "bar",
+      "stack": "flow",
+      "label": {
+        "show": true,
+        "position": "top",
+        "formatter": "{c}"
+      },
+      "data": [36, 28, 41, 34, 39]
+    },
+    {
+      "name": "Refunds",
+      "type": "bar",
+      "stack": "flow",
+      "label": {
+        "show": true,
+        "position": "top",
+        "formatter": "{c}"
+      },
+      "itemStyle": {
+        "color": "#ee6666",
+        "opacity": 0.9
+      },
+      "data": [-12, -16, -9, -14, -11]
+    },
+    {
+      "name": "Chargebacks",
+      "type": "bar",
+      "stack": "flow",
+      "label": {
+        "show": true,
+        "position": "top",
+        "formatter": "{c}"
+      },
+      "itemStyle": {
+        "color": "#fac858",
+        "opacity": 0.9
+      },
+      "data": [-5, -3, -7, -4, -6]
+    },
+    {
+      "name": "Balance",
+      "type": "line",
+      "yAxisIndex": 1,
+      "symbol": "diamond",
+      "lineStyle": {
+        "width": 2.6
+      },
+      "data": [210, 198, 226, 219, 241]
+    }
+  ]
+}

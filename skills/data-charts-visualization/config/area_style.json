@@ -1,0 +1,23 @@
+{
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category"
+  },
+  "yAxis": {
+    "type": "value"
+  },
+  "series": [
+    {
+      "type": "line",
+      "stack": "total",
+      "lineStyle": {
+        "width": 2
+      },
+      "areaStyle": {
+        "opacity": 0.35
+      }
+    }
+  ]
+}

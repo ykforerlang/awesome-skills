@@ -1,0 +1,51 @@
+{
+  "title": {
+    "text": "Line Style Coverage"
+  },
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Orders"
+  },
+  "series": [
+    {
+      "name": "Solid",
+      "type": "line",
+      "symbol": "circle",
+      "symbolSize": 6,
+      "lineStyle": {
+        "type": "solid",
+        "width": 2.5
+      },
+      "data": [120, 132, 121, 144, 150, 168]
+    },
+    {
+      "name": "Dashed",
+      "type": "line",
+      "symbol": "diamond",
+      "symbolSize": 6,
+      "lineStyle": {
+        "type": "dashed",
+        "width": 2.5
+      },
+      "data": [102, 118, 116, 128, 140, 149]
+    },
+    {
+      "name": "Dotted",
+      "type": "line",
+      "symbol": "rect",
+      "symbolSize": 6,
+      "lineStyle": {
+        "type": "dotted",
+        "width": 2.5
+      },
+      "data": [88, 96, 105, 111, 124, 131]
+    }
+  ]
+}

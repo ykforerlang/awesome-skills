@@ -1,0 +1,33 @@
+{
+  "title": {
+    "text": "Scatter Multi Series (Global Palette)"
+  },
+  "color": ["#0284c7", "#d97706"],
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "value",
+    "name": "Latency"
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Conversion"
+  },
+  "series": [
+    {
+      "name": "Search",
+      "type": "scatter",
+      "symbol": "circle",
+      "symbolSize": 60,
+      "data": [[18, 2.4], [22, 2.6], [26, 2.8], [29, 3.0], [32, 3.2]]
+    },
+    {
+      "name": "Feed",
+      "type": "scatter",
+      "symbol": "diamond",
+      "symbolSize": 60,
+      "data": [[20, 1.9], [24, 2.1], [27, 2.2], [31, 2.5], [34, 2.7]]
+    }
+  ]
+}

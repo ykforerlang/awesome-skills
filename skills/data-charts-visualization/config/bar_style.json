@@ -1,0 +1,20 @@
+{
+  "legend": {
+    "top": "top"
+  },
+  "xAxis": {
+    "type": "category"
+  },
+  "yAxis": {
+    "type": "value"
+  },
+  "series": [
+    {
+      "type": "bar",
+      "barWidth": 0.28,
+      "itemStyle": {
+        "opacity": 0.92
+      }
+    }
+  ]
+}
