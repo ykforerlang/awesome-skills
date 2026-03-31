@@ -10,6 +10,11 @@ Useful runner flags:
 - `--update-golden`: replace the stored golden images with current output
 - `--no-verify`: render without comparing against the golden images
 
+Style-config regression cases now follow the same model as the skill itself:
+- each chart type uses its own single `test/style/<chart>_style_test.json`
+- runners no longer depend on `base_test_style.json`
+- the goal is to validate one-chart-one-style-preset behavior
+
 Current coverage:
 - `line_chart_cases.md`: line-chart test case descriptions and expected validation points
 - `data/line/*.json`: ECharts-aligned option payloads for each line-chart case
@@ -218,6 +223,7 @@ Funnel eighth-round coverage includes:
 - top-level `option.color` palette
 
 Funnel ninth-round coverage includes:
+- bottom-centered horizontal legend layout
 - bottom-centered horizontal legend layout
 
 Recommended validation flow:

@@ -24,7 +24,7 @@ TEST_CASES = [
     ("scatter_global_palette.json", "scatter_global_palette.png"),
     ("scatter_background_color.json", "scatter_background_color.png"),
     ("scatter_axis_grid_range_formatter.json", "scatter_axis_grid_range_formatter.png"),
-    ("scatter_style_config.json", "scatter_style_config.png", ["base_test_style.json", "scatter_style_test.json"]),
+    ("scatter_style_config.json", "scatter_style_config.png", ["scatter_style_test.json"]),
 ]
 
 

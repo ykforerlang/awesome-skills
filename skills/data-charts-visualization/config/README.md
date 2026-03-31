@@ -2,7 +2,7 @@
 
 This directory contains style-oriented chart configuration presets for this skill.
 
-These files are not demo data files. They are ECharts-aligned style config fragments that define how charts should look:
+These files are not demo data files. They are ECharts-aligned style presets that define how each chart type should look:
 - palette
 - background
 - title style
@@ -20,7 +20,6 @@ These files are not demo data files. They are ECharts-aligned style config fragm
 
 ## Files
 
-- `base_style.json`: common chart look-and-feel
 - `line_style.json`: line-chart style config
 - `bar_style.json`: bar-chart style config
 - `pie_style.json`: pie / donut style config
@@ -34,7 +33,7 @@ These files are not demo data files. They are ECharts-aligned style config fragm
 ## Usage
 
 1. Pick the closest style preset.
-2. Pass it with `--style-config`.
+2. Pass that single preset with `--style-config`.
 3. Add real `dataset`, `xAxis.data`, or `series[].data` separately.
 4. Render with the chart script.
 
@@ -43,26 +42,17 @@ Priority rule:
 - style config provides persistent appearance
 - overlapping fields are overridden by the style config
 
-Recommended layering from low priority to high priority:
-1. `base_style.json`
+Recommended default model:
+1. input `option`
 2. chart style such as `line_style.json`
 
 Example:
 
 ```bash
 python3 skills/data-charts-visualization/scripts/line_chart.py \
-  --style-config skills/data-charts-visualization/config/base_style.json \
   --style-config skills/data-charts-visualization/config/line_style.json \
   --option skills/data-charts-visualization/test/data/line/line_basic_single_series.json \
   --output skills/data-charts-visualization/test/out/manual_line_chart_styled.png
-```
-
-Update the shared base style:
-
-```bash
-python3 skills/data-charts-visualization/scripts/update_style_config.py \
-  --chart-type base \
-  --instruction "title size 24, legend at bottom, warm palette"
 ```
 
 Update a chart-specific style config:
@@ -77,7 +67,7 @@ Update a persistent config with explicit overrides:
 
 ```bash
 python3 skills/data-charts-visualization/scripts/update_style_config.py \
-  --config skills/data-charts-visualization/config/base_style.json \
+  --config skills/data-charts-visualization/config/line_style.json \
   --set title.textStyle.fontSize=24 \
   --set legend.top=bottom
 ```
@@ -85,3 +75,4 @@ python3 skills/data-charts-visualization/scripts/update_style_config.py \
 The config shape stays close to ECharts, but these files intentionally avoid business/demo data values.
 The renderer still produces one resolved final option internally, but `--style-config` exists so user style can be edited and persisted independently from incoming chart data.
 Use `--chart-type` for normal updates and `--config` when an exact target file must be chosen.
+Each built-in chart type now owns a self-contained preset file, so editing one preset does not change other chart types.

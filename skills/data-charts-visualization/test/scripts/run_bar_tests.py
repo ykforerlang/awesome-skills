@@ -30,7 +30,7 @@ TEST_CASES = [
     ("bar_legend_bottom_center.json", "bar_legend_bottom_center.png"),
     ("bar_global_palette.json", "bar_global_palette.png"),
     ("bar_background_color.json", "bar_background_color.png"),
-    ("bar_style_config.json", "bar_style_config.png", ["base_test_style.json", "bar_style_test.json"]),
+    ("bar_style_config.json", "bar_style_config.png", ["bar_style_test.json"]),
 ]
 
 

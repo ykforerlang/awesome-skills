@@ -19,7 +19,7 @@ This document describes the focused scatter-chart coverage cases used to validat
 | SC-011 | `data/scatter/scatter_global_palette.json` | Validate global palette assignment | top-level `color=[...]` | Scatter series consume colors from the global palette in series order |
 | SC-012 | `data/scatter/scatter_background_color.json` | Validate chart background color | `backgroundColor` | Scatter chart renders with the configured non-default background color |
 | SC-013 | `data/scatter/scatter_axis_grid_range_formatter.json` | Validate axis/grid styling and explicit range | `grid`, axis formatters, `min/max`, `splitLine` | Scatter chart respects axis labels, ranges, and grid styling on value axes |
-| SC-014 | `data/scatter/scatter_style_config.json` | Validate style-config override flow | `--style-config`, layered base/chart style configs | Rendered output reflects style-config overrides over the input option |
+| SC-014 | `data/scatter/scatter_style_config.json` | Validate style-config override flow | `--style-config`, single chart style config file | Rendered output reflects style-config overrides over the input option |
 
 ## Notes
 

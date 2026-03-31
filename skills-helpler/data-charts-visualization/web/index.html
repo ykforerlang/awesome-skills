@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Charts Visualization Helper</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Skills Helper</p>
+          <h1>Data Charts Visualization Config Studio</h1>
+          <p class="hero-text">
+            Focus on style tuning for
+            <code>skills/data-charts-visualization</code>. Adjust chart look and
+            feel quickly, validate it in preview, and keep the style payload for
+            your own data.
+          </p>
+        </div>
+        <aside class="hero-panel">
+          <div class="mini-stat">
+            <span class="mini-stat-value">9</span>
+            <span class="mini-stat-label">chart families</span>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-stat-value">1</span>
+            <span class="mini-stat-label">style output</span>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-stat-value">0</span>
+            <span class="mini-stat-label">build step</span>
+          </div>
+        </aside>
+      </header>
+
+      <main class="workspace">
+        <section class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Step 1</p>
+              <h2>Chart Type</h2>
+            </div>
+            <p class="section-note">
+              Switch chart family here. The config fields and preview update
+              immediately with the selected chart.
+            </p>
+          </div>
+          <div id="chart-grid" class="chart-grid"></div>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Step 2</p>
+              <h2>Configure</h2>
+            </div>
+            <div id="chart-summary" class="chart-summary"></div>
+          </div>
+          <div class="mobile-preview-bar">
+            <button id="open-preview-mobile" class="primary-button preview-mobile-button" type="button">
+              Open Preview
+            </button>
+          </div>
+
+          <div class="config-layout">
+            <div class="config-column">
+              <section class="subpanel">
+                <h3>Foundation</h3>
+                <div class="foundation-stack">
+                  <section id="title-group" class="foundation-group">
+                    <div class="foundation-group-head">
+                      <h4>Title</h4>
+                      <p>This section controls the title area at the top of the chart, including the main title and subtitle.</p>
+                    </div>
+                    <div class="foundation-subgroup">
+                      <div class="foundation-subgroup-head">Main Title</div>
+                      <div class="field-grid">
+                        <label class="field">
+                          <span>Show Title</span>
+                          <select id="title-show" data-boolean-select="true">
+                            <option value="true" selected>Yes</option>
+                            <option value="false">No</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>Title Align</span>
+                          <select id="title-align">
+                            <option value="left">Left</option>
+                            <option value="center">Center</option>
+                            <option value="right">Right</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>Title Size</span>
+                          <select id="title-font-size">
+                            <option value="8">8</option>
+                            <option value="10">10</option>
+                            <option value="12">12</option>
+                            <option value="14">14</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="20">20</option>
+                            <option value="22">22</option>
+                            <option value="24">24</option>
+                            <option value="26" selected>26</option>
+                            <option value="28">28</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>Title Color</span>
+                          <input id="title-color" type="color" value="#1f2937" />
+                        </label>
+                        <label class="field">
+                          <span>Bold Title</span>
+                          <select id="title-bold" data-boolean-select="true">
+                            <option value="true" selected>Yes</option>
+                            <option value="false">No</option>
+                          </select>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="foundation-subgroup">
+                      <div class="foundation-subgroup-head">Subtitle</div>
+                      <div class="field-grid">
+                        <label class="field">
+                          <span>Show Subtitle</span>
+                          <select id="subtitle-show" data-boolean-select="true">
+                            <option value="true" selected>Yes</option>
+                            <option value="false">No</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>Subtitle Size</span>
+                          <select id="subtitle-font-size">
+                            <option value="8">8</option>
+                            <option value="10">10</option>
+                            <option value="12" selected>12</option>
+                            <option value="14">14</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="20">20</option>
+                            <option value="22">22</option>
+                            <option value="24">24</option>
+                            <option value="26">26</option>
+                            <option value="28">28</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>Subtitle Color</span>
+                          <input id="subtitle-color" type="color" value="#6b7280" />
+                        </label>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section id="legend-group" class="foundation-group">
+                    <div class="foundation-group-head">
+                      <h4>Legend</h4>
+                    </div>
+                    <div class="field-grid">
+                      <label class="field">
+                        <span>Show Legend</span>
+                        <select id="legend-show" data-boolean-select="true">
+                          <option value="true" selected>Yes</option>
+                          <option value="false">No</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>Legend Position</span>
+                        <select id="legend-position">
+                          <option value="top-left">Top Left</option>
+                          <option value="top-center">Top Center</option>
+                          <option value="top-right">Top Right</option>
+                          <option value="middle-left">Middle Left</option>
+                          <option value="middle-right">Middle Right</option>
+                          <option value="bottom-left">Bottom Left</option>
+                          <option value="bottom-center">Bottom Center</option>
+                          <option value="bottom-right">Bottom Right</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>Legend Orient</span>
+                        <select id="legend-orient">
+                          <option value="horizontal">Horizontal</option>
+                          <option value="vertical">Vertical</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>Legend Size</span>
+                        <select id="legend-font-size">
+                          <option value="8">8</option>
+                          <option value="10">10</option>
+                          <option value="12" selected>12</option>
+                          <option value="14">14</option>
+                          <option value="16">16</option>
+                          <option value="18">18</option>
+                          <option value="20">20</option>
+                          <option value="22">22</option>
+                          <option value="24">24</option>
+                          <option value="26">26</option>
+                          <option value="28">28</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>Legend Color</span>
+                        <input id="legend-color" type="color" value="#4b5563" />
+                      </label>
+                    </div>
+                  </section>
+
+                  <section id="labels-group" class="foundation-group hidden">
+                    <div class="foundation-group-head">
+                      <h4 id="labels-group-title">Labels</h4>
+                    </div>
+                    <div id="labels-group-content" class="foundation-stack"></div>
+                  </section>
+
+                  <section id="layout-group" class="foundation-group">
+                    <div class="foundation-group-head">
+                      <h4>Canvas</h4>
+                    </div>
+                    <div class="foundation-subgroup">
+                      <div class="foundation-subgroup-head">Canvas Style</div>
+                      <div class="field-grid">
+                        <label class="field">
+                          <span>Background</span>
+                          <input id="background-color" class="background-hidden-input" type="color" value="#ffffff" />
+                          <div class="background-picker">
+                            <div class="background-customizer">
+                              <div class="background-custom-row">
+                                <input id="background-custom-input" class="background-color-input" type="color" value="#ffffff" />
+                              </div>
+                            </div>
+                          </div>
+                        </label>
+                        <label id="palette-field" class="field field-wide">
+                          <span>Palette</span>
+                          <textarea id="palette-input" class="palette-hidden-input" rows="3">#5470c6, #91cc75, #fac858, #ee6666, #73c0de</textarea>
+                          <div class="palette-picker">
+                            <div class="palette-customizer">
+                              <div class="palette-customizer-head">
+                                <strong>Custom Palette</strong>
+                                <div class="template-actions">
+                                  <button id="add-custom-palette" class="secondary-button small" type="button">
+                                    Add Color
+                                  </button>
+                                  <button id="remove-custom-palette" class="secondary-button small" type="button">
+                                    Remove Color
+                                  </button>
+                                </div>
+                              </div>
+                              <div id="palette-custom-colors" class="palette-custom-colors">
+                                <input class="palette-color-input" type="color" value="#5470c6" />
+                                <input class="palette-color-input" type="color" value="#91cc75" />
+                                <input class="palette-color-input" type="color" value="#fac858" />
+                                <input class="palette-color-input" type="color" value="#ee6666" />
+                                <input class="palette-color-input" type="color" value="#73c0de" />
+                              </div>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                    <div id="layout-spacing-group" class="foundation-subgroup">
+                      <div class="foundation-subgroup-head">Plot Area</div>
+                      <p>These values control plot-area margins as a percentage of the canvas width or height.</p>
+                      <div class="field-grid">
+                        <label class="field">
+                          <span>Left</span>
+                          <select id="grid-left">
+                            <option value="0%">0%</option>
+                            <option value="3%">3%</option>
+                            <option value="6%">6%</option>
+                            <option value="9%" selected>9%</option>
+                            <option value="12%">12%</option>
+                            <option value="15%">15%</option>
+                            <option value="18%">18%</option>
+                            <option value="21%">21%</option>
+                            <option value="24%">24%</option>
+                            <option value="27%">27%</option>
+                            <option value="30%">30%</option>
+                            <option value="33%">33%</option>
+                            <option value="36%">36%</option>
+                            <option value="39%">39%</option>
+                            <option value="42%">42%</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>Right</span>
+                          <select id="grid-right">
+                            <option value="0%">0%</option>
+                            <option value="3%">3%</option>
+                            <option value="6%" selected>6%</option>
+                            <option value="9%">9%</option>
+                            <option value="12%">12%</option>
+                            <option value="15%">15%</option>
+                            <option value="18%">18%</option>
+                            <option value="21%">21%</option>
+                            <option value="24%">24%</option>
+                            <option value="27%">27%</option>
+                            <option value="30%">30%</option>
+                            <option value="33%">33%</option>
+                            <option value="36%">36%</option>
+                            <option value="39%">39%</option>
+                            <option value="42%">42%</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>Top</span>
+                          <select id="grid-top">
+                            <option value="0%">0%</option>
+                            <option value="3%">3%</option>
+                            <option value="6%">6%</option>
+                            <option value="9%" selected>9%</option>
+                            <option value="12%">12%</option>
+                            <option value="15%">15%</option>
+                            <option value="18%">18%</option>
+                            <option value="21%">21%</option>
+                            <option value="24%">24%</option>
+                            <option value="27%">27%</option>
+                            <option value="30%">30%</option>
+                            <option value="33%">33%</option>
+                            <option value="36%">36%</option>
+                            <option value="39%">39%</option>
+                            <option value="42%">42%</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>Bottom</span>
+                          <select id="grid-bottom">
+                            <option value="0%">0%</option>
+                            <option value="3%">3%</option>
+                            <option value="6%" selected>6%</option>
+                            <option value="9%">9%</option>
+                            <option value="12%">12%</option>
+                            <option value="15%">15%</option>
+                            <option value="18%">18%</option>
+                            <option value="21%">21%</option>
+                            <option value="24%">24%</option>
+                            <option value="27%">27%</option>
+                            <option value="30%">30%</option>
+                            <option value="33%">33%</option>
+                            <option value="36%">36%</option>
+                            <option value="39%">39%</option>
+                            <option value="42%">42%</option>
+                          </select>
+                        </label>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section id="axes-group" class="foundation-group">
+                    <div class="foundation-group-head">
+                      <h4 id="axes-group-title">Axes</h4>
+                    </div>
+                    <div id="x-axis-subgroup" class="foundation-subgroup">
+                      <div id="x-axis-subgroup-head" class="foundation-subgroup-head">X Axis</div>
+                      <div class="field-grid">
+                        <label class="field">
+                          <span id="x-axis-line-show-label">Show X Axis Line</span>
+                          <select id="x-axis-line-show" data-boolean-select="true">
+                            <option value="true" selected>Yes</option>
+                            <option value="false">No</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span id="x-axis-tick-show-label">Show X Ticks</span>
+                          <select id="x-axis-tick-show" data-boolean-select="true">
+                            <option value="true" selected>Yes</option>
+                            <option value="false">No</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span id="x-rotate-label">X Label Rotate</span>
+                          <input id="x-rotate" type="number" value="0" />
+                        </label>
+                        <label class="field">
+                          <span id="x-axis-label-font-size-label">X Label Size</span>
+                          <select id="x-axis-label-font-size">
+                            <option value="8">8</option>
+                            <option value="10">10</option>
+                            <option value="12" selected>12</option>
+                            <option value="14">14</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="20">20</option>
+                            <option value="22">22</option>
+                            <option value="24">24</option>
+                            <option value="26">26</option>
+                            <option value="28">28</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span id="x-axis-label-color-label">X Label Color</span>
+                          <input id="x-axis-label-color" type="color" value="#4b5563" />
+                        </label>
+                        <label class="field">
+                          <span id="x-axis-line-color-label">X Axis Line Color</span>
+                          <input id="x-axis-line-color" type="color" value="#9ca3af" />
+                        </label>
+                        <label class="field">
+                          <span id="x-formatter-label">X Formatter</span>
+                          <input id="x-formatter" type="text" value="{value}" />
+                        </label>
+                        <label id="x-min-field" class="field">
+                          <span id="x-min-label">X Min</span>
+                          <input id="x-min" type="number" step="any" placeholder="auto" />
+                        </label>
+                        <label id="x-max-field" class="field">
+                          <span id="x-max-label">X Max</span>
+                          <input id="x-max" type="number" step="any" placeholder="auto" />
+                        </label>
+                      </div>
+                    </div>
+                    <div id="y-axis-subgroup" class="foundation-subgroup">
+                      <div id="y-axis-subgroup-head" class="foundation-subgroup-head">Y Axis</div>
+                      <div class="field-grid">
+                        <label class="field">
+                          <span id="y-axis-line-show-label">Show Y Axis Line</span>
+                          <select id="y-axis-line-show" data-boolean-select="true">
+                            <option value="true">Yes</option>
+                            <option value="false" selected>No</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span id="y-axis-tick-show-label">Show Y Ticks</span>
+                          <select id="y-axis-tick-show" data-boolean-select="true">
+                            <option value="true" selected>Yes</option>
+                            <option value="false">No</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span id="y-axis-label-font-size-label">Y Label Size</span>
+                          <select id="y-axis-label-font-size">
+                            <option value="8">8</option>
+                            <option value="10">10</option>
+                            <option value="12" selected>12</option>
+                            <option value="14">14</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="20">20</option>
+                            <option value="22">22</option>
+                            <option value="24">24</option>
+                            <option value="26">26</option>
+                            <option value="28">28</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span id="y-axis-label-color-label">Y Label Color</span>
+                          <input id="y-axis-label-color" type="color" value="#4b5563" />
+                        </label>
+                        <label class="field">
+                          <span id="y-formatter-label">Y Formatter</span>
+                          <input id="y-formatter" type="text" value="{value}" />
+                        </label>
+                        <label class="field">
+                          <span id="y-axis-line-color-label">Y Axis Line Color</span>
+                          <input id="y-axis-line-color" type="color" value="#9ca3af" />
+                        </label>
+                        <label id="y-min-field" class="field">
+                          <span id="y-min-label">Y Min</span>
+                          <input id="y-min" type="number" step="any" placeholder="auto" />
+                        </label>
+                        <label id="y-max-field" class="field">
+                          <span id="y-max-label">Y Max</span>
+                          <input id="y-max" type="number" step="any" placeholder="auto" />
+                        </label>
+                      </div>
+                    </div>
+                    <div id="dual-axis-extra-axes" class="hidden"></div>
+                  </section>
+
+                  <section id="split-lines-group" class="foundation-group">
+                    <div class="foundation-group-head">
+                      <h4>Split Lines</h4>
+                    </div>
+                    <div class="field-grid">
+                      <label class="field">
+                        <span>Show Horizontal Split Line</span>
+                        <select id="split-line-show" data-boolean-select="true">
+                          <option value="true" selected>Yes</option>
+                          <option value="false">No</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>Horizontal Split Color</span>
+                        <input id="split-line-color" type="color" value="#e5e7eb" />
+                      </label>
+                      <label class="field">
+                        <span>Horizontal Split Style</span>
+                        <select id="split-line-type">
+                          <option value="solid">Solid</option>
+                          <option value="dashed" selected>Dashed</option>
+                          <option value="dotted">Dotted</option>
+                          <option value="--">ECharts Dashed</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>Horizontal Split Width</span>
+                        <select id="split-line-width">
+                          <option value="0.6">Thin</option>
+                          <option value="1" selected>Fine</option>
+                          <option value="1.6">Bold</option>
+                        </select>
+                      </label>
+                      <label id="x-split-line-show-field" class="field">
+                        <span>Show Vertical Split Line</span>
+                        <select id="x-split-line-show" data-boolean-select="true">
+                          <option value="true">Yes</option>
+                          <option value="false" selected>No</option>
+                        </select>
+                      </label>
+                      <label id="x-split-line-color-field" class="field">
+                        <span>Vertical Split Color</span>
+                        <input id="x-split-line-color" type="color" value="#e5e7eb" />
+                      </label>
+                      <label id="x-split-line-type-field" class="field">
+                        <span>Vertical Split Style</span>
+                        <select id="x-split-line-type">
+                          <option value="solid">Solid</option>
+                          <option value="dashed" selected>Dashed</option>
+                          <option value="dotted">Dotted</option>
+                          <option value="--">ECharts Dashed</option>
+                        </select>
+                      </label>
+                      <label id="x-split-line-width-field" class="field">
+                        <span>Vertical Split Width</span>
+                        <select id="x-split-line-width">
+                          <option value="0.6">Thin</option>
+                          <option value="1" selected>Fine</option>
+                          <option value="1.6">Bold</option>
+                        </select>
+                      </label>
+                    </div>
+                  </section>
+
+                </div>
+              </section>
+
+              <section class="subpanel">
+                <div class="subpanel-head">
+                  <h3>Chart-Specific Style</h3>
+                  <span id="specific-caption" class="ghost-badge"></span>
+                </div>
+                <div id="specific-fields" class="field-grid"></div>
+              </section>
+            </div>
+
+            <div class="output-column">
+              <section class="subpanel preview-panel">
+                <div class="subpanel-head">
+                  <h3>Preview</h3>
+                  <span id="preview-badge" class="ghost-badge">Live</span>
+                </div>
+                <p id="preview-status" class="helper-text preview-status">
+                  Preview updates with your current configuration.
+                </p>
+                <div id="dual-axis-preview-controls" class="dual-axis-preview-controls hidden"></div>
+                <div id="preview-canvas" class="preview-canvas"></div>
+              </section>
+
+              <section class="subpanel sticky-panel">
+                <div class="subpanel-head">
+                  <h3>Style Config</h3>
+                  <span id="status-badge" class="status-badge">Ready</span>
+                </div>
+                <div id="error-box" class="error-box hidden"></div>
+
+                <div class="output-block">
+                  <div class="output-head">
+                    <h4>Style Payload</h4>
+                    <button class="secondary-button small" data-copy-target="style-output" type="button">
+                      Copy
+                    </button>
+                  </div>
+                  <pre id="style-output" class="code-block"></pre>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div id="preview-modal" class="preview-modal hidden">
+        <div class="preview-modal-shell">
+          <div class="preview-modal-head">
+            <h3>Chart Preview</h3>
+            <button id="close-preview-mobile" class="secondary-button small" type="button">
+              Close
+            </button>
+          </div>
+          <p id="preview-status-mobile" class="helper-text preview-status"></p>
+          <div id="dual-axis-preview-controls-mobile" class="dual-axis-preview-controls hidden"></div>
+          <div id="preview-canvas-mobile" class="preview-canvas preview-canvas-modal"></div>
+        </div>
+      </div>
+
+      <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

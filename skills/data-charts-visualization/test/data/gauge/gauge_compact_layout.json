@@ -1,0 +1,28 @@
+{
+  "series": [
+    {
+      "type": "gauge",
+      "min": 0,
+      "max": 100,
+      "axisLine": {
+        "lineStyle": {
+          "width": 20,
+          "color": [
+            [0.4, "#ee6666"],
+            [0.75, "#fac858"],
+            [1.0, "#91cc75"]
+          ]
+        }
+      },
+      "detail": {
+        "formatter": "{c}%"
+      },
+      "data": [
+        {
+          "value": 68,
+          "name": "Progress"
+        }
+      ]
+    }
+  ]
+}

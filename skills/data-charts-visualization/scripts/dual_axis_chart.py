@@ -11,7 +11,7 @@ bootstrap_runtime()
 
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.patches import Polygon
+from matplotlib.patches import FancyBboxPatch, Polygon
 from matplotlib.ticker import FuncFormatter
 
 from common import (
@@ -150,7 +150,15 @@ def resolve_dual_axis_data(option: dict, series: dict, category_axis: dict, hori
     return [], []
 
 
-def render_bar_labels(ax, bars, labels: list[str], values: list[float], label_conf: dict, horizontal: bool = False) -> None:
+def render_bar_labels(
+    ax,
+    bars,
+    labels: list[str],
+    values: list[float],
+    label_conf: dict,
+    horizontal: bool = False,
+    series_name: str | None = None,
+) -> None:
     if not label_conf.get("show"):
         return
 
@@ -184,7 +192,7 @@ def render_bar_labels(ax, bars, labels: list[str], values: list[float], label_co
                 va = "bottom" if value >= 0 else "top"
             ha = "center"
         ax.annotate(
-            format_label(formatter, category_label, value),
+            format_label(formatter, category_label, value, series_name=series_name),
             xy=xy,
             xytext=xytext,
             textcoords="offset points",
@@ -195,7 +203,47 @@ def render_bar_labels(ax, bars, labels: list[str], values: list[float], label_co
         )
 
 
-def render_line_labels(ax, category_positions, values: list[float], label_conf: dict, horizontal: bool = False) -> None:
+def apply_bar_border_radius(ax, bars, radius: float) -> None:
+    radius = float(radius or 0)
+    if radius <= 0:
+        return
+
+    for patch in list(bars.patches):
+        x = patch.get_x()
+        y = patch.get_y()
+        width = patch.get_width()
+        height = patch.get_height()
+        facecolor = patch.get_facecolor()
+        edgecolor = patch.get_edgecolor()
+        linewidth = patch.get_linewidth()
+        zorder = patch.get_zorder()
+        alpha = patch.get_alpha()
+
+        rounded = FancyBboxPatch(
+            (x, y),
+            width,
+            height,
+            boxstyle=f"round,pad=0,rounding_size={radius}",
+            linewidth=linewidth,
+            facecolor=facecolor,
+            edgecolor=edgecolor,
+            mutation_aspect=1.0,
+            zorder=zorder,
+        )
+        if alpha is not None:
+            rounded.set_alpha(alpha)
+        patch.remove()
+        ax.add_patch(rounded)
+
+
+def render_line_labels(
+    ax,
+    category_positions,
+    values: list[float],
+    label_conf: dict,
+    horizontal: bool = False,
+    series_name: str | None = None,
+) -> None:
     if not label_conf.get("show"):
         return
 
@@ -210,7 +258,7 @@ def render_line_labels(ax, category_positions, values: list[float], label_conf: 
         ax.text(
             x_value,
             y_value,
-            format_label(formatter, None, value),
+            format_label(formatter, None, value, series_name=series_name),
             fontsize=fontsize,
             color=color,
             ha="left" if horizontal else "center",
@@ -237,6 +285,7 @@ def apply_secondary_y_axis_style(ax, axis_conf: dict) -> None:
     label_conf = axis_conf.get("axisLabel", {}) or {}
     tick_conf = axis_conf.get("axisTick", {}) or {}
     line_conf = axis_conf.get("axisLine", {}) or {}
+    split_conf = axis_conf.get("splitLine", {}) or {}
 
     if axis_conf.get("name"):
         ax.set_ylabel(axis_conf["name"], **normalize_font(axis_conf.get("nameTextStyle")))
@@ -254,6 +303,15 @@ def apply_secondary_y_axis_style(ax, axis_conf: dict) -> None:
         ax.spines["right"].set_color(line_conf.get("lineStyle", {}).get("color", "#6e7079"))
     else:
         ax.spines["right"].set_visible(False)
+
+    if split_conf.get("show"):
+        ax.grid(
+            axis="y",
+            linestyle=resolve_line_style(split_conf.get("lineStyle", {}).get("type"), "--"),
+            linewidth=split_conf.get("lineStyle", {}).get("width", 0.8),
+            color=split_conf.get("lineStyle", {}).get("color", "#e0e6f1"),
+            alpha=split_conf.get("lineStyle", {}).get("opacity", 1.0),
+        )
 
     formatter = label_conf.get("formatter")
     if isinstance(formatter, str) and "{value}" in formatter:
@@ -435,7 +493,7 @@ def render_line_series(
             markersize=series.get("symbolSize", 5),
             label=label,
         )
-        render_line_labels(axis, line_x, line_y.tolist(), series.get("label", {}), horizontal=True)
+        render_line_labels(axis, line_x, line_y.tolist(), series.get("label", {}), horizontal=True, series_name=series.get("name"))
         return
 
     if smooth and not np.isnan(line_y).any():
@@ -474,7 +532,7 @@ def render_line_series(
                 color=to_rgba(area_color, area_style.get("opacity", 0.35)),
             )
 
-    render_line_labels(axis, line_x, line_y.tolist(), series.get("label", {}), horizontal=False)
+    render_line_labels(axis, line_x, line_y.tolist(), series.get("label", {}), horizontal=False, series_name=series.get("name"))
 
 
 def main() -> None:
@@ -577,7 +635,16 @@ def main() -> None:
 
             handles.append(build_legend_proxy(color, is_bar=True))
             labels.append(label)
-            render_bar_labels(target_axis, bars, category_labels, values, series.get("label", {}), horizontal=horizontal)
+            render_bar_labels(
+                target_axis,
+                bars,
+                category_labels,
+                values,
+                series.get("label", {}),
+                horizontal=horizontal,
+                series_name=series.get("name"),
+            )
+            apply_bar_border_radius(target_axis, bars, item_style.get("borderRadius", 0))
             continue
 
         render_line_series(option, target_axis, category_positions, values, series, index, label, horizontal)

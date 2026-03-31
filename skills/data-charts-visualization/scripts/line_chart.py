@@ -140,7 +140,7 @@ def main() -> None:
                 ax.text(
                     x_item,
                     y_item,
-                    format_label(formatter, raw_name, y_item),
+                    format_label(formatter, raw_name, y_item, series_name=series.get("name")),
                     fontsize=series.get("label", {}).get("fontSize", 9),
                     color=series.get("label", {}).get("color"),
                     ha="center",

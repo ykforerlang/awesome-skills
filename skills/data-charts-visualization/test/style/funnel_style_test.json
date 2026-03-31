@@ -1,4 +1,20 @@
 {
+  "backgroundColor": "#f8fafc",
+  "title": {
+    "textStyle": {
+      "fontSize": 20,
+      "fontWeight": "bold",
+      "color": "#0f172a"
+    }
+  },
+  "legend": {
+    "top": "bottom",
+    "left": "center",
+    "textStyle": {
+      "fontSize": 10,
+      "color": "#334155"
+    }
+  },
   "series": [
     {
       "type": "funnel",

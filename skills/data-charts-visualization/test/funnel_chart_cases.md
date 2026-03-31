@@ -20,7 +20,7 @@ This document describes the focused funnel-chart coverage cases used to validate
 | FU-012 | `data/funnel/funnel_legend_bottom_center.json` | Validate bottom-centered horizontal legend layout | `legend.top=bottom`, `legend.left=center`, `legend.orient=horizontal` | Funnel stage legends render below the funnel body as a centered horizontal row |
 | FU-013 | `data/funnel/funnel_global_palette.json` | Validate global palette assignment | top-level `color=[...]` | Funnel stages consume colors from the global palette in rendered stage order |
 | FU-014 | `data/funnel/funnel_background_color.json` | Validate chart background color | `backgroundColor` | Funnel chart renders with the configured non-default background color |
-| FU-015 | `data/funnel/funnel_style_config.json` | Validate style-config override flow | `--style-config`, layered base/chart style configs | Rendered output reflects style-config overrides over the input option |
+| FU-015 | `data/funnel/funnel_style_config.json` | Validate style-config override flow | `--style-config`, single chart style config file | Rendered output reflects style-config overrides over the input option |
 
 ## Notes
 

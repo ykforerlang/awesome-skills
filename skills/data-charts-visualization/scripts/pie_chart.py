@@ -91,16 +91,22 @@ def apply_text_style(texts: list, label_conf: dict) -> None:
             text.set_fontsize(label_conf.get("fontSize"))
 
 
+def label_line_style(label_conf: dict) -> tuple[str, float]:
+    line_style = (label_conf.get("labelLine") or {}).get("lineStyle", {})
+    return line_style.get("color", "#94a3b8"), float(line_style.get("width", 0.8) or 0.8)
+
+
 def render_standard_pie(ax, data: list[dict], option: dict, series: dict, names: list[str], values: list[float], colors: list[str], inner_radius: float, outer_radius: float, label_conf: dict):
     series_item_style = series.get("itemStyle", {})
     total = sum(values) or 1
     label_index = {"value": 0}
+    line_color, line_width = label_line_style(label_conf)
 
     def autopct_formatter(pct: float) -> str:
         index = min(label_index["value"], len(names) - 1)
         label_index["value"] += 1
         value = round(total * pct / 100.0, 2)
-        return format_label(label_conf.get("formatter"), names[index], value, pct)
+        return format_label(label_conf.get("formatter"), names[index], value, pct, series.get("name"))
 
     center = resolve_center(series)
     pie_result = ax.pie(
@@ -129,9 +135,20 @@ def render_standard_pie(ax, data: list[dict], option: dict, series: dict, names:
 
     if label_conf.get("show", True) and label_conf.get("position") != "inside":
         formatter = label_conf.get("formatter")
-        for index, text in enumerate(texts):
+        for index, (wedge, text) in enumerate(zip(wedges, texts)):
             percent = values[index] / total * 100.0
-            text.set_text(format_label(formatter, names[index], values[index], percent))
+            text.set_text(format_label(formatter, names[index], values[index], percent, series.get("name")))
+            if label_conf.get("labelLine", {}).get("show", True):
+                theta = math.radians((wedge.theta1 + wedge.theta2) / 2.0)
+                center_x, center_y = wedge.center
+                line_start_radius = wedge.r
+                line_mid_radius = wedge.r + 0.06
+                x1 = center_x + line_start_radius * math.cos(theta)
+                y1 = center_y + line_start_radius * math.sin(theta)
+                x2 = center_x + line_mid_radius * math.cos(theta)
+                y2 = center_y + line_mid_radius * math.sin(theta)
+                x3, y3 = text.get_position()
+                ax.plot([x1, x2, x3], [y1, y2, y3], color=line_color, linewidth=line_width)
         apply_text_style(list(texts), label_conf)
 
     apply_text_style(list(autotexts), label_conf)
@@ -156,6 +173,7 @@ def render_rose_pie(ax, data: list[dict], series: dict, names: list[str], values
     wedges = []
     text_items = []
     line_items = []
+    line_color, line_width = label_line_style(label_conf)
 
     for index, (item, name, value, color) in enumerate(zip(data, names, values, colors)):
         theta = 360.0 * value / total
@@ -183,7 +201,7 @@ def render_rose_pie(ax, data: list[dict], series: dict, names: list[str], values
                 text = ax.text(
                     x,
                     y,
-                    format_label(label_conf.get("formatter"), name, value, value / total * 100.0),
+                    format_label(label_conf.get("formatter"), name, value, value / total * 100.0, series.get("name")),
                     ha="center",
                     va="center",
                 )
@@ -199,11 +217,11 @@ def render_rose_pie(ax, data: list[dict], series: dict, names: list[str], values
                 x3 = center[0] + text_radius * math.cos(mid_angle)
                 y3 = center[1] + text_radius * math.sin(mid_angle)
                 if label_conf.get("labelLine", {}).get("show", True):
-                    line_items.extend(ax.plot([x1, x2, x3], [y1, y2, y3], color="#94a3b8", linewidth=0.8))
+                    line_items.extend(ax.plot([x1, x2, x3], [y1, y2, y3], color=line_color, linewidth=line_width))
                 text = ax.text(
                     x3,
                     y3,
-                    format_label(label_conf.get("formatter"), name, value, value / total * 100.0),
+                    format_label(label_conf.get("formatter"), name, value, value / total * 100.0, series.get("name")),
                     ha="left" if math.cos(mid_angle) >= 0 else "right",
                     va="center",
                 )

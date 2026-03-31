@@ -10,6 +10,7 @@ from bootstrap import bootstrap_runtime
 bootstrap_runtime()
 
 import numpy as np
+from matplotlib.patches import FancyBboxPatch
 
 from common import (
     apply_axis_style,
@@ -127,7 +128,15 @@ def resolve_bar_data(option: dict, series: dict, category_axis: dict, horizontal
     return [], []
 
 
-def render_bar_labels(ax, bars, labels: list[str], values: list[float], label_conf: dict, horizontal: bool = False) -> None:
+def render_bar_labels(
+    ax,
+    bars,
+    labels: list[str],
+    values: list[float],
+    label_conf: dict,
+    horizontal: bool = False,
+    series_name: str | None = None,
+) -> None:
     if not label_conf.get("show"):
         return
 
@@ -161,7 +170,7 @@ def render_bar_labels(ax, bars, labels: list[str], values: list[float], label_co
                 va = "bottom" if value >= 0 else "top"
             ha = "center"
 
-        text = str(value) if not formatter else format_label(formatter, category_label, value)
+        text = str(value) if not formatter else format_label(formatter, category_label, value, series_name=series_name)
         ax.annotate(
             text,
             xy=xy,
@@ -172,6 +181,39 @@ def render_bar_labels(ax, bars, labels: list[str], values: list[float], label_co
             fontsize=fontsize,
             color=color,
         )
+
+
+def apply_bar_border_radius(ax, bars, radius: float) -> None:
+    radius = float(radius or 0)
+    if radius <= 0:
+        return
+
+    for patch in list(bars.patches):
+        x = patch.get_x()
+        y = patch.get_y()
+        width = patch.get_width()
+        height = patch.get_height()
+        facecolor = patch.get_facecolor()
+        edgecolor = patch.get_edgecolor()
+        linewidth = patch.get_linewidth()
+        zorder = patch.get_zorder()
+        alpha = patch.get_alpha()
+
+        rounded = FancyBboxPatch(
+            (x, y),
+            width,
+            height,
+            boxstyle=f"round,pad=0,rounding_size={radius}",
+            linewidth=linewidth,
+            facecolor=facecolor,
+            edgecolor=edgecolor,
+            mutation_aspect=1.0,
+            zorder=zorder,
+        )
+        if alpha is not None:
+            rounded.set_alpha(alpha)
+        patch.remove()
+        ax.add_patch(rounded)
 
 
 def main() -> None:
@@ -236,7 +278,8 @@ def main() -> None:
                 linewidth=item_style.get("borderWidth", 0),
                 bottom=bottom,
             )
-        render_bar_labels(ax, bars, labels, values, series.get("label", {}), horizontal=horizontal)
+        render_bar_labels(ax, bars, labels, values, series.get("label", {}), horizontal=horizontal, series_name=series.get("name"))
+        apply_bar_border_radius(ax, bars, item_style.get("borderRadius", 0))
         if series.get("stack"):
             stack_bottoms[group_key] = stack_bottoms[group_key] + np.array(values, dtype=float)
 

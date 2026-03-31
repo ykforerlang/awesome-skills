@@ -17,7 +17,7 @@ This document describes the focused radar-chart coverage cases used to validate 
 | RA-009 | `data/radar/radar_legend_bottom_center.json` | Validate bottom-centered horizontal legend layout | `legend.top=bottom`, `legend.left=center`, `legend.orient=horizontal` | Radar item legends render below the grid as a centered horizontal row |
 | RA-010 | `data/radar/radar_global_palette.json` | Validate global palette assignment | top-level `color=[...]` | Radar items consume colors from the global palette in data order |
 | RA-011 | `data/radar/radar_background_color.json` | Validate chart background color | `backgroundColor` | Radar chart renders with the configured non-default background color |
-| RA-012 | `data/radar/radar_style_config.json` | Validate style-config override flow | `--style-config`, layered base/chart style configs | Rendered output reflects style-config overrides over the input option |
+| RA-012 | `data/radar/radar_style_config.json` | Validate style-config override flow | `--style-config`, single chart style config file | Rendered output reflects style-config overrides over the input option |
 
 ## Notes
 

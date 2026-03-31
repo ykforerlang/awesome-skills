@@ -134,11 +134,14 @@ def main() -> None:
     max_value = float(series.get("max", max(values)))
     total_height_px = args.height * args.dpi
     total_width_px = args.width * args.dpi
-    chart_width_ratio = 0.92
-    chart_left = (1.0 - chart_width_ratio) / 2.0
+    chart_left = parse_percent(series.get("left"), 1.0, 0.04)
+    chart_top_margin = parse_percent(series.get("top"), 1.0, 0.0)
+    chart_width_ratio = parse_percent(series.get("width"), 1.0, 0.92)
+    chart_height_ratio = parse_percent(series.get("height"), 1.0, 1.0 - chart_top_margin)
+    chart_height_ratio = max(0.12, min(chart_height_ratio, 1.0 - chart_top_margin))
     chart_center = chart_left + chart_width_ratio / 2.0
     gap_ratio = resolve_gap_ratio(series.get("gap"), total_height_px)
-    segment_height = (1.0 - gap_ratio * max(len(data) - 1, 0)) / len(data)
+    segment_height = (chart_height_ratio - gap_ratio * max(len(data) - 1, 0)) / len(data)
     min_size_ratio = resolve_size_ratio(series.get("minSize"), chart_width_ratio, 0.25 * chart_width_ratio, total_width_px)
     max_size_ratio = resolve_size_ratio(series.get("maxSize"), chart_width_ratio, chart_width_ratio, total_width_px)
     handles = []
@@ -152,7 +155,7 @@ def main() -> None:
     for index, item in enumerate(data):
         top_width = widths[index]
         bottom_width = widths[index + 1] if index + 1 < len(widths) else terminal_width
-        y_top = 1.0 - index * (segment_height + gap_ratio)
+        y_top = 1.0 - chart_top_margin - index * (segment_height + gap_ratio)
         y_bottom = y_top - segment_height
         x_top_left = chart_center - top_width / 2.0
         x_top_right = chart_center + top_width / 2.0
@@ -175,7 +178,13 @@ def main() -> None:
         if label_conf.get("show"):
             position = label_conf.get("position", "outside")
             percent = (float(item.get("value", 0)) / max_value * 100.0) if max_value else None
-            text = format_label(label_conf.get("formatter"), item.get("name"), item.get("value"), percent)
+            text = format_label(
+                label_conf.get("formatter"),
+                item.get("name"),
+                item.get("value"),
+                percent,
+                series.get("name"),
+            )
             center_y = (y_top + y_bottom) / 2.0
             if position == "inside":
                 text_x = chart_center

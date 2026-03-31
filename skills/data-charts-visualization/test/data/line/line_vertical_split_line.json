@@ -1,0 +1,59 @@
+{
+  "backgroundColor": "#fbfcfe",
+  "title": {
+    "text": "Vertical Split Line"
+  },
+  "grid": {
+    "left": 88,
+    "right": 32,
+    "top": 86,
+    "bottom": 72
+  },
+  "xAxis": {
+    "type": "category",
+    "data": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"],
+    "axisLabel": {
+      "color": "#475569"
+    },
+    "axisLine": {
+      "show": true,
+      "lineStyle": {
+        "color": "#94a3b8"
+      }
+    },
+    "splitLine": {
+      "show": true,
+      "lineStyle": {
+        "type": "dotted",
+        "width": 1.1,
+        "color": "#cbd5e1",
+        "opacity": 0.95
+      }
+    }
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Users",
+    "axisLabel": {
+      "color": "#475569"
+    },
+    "splitLine": {
+      "show": false
+    }
+  },
+  "series": [
+    {
+      "name": "App",
+      "type": "line",
+      "symbol": "circle",
+      "lineStyle": {
+        "width": 3,
+        "color": "#2563eb"
+      },
+      "itemStyle": {
+        "color": "#2563eb"
+      },
+      "data": [820, 900, 880, 960, 1040, 1120]
+    }
+  ]
+}

@@ -243,7 +243,7 @@ def main() -> None:
                 ax.text(
                     x_item,
                     y_item,
-                    format_label(formatter, raw_name, raw_value),
+                    format_label(formatter, raw_name, raw_value, series_name=series.get("name")),
                     fontsize=label_conf.get("fontSize", 9),
                     color=label_conf.get("color"),
                     ha="center",

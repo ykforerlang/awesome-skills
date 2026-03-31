@@ -16,6 +16,7 @@ TEST_CASES = [
     ("line_dataset_encode.json", "line_dataset_encode.png"),
     ("line_line_styles_symbols.json", "line_line_styles_symbols.png"),
     ("line_object_data_labels.json", "line_object_data_labels.png"),
+    ("line_series_name_formatter.json", "line_series_name_formatter.png"),
     ("line_smooth.json", "line_smooth.png"),
     ("line_step.json", "line_step.png"),
     ("line_value_axis_pairs.json", "line_value_axis_pairs.png"),
@@ -29,7 +30,8 @@ TEST_CASES = [
     ("line_legend_bottom_center.json", "line_legend_bottom_center.png"),
     ("line_global_palette.json", "line_global_palette.png"),
     ("line_background_color.json", "line_background_color.png"),
-    ("line_style_config.json", "line_style_config.png", ["base_test_style.json", "line_style_test.json"]),
+    ("line_style_config.json", "line_style_config.png", ["line_style_test.json"]),
+    ("line_vertical_split_line.json", "line_vertical_split_line.png"),
 ]
 
 

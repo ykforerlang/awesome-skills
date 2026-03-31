@@ -29,7 +29,8 @@ TEST_CASES = [
     ("dual_axis_legend_bottom_center.json", "dual_axis_legend_bottom_center.png"),
     ("dual_axis_global_palette.json", "dual_axis_global_palette.png"),
     ("dual_axis_background_color.json", "dual_axis_background_color.png"),
-    ("dual_axis_style_config.json", "dual_axis_style_config.png", ["base_test_style.json", "dual_axis_style_test.json"]),
+    ("dual_axis_style_config.json", "dual_axis_style_config.png", ["dual_axis_style_test.json"]),
+    ("dual_axis_vertical_split_line.json", "dual_axis_vertical_split_line.png"),
 ]
 
 

@@ -24,7 +24,8 @@ This document describes the focused dual-axis chart coverage cases used to valid
 | DA-016 | `data/dual_axis/dual_axis_legend_bottom_center.json` | Validate bottom-centered horizontal legend layout | `legend.top=bottom`, `legend.left=center`, `legend.orient=horizontal` | The combined legend renders below the chart as a centered horizontal row |
 | DA-017 | `data/dual_axis/dual_axis_global_palette.json` | Validate global palette assignment | top-level `color=[...]` | Bar and line series consume colors from the global palette in series order across both axes |
 | DA-018 | `data/dual_axis/dual_axis_background_color.json` | Validate chart background color | `backgroundColor` | Dual-axis chart renders with the configured non-default background color |
-| DA-019 | `data/dual_axis/dual_axis_style_config.json` | Validate style-config override flow | `--style-config`, layered base/chart style configs | Rendered output reflects style-config overrides over the input option |
+| DA-019 | `data/dual_axis/dual_axis_style_config.json` | Validate style-config override flow | `--style-config`, single chart style config file | Rendered output reflects style-config overrides over the input option |
+| DA-020 | `data/dual_axis/dual_axis_vertical_split_line.json` | Validate vertical split lines on the shared category axis | `xAxis.splitLine.show`, `xAxis.splitLine.lineStyle`, `yAxis[0].splitLine.show=false` | The dual-axis chart renders vertical category grid lines while suppressing horizontal primary-axis split lines |
 
 ## Notes
 

@@ -20,7 +20,8 @@ This document describes the focused gauge-chart coverage cases used to validate 
 | G-012 | `data/gauge/gauge_axis_label_distance.json` | Validate label/tick distance tuning | `axisLabel.distance`, `axisTick.distance`, `splitLine.distance` | Labels and ticks render with shifted radial distance |
 | G-013 | `data/gauge/gauge_axisline_segments.json` | Validate segmented axis-line thresholds | `axisLine.lineStyle.color=[[threshold,color],...]` | Gauge renders distinct colored axis-line segments across configured thresholds |
 | G-014 | `data/gauge/gauge_background_color.json` | Validate chart background color | `backgroundColor` | Gauge chart renders with the configured non-default background color |
-| G-015 | `data/gauge/gauge_style_config.json` | Validate style-config override flow | `--style-config`, layered base/chart style configs | Rendered output reflects style-config overrides over the input option |
+| G-015 | `data/gauge/gauge_style_config.json` | Validate style-config override flow | `--style-config`, single chart style config file | Rendered output reflects style-config overrides over the input option |
+| G-016 | `data/gauge/gauge_compact_layout.json` | Validate default gauge layout does not leave excessive top whitespace | default `startAngle`, `endAngle`, `center`, `radius` | Gauge arc occupies the expected top-oriented region and exports with balanced padding |
 
 ## Notes
 

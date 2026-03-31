@@ -31,7 +31,7 @@ TEST_CASES = [
     ("area_legend_bottom_center.json", "area_legend_bottom_center.png"),
     ("area_global_palette.json", "area_global_palette.png"),
     ("area_background_color.json", "area_background_color.png"),
-    ("area_style_config.json", "area_style_config.png", ["base_test_style.json", "area_style_test.json"]),
+    ("area_style_config.json", "area_style_config.png", ["area_style_test.json"]),
 ]
 
 

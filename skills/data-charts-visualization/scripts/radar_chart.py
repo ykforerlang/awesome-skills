@@ -22,6 +22,7 @@ from common import (
     format_label,
     load_option,
     normalize_font,
+    parse_percent,
     resolve_line_style,
     resolve_series_marker,
     save_figure,
@@ -36,6 +37,16 @@ def radar_angles(count: int) -> list[float]:
 
 def radar_point(angle: float, radius: float) -> tuple[float, float]:
     return radius * math.cos(angle), radius * math.sin(angle)
+
+
+def radar_layout(radar_conf: dict) -> tuple[tuple[float, float], float]:
+    center = radar_conf.get("center", ["50%", "50%"])
+    if not isinstance(center, list) or len(center) != 2:
+        center = ["50%", "50%"]
+    center_x = parse_percent(center[0], 2.0, 1.0) - 1.0
+    center_y = 1.0 - parse_percent(center[1], 2.0, 1.0)
+    radius = parse_percent(radar_conf.get("radius"), 1.0, 1.0)
+    return (center_x, center_y), radius
 
 
 def indicator_bounds(indicators: list[dict]) -> list[tuple[float, float]]:
@@ -59,15 +70,16 @@ def draw_radar_grid(ax, radar_conf: dict, indicators: list[dict], angles: list[f
     axis_line = radar_conf.get("axisLine", {})
     axis_line_style = axis_line.get("lineStyle", {})
     split_area_colors = split_area.get("areaStyle", {}).get("color") or []
+    center, radius_scale = radar_layout(radar_conf)
 
     for level in range(split_number, 0, -1):
-        radius = level / split_number
+        radius = radius_scale * level / split_number
         facecolor = "none"
         if split_area_colors:
             facecolor = to_rgba(split_area_colors[(split_number - level) % len(split_area_colors)], split_area.get("areaStyle", {}).get("opacity", 1.0))
         if shape == "circle":
             patch = Circle(
-                (0, 0),
+                center,
                 radius,
                 facecolor=facecolor,
                 edgecolor=split_line_style.get("color", "#d0d7de"),
@@ -75,7 +87,7 @@ def draw_radar_grid(ax, radar_conf: dict, indicators: list[dict], angles: list[f
                 linestyle=resolve_line_style(split_line_style.get("type"), "-"),
             )
         else:
-            vertices = [radar_point(angle, radius) for angle in angles]
+            vertices = [(center[0] + x, center[1] + y) for x, y in [radar_point(angle, radius) for angle in angles]]
             patch = Polygon(
                 vertices,
                 closed=True,
@@ -87,18 +99,18 @@ def draw_radar_grid(ax, radar_conf: dict, indicators: list[dict], angles: list[f
         ax.add_patch(patch)
 
     for angle, indicator in zip(angles, indicators):
-        x_value, y_value = radar_point(angle, 1.0)
+        x_value, y_value = radar_point(angle, radius_scale)
         ax.plot(
-            [0.0, x_value],
-            [0.0, y_value],
+            [center[0], center[0] + x_value],
+            [center[1], center[1] + y_value],
             color=axis_line_style.get("color", "#94a3b8"),
             linewidth=axis_line_style.get("width", 1.0),
             linestyle=resolve_line_style(axis_line_style.get("type"), "-"),
         )
-        label_x, label_y = radar_point(angle, 1.12)
+        label_x, label_y = radar_point(angle, radius_scale * 1.12)
         ax.text(
-            label_x,
-            label_y,
+            center[0] + label_x,
+            center[1] + label_y,
             indicator.get("name", ""),
             ha="center",
             va="center",
@@ -154,7 +166,11 @@ def main() -> None:
                 continue
             color = series_color(option, series, series_counter)
             radius_values = [normalize_value(value, min_value, max_value) for value, (min_value, max_value) in zip(values, bounds)]
-            vertices = [radar_point(angle, radius) for angle, radius in zip(angles, radius_values)]
+            center, radius_scale = radar_layout(radar_conf)
+            vertices = [
+                (center[0] + x, center[1] + y)
+                for x, y in [radar_point(angle, radius_scale * radius) for angle, radius in zip(angles, radius_values)]
+            ]
             closed_vertices = vertices + [vertices[0]]
             x_values = [point[0] for point in closed_vertices]
             y_values = [point[1] for point in closed_vertices]
@@ -186,7 +202,7 @@ def main() -> None:
                     ax.text(
                         point[0],
                         point[1],
-                        format_label(formatter, indicator.get("name"), raw_value),
+                        format_label(formatter, indicator.get("name"), raw_value, series_name=item.get("name", series.get("name"))),
                         fontsize=label_conf.get("fontSize", 9),
                         color=label_conf.get("color"),
                         ha="center",

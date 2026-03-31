@@ -18,6 +18,7 @@ TEST_CASES = [
     ("pie_inside_labels.json", "pie_inside_labels.png"),
     ("pie_start_angle.json", "pie_start_angle.png"),
     ("pie_item_style_details.json", "pie_item_style_details.png"),
+    ("pie_series_name_formatter.json", "pie_series_name_formatter.png"),
     ("pie_multilingual.json", "pie_multilingual.png"),
     ("pie_dataset_encode.json", "pie_dataset_encode.png"),
     ("pie_center_offset.json", "pie_center_offset.png"),
@@ -29,7 +30,7 @@ TEST_CASES = [
     ("pie_global_palette.json", "pie_global_palette.png"),
     ("pie_background_color.json", "pie_background_color.png"),
     ("pie_dataset_encode_table.json", "pie_dataset_encode_table.png"),
-    ("pie_style_config.json", "pie_style_config.png", ["base_test_style.json", "pie_style_test.json"]),
+    ("pie_style_config.json", "pie_style_config.png", ["pie_style_test.json"]),
 ]
 
 

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Data Charts Visualization 配置助手</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">技能助手</p>
+          <h1>数据图表可视化配置工作台</h1>
+          <p class="hero-text">
+            聚焦 <code>skills/data-charts-visualization</code> 的样式配置。
+            快速调出你想要的图表观感，用预览确认效果，再保留样式配置去适配你自己的数据。
+          </p>
+        </div>
+        <aside class="hero-panel">
+          <div class="mini-stat">
+            <span class="mini-stat-value">9</span>
+            <span class="mini-stat-label">图表家族</span>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-stat-value">1</span>
+            <span class="mini-stat-label">样式输出</span>
+          </div>
+          <div class="mini-stat">
+            <span class="mini-stat-value">0</span>
+            <span class="mini-stat-label">构建步骤</span>
+          </div>
+        </aside>
+      </header>
+
+      <main class="workspace">
+        <section class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">步骤 1</p>
+              <h2>图表类型</h2>
+            </div>
+            <p class="section-note">
+              在这里切换图表类型。切换后，可配置字段和预览会立即同步更新。
+            </p>
+          </div>
+          <div id="chart-grid" class="chart-grid"></div>
+        </section>
+
+        <section class="panel">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">步骤 2</p>
+              <h2>配置内容</h2>
+            </div>
+            <div id="chart-summary" class="chart-summary"></div>
+          </div>
+          <div class="mobile-preview-bar">
+            <button id="open-preview-mobile" class="primary-button preview-mobile-button" type="button">
+              打开预览
+            </button>
+          </div>
+
+          <div class="config-layout">
+            <div class="config-column">
+              <section class="subpanel">
+                <h3>基础样式</h3>
+                <div class="foundation-stack">
+                  <section id="title-group" class="foundation-group">
+                    <div class="foundation-group-head">
+                      <h4>标题</h4>
+                      <p>这里对应图表顶部的标题区域，包括主标题和副标题。</p>
+                    </div>
+                    <div class="foundation-subgroup">
+                      <div class="foundation-subgroup-head">主标题</div>
+                      <div class="field-grid">
+                        <label class="field">
+                          <span>显示主标题</span>
+                          <select id="title-show" data-boolean-select="true">
+                            <option value="true" selected>是</option>
+                            <option value="false">否</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>标题对齐</span>
+                          <select id="title-align">
+                            <option value="left">左对齐</option>
+                            <option value="center">居中</option>
+                            <option value="right">右对齐</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>标题字号</span>
+                          <select id="title-font-size">
+                            <option value="8">8</option>
+                            <option value="10">10</option>
+                            <option value="12">12</option>
+                            <option value="14">14</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="20">20</option>
+                            <option value="22">22</option>
+                            <option value="24">24</option>
+                            <option value="26" selected>26</option>
+                            <option value="28">28</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>标题颜色</span>
+                          <input id="title-color" type="color" value="#1f2937" />
+                        </label>
+                        <label class="field">
+                          <span>标题加粗</span>
+                          <select id="title-bold" data-boolean-select="true">
+                            <option value="true" selected>是</option>
+                            <option value="false">否</option>
+                          </select>
+                        </label>
+                      </div>
+                    </div>
+                    <div class="foundation-subgroup">
+                      <div class="foundation-subgroup-head">副标题</div>
+                      <div class="field-grid">
+                        <label class="field">
+                          <span>显示副标题</span>
+                          <select id="subtitle-show" data-boolean-select="true">
+                            <option value="true" selected>是</option>
+                            <option value="false">否</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>副标题字号</span>
+                          <select id="subtitle-font-size">
+                            <option value="8">8</option>
+                            <option value="10">10</option>
+                            <option value="12" selected>12</option>
+                            <option value="14">14</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="20">20</option>
+                            <option value="22">22</option>
+                            <option value="24">24</option>
+                            <option value="26">26</option>
+                            <option value="28">28</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>副标题颜色</span>
+                          <input id="subtitle-color" type="color" value="#6b7280" />
+                        </label>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section id="legend-group" class="foundation-group">
+                    <div class="foundation-group-head">
+                      <h4>图例</h4>
+                    </div>
+                    <div class="field-grid">
+                      <label class="field">
+                        <span>显示图例</span>
+                        <select id="legend-show" data-boolean-select="true">
+                          <option value="true" selected>是</option>
+                          <option value="false">否</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>图例位置</span>
+                        <select id="legend-position">
+                          <option value="top-left">左上</option>
+                          <option value="top-center">上中</option>
+                          <option value="top-right">右上</option>
+                          <option value="middle-left">左中</option>
+                          <option value="middle-right">右中</option>
+                          <option value="bottom-left">左下</option>
+                          <option value="bottom-center">下中</option>
+                          <option value="bottom-right">右下</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>图例方向</span>
+                        <select id="legend-orient">
+                          <option value="horizontal">水平</option>
+                          <option value="vertical">垂直</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>图例字号</span>
+                        <select id="legend-font-size">
+                          <option value="8">8</option>
+                          <option value="10">10</option>
+                          <option value="12" selected>12</option>
+                          <option value="14">14</option>
+                          <option value="16">16</option>
+                          <option value="18">18</option>
+                          <option value="20">20</option>
+                          <option value="22">22</option>
+                          <option value="24">24</option>
+                          <option value="26">26</option>
+                          <option value="28">28</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>图例颜色</span>
+                        <input id="legend-color" type="color" value="#4b5563" />
+                      </label>
+                    </div>
+                  </section>
+
+                  <section id="labels-group" class="foundation-group hidden">
+                    <div class="foundation-group-head">
+                      <h4 id="labels-group-title">标签</h4>
+                    </div>
+                    <div id="labels-group-content" class="foundation-stack"></div>
+                  </section>
+
+                  <section id="layout-group" class="foundation-group">
+                    <div class="foundation-group-head">
+                      <h4>画布</h4>
+                    </div>
+                    <div class="foundation-subgroup">
+                      <div class="foundation-subgroup-head">画布样式</div>
+                      <div class="field-grid">
+                        <label class="field">
+                          <span>背景色</span>
+                          <input id="background-color" class="background-hidden-input" type="color" value="#ffffff" />
+                          <div class="background-picker">
+                            <div class="background-customizer">
+                              <div class="background-custom-row">
+                                <input id="background-custom-input" class="background-color-input" type="color" value="#ffffff" />
+                              </div>
+                            </div>
+                          </div>
+                        </label>
+                        <label id="palette-field" class="field field-wide">
+                          <span>配色板</span>
+                          <textarea id="palette-input" class="palette-hidden-input" rows="3">#5470c6, #91cc75, #fac858, #ee6666, #73c0de</textarea>
+                          <div class="palette-picker">
+                            <div class="palette-customizer">
+                              <div class="palette-customizer-head">
+                                <strong>自定义配色</strong>
+                                <div class="template-actions">
+                                  <button id="add-custom-palette" class="secondary-button small" type="button">
+                                    添加颜色
+                                  </button>
+                                  <button id="remove-custom-palette" class="secondary-button small" type="button">
+                                    移除颜色
+                                  </button>
+                                </div>
+                              </div>
+                              <div id="palette-custom-colors" class="palette-custom-colors">
+                                <input class="palette-color-input" type="color" value="#5470c6" />
+                                <input class="palette-color-input" type="color" value="#91cc75" />
+                                <input class="palette-color-input" type="color" value="#fac858" />
+                                <input class="palette-color-input" type="color" value="#ee6666" />
+                                <input class="palette-color-input" type="color" value="#73c0de" />
+                              </div>
+                            </div>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                    <div id="layout-spacing-group" class="foundation-subgroup">
+                      <div class="foundation-subgroup-head">绘图区</div>
+                      <p>这里的值表示绘图区四边留白占画布宽度或高度的百分比。</p>
+                      <div class="field-grid">
+                        <label class="field">
+                          <span>左边距</span>
+                          <select id="grid-left">
+                            <option value="0%">0%</option>
+                            <option value="3%">3%</option>
+                            <option value="6%">6%</option>
+                            <option value="9%" selected>9%</option>
+                            <option value="12%">12%</option>
+                            <option value="15%">15%</option>
+                            <option value="18%">18%</option>
+                            <option value="21%">21%</option>
+                            <option value="24%">24%</option>
+                            <option value="27%">27%</option>
+                            <option value="30%">30%</option>
+                            <option value="33%">33%</option>
+                            <option value="36%">36%</option>
+                            <option value="39%">39%</option>
+                            <option value="42%">42%</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>右边距</span>
+                          <select id="grid-right">
+                            <option value="0%">0%</option>
+                            <option value="3%">3%</option>
+                            <option value="6%" selected>6%</option>
+                            <option value="9%">9%</option>
+                            <option value="12%">12%</option>
+                            <option value="15%">15%</option>
+                            <option value="18%">18%</option>
+                            <option value="21%">21%</option>
+                            <option value="24%">24%</option>
+                            <option value="27%">27%</option>
+                            <option value="30%">30%</option>
+                            <option value="33%">33%</option>
+                            <option value="36%">36%</option>
+                            <option value="39%">39%</option>
+                            <option value="42%">42%</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>上边距</span>
+                          <select id="grid-top">
+                            <option value="0%">0%</option>
+                            <option value="3%">3%</option>
+                            <option value="6%">6%</option>
+                            <option value="9%" selected>9%</option>
+                            <option value="12%">12%</option>
+                            <option value="15%">15%</option>
+                            <option value="18%">18%</option>
+                            <option value="21%">21%</option>
+                            <option value="24%">24%</option>
+                            <option value="27%">27%</option>
+                            <option value="30%">30%</option>
+                            <option value="33%">33%</option>
+                            <option value="36%">36%</option>
+                            <option value="39%">39%</option>
+                            <option value="42%">42%</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span>下边距</span>
+                          <select id="grid-bottom">
+                            <option value="0%">0%</option>
+                            <option value="3%">3%</option>
+                            <option value="6%" selected>6%</option>
+                            <option value="9%">9%</option>
+                            <option value="12%">12%</option>
+                            <option value="15%">15%</option>
+                            <option value="18%">18%</option>
+                            <option value="21%">21%</option>
+                            <option value="24%">24%</option>
+                            <option value="27%">27%</option>
+                            <option value="30%">30%</option>
+                            <option value="33%">33%</option>
+                            <option value="36%">36%</option>
+                            <option value="39%">39%</option>
+                            <option value="42%">42%</option>
+                          </select>
+                        </label>
+                      </div>
+                    </div>
+                  </section>
+
+                  <section id="axes-group" class="foundation-group">
+                    <div class="foundation-group-head">
+                      <h4 id="axes-group-title">坐标轴</h4>
+                    </div>
+                    <div id="x-axis-subgroup" class="foundation-subgroup">
+                      <div id="x-axis-subgroup-head" class="foundation-subgroup-head">X 轴</div>
+                      <div class="field-grid">
+                        <label class="field">
+                          <span id="x-axis-line-show-label">显示 X 轴线</span>
+                          <select id="x-axis-line-show" data-boolean-select="true">
+                            <option value="true" selected>是</option>
+                            <option value="false">否</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span id="x-axis-tick-show-label">显示 X 轴刻度</span>
+                          <select id="x-axis-tick-show" data-boolean-select="true">
+                            <option value="true" selected>是</option>
+                            <option value="false">否</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span id="x-rotate-label">X 轴标签旋转</span>
+                          <input id="x-rotate" type="number" value="0" />
+                        </label>
+                        <label class="field">
+                          <span id="x-axis-label-font-size-label">X 轴标签字号</span>
+                          <select id="x-axis-label-font-size">
+                            <option value="8">8</option>
+                            <option value="10">10</option>
+                            <option value="12" selected>12</option>
+                            <option value="14">14</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="20">20</option>
+                            <option value="22">22</option>
+                            <option value="24">24</option>
+                            <option value="26">26</option>
+                            <option value="28">28</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span id="x-axis-label-color-label">X 轴标签颜色</span>
+                          <input id="x-axis-label-color" type="color" value="#4b5563" />
+                        </label>
+                        <label class="field">
+                          <span id="x-axis-line-color-label">X 轴线颜色</span>
+                          <input id="x-axis-line-color" type="color" value="#9ca3af" />
+                        </label>
+                        <label class="field">
+                          <span id="x-formatter-label">X 轴格式</span>
+                          <input id="x-formatter" type="text" value="{value}" />
+                        </label>
+                        <label id="x-min-field" class="field">
+                          <span id="x-min-label">X 轴最小值</span>
+                          <input id="x-min" type="number" step="any" placeholder="自动" />
+                        </label>
+                        <label id="x-max-field" class="field">
+                          <span id="x-max-label">X 轴最大值</span>
+                          <input id="x-max" type="number" step="any" placeholder="自动" />
+                        </label>
+                      </div>
+                    </div>
+                    <div id="y-axis-subgroup" class="foundation-subgroup">
+                      <div id="y-axis-subgroup-head" class="foundation-subgroup-head">Y 轴</div>
+                      <div class="field-grid">
+                        <label class="field">
+                          <span id="y-axis-line-show-label">显示 Y 轴线</span>
+                          <select id="y-axis-line-show" data-boolean-select="true">
+                            <option value="true">是</option>
+                            <option value="false" selected>否</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span id="y-axis-tick-show-label">显示 Y 轴刻度</span>
+                          <select id="y-axis-tick-show" data-boolean-select="true">
+                            <option value="true" selected>是</option>
+                            <option value="false">否</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span id="y-axis-label-font-size-label">Y 轴标签字号</span>
+                          <select id="y-axis-label-font-size">
+                            <option value="8">8</option>
+                            <option value="10">10</option>
+                            <option value="12" selected>12</option>
+                            <option value="14">14</option>
+                            <option value="16">16</option>
+                            <option value="18">18</option>
+                            <option value="20">20</option>
+                            <option value="22">22</option>
+                            <option value="24">24</option>
+                            <option value="26">26</option>
+                            <option value="28">28</option>
+                          </select>
+                        </label>
+                        <label class="field">
+                          <span id="y-axis-label-color-label">Y 轴标签颜色</span>
+                          <input id="y-axis-label-color" type="color" value="#4b5563" />
+                        </label>
+                        <label class="field">
+                          <span id="y-formatter-label">Y 轴格式</span>
+                          <input id="y-formatter" type="text" value="{value}" />
+                        </label>
+                        <label class="field">
+                          <span id="y-axis-line-color-label">Y 轴线颜色</span>
+                          <input id="y-axis-line-color" type="color" value="#9ca3af" />
+                        </label>
+                        <label id="y-min-field" class="field">
+                          <span id="y-min-label">Y 轴最小值</span>
+                          <input id="y-min" type="number" step="any" placeholder="自动" />
+                        </label>
+                        <label id="y-max-field" class="field">
+                          <span id="y-max-label">Y 轴最大值</span>
+                          <input id="y-max" type="number" step="any" placeholder="自动" />
+                        </label>
+                      </div>
+                    </div>
+                    <div id="dual-axis-extra-axes" class="hidden"></div>
+                  </section>
+
+                  <section id="split-lines-group" class="foundation-group">
+                    <div class="foundation-group-head">
+                      <h4>分割线</h4>
+                    </div>
+                    <div class="field-grid">
+                      <label class="field">
+                        <span>显示水平分割线</span>
+                        <select id="split-line-show" data-boolean-select="true">
+                          <option value="true" selected>是</option>
+                          <option value="false">否</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>水平分割线颜色</span>
+                        <input id="split-line-color" type="color" value="#e5e7eb" />
+                      </label>
+                      <label class="field">
+                        <span>水平分割线样式</span>
+                        <select id="split-line-type">
+                          <option value="solid">实线</option>
+                          <option value="dashed" selected>虚线</option>
+                          <option value="dotted">点线</option>
+                          <option value="--">ECharts 虚线</option>
+                        </select>
+                      </label>
+                      <label class="field">
+                        <span>水平分割线宽度</span>
+                        <select id="split-line-width">
+                          <option value="0.6">纤细</option>
+                          <option value="1" selected>细</option>
+                          <option value="1.6">粗</option>
+                        </select>
+                      </label>
+                      <label id="x-split-line-show-field" class="field">
+                        <span>显示垂直分割线</span>
+                        <select id="x-split-line-show" data-boolean-select="true">
+                          <option value="true">是</option>
+                          <option value="false" selected>否</option>
+                        </select>
+                      </label>
+                      <label id="x-split-line-color-field" class="field">
+                        <span>垂直分割线颜色</span>
+                        <input id="x-split-line-color" type="color" value="#e5e7eb" />
+                      </label>
+                      <label id="x-split-line-type-field" class="field">
+                        <span>垂直分割线样式</span>
+                        <select id="x-split-line-type">
+                          <option value="solid">实线</option>
+                          <option value="dashed" selected>虚线</option>
+                          <option value="dotted">点线</option>
+                          <option value="--">ECharts 虚线</option>
+                        </select>
+                      </label>
+                      <label id="x-split-line-width-field" class="field">
+                        <span>垂直分割线宽度</span>
+                        <select id="x-split-line-width">
+                          <option value="0.6">纤细</option>
+                          <option value="1" selected>细</option>
+                          <option value="1.6">粗</option>
+                        </select>
+                      </label>
+                    </div>
+                  </section>
+
+                </div>
+              </section>
+
+              <section class="subpanel">
+                <div class="subpanel-head">
+                  <h3>图表专属样式</h3>
+                  <span id="specific-caption" class="ghost-badge"></span>
+                </div>
+                <div id="specific-fields" class="field-grid"></div>
+              </section>
+            </div>
+
+            <div class="output-column">
+              <section class="subpanel preview-panel">
+                <div class="subpanel-head">
+                  <h3>图表预览</h3>
+                  <span id="preview-badge" class="ghost-badge">实时</span>
+                </div>
+                <p id="preview-status" class="helper-text preview-status">
+                  预览会随着当前配置实时更新。
+                </p>
+                <div id="dual-axis-preview-controls" class="dual-axis-preview-controls hidden"></div>
+                <div id="preview-canvas" class="preview-canvas"></div>
+              </section>
+
+              <section class="subpanel sticky-panel">
+                <div class="subpanel-head">
+                  <h3>样式配置</h3>
+                  <span id="status-badge" class="status-badge">就绪</span>
+                </div>
+                <div id="error-box" class="error-box hidden"></div>
+
+                <div class="output-block">
+                  <div class="output-head">
+                    <h4>样式 Payload</h4>
+                    <button class="secondary-button small" data-copy-target="style-output" type="button">
+                      复制
+                    </button>
+                  </div>
+                  <pre id="style-output" class="code-block"></pre>
+                </div>
+              </section>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <div id="preview-modal" class="preview-modal hidden">
+        <div class="preview-modal-shell">
+          <div class="preview-modal-head">
+            <h3>图表预览</h3>
+            <button id="close-preview-mobile" class="secondary-button small" type="button">
+              关闭
+            </button>
+          </div>
+          <p id="preview-status-mobile" class="helper-text preview-status"></p>
+          <div id="dual-axis-preview-controls-mobile" class="dual-axis-preview-controls hidden"></div>
+          <div id="preview-canvas-mobile" class="preview-canvas preview-canvas-modal"></div>
+        </div>
+      </div>
+
+      <div id="toast" class="toast hidden"></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

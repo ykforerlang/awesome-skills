@@ -11,6 +11,7 @@ This document describes the focused line-chart coverage cases used to validate t
 | L-003 | `data/line/line_dataset_encode.json` | Validate dataset + encode support | `dataset.source`, `series.encode` | Lines render from tabular dataset input without inline `series.data` |
 | L-004 | `data/line/line_line_styles_symbols.json` | Validate line-style and symbol coverage | `lineStyle.type`, `symbol`, `symbolSize` | Solid, dashed, and dotted lines render with distinct markers and widths |
 | L-005 | `data/line/line_object_data_labels.json` | Validate object-array data and ECharts-style labels | `series.data[{name,value}]`, `label.formatter` | The line renders from object data and labels apply `{b}` / `{c}` substitutions |
+| L-005A | `data/line/line_series_name_formatter.json` | Validate series-name label formatter | `series.name`, `label.formatter="{a} · {b}: {c}"` | The line renders labels with ECharts-style `{a}` / `{b}` / `{c}` substitutions |
 | L-006 | `data/line/line_smooth.json` | Validate smooth line rendering | `series.smooth=true` | The line renders as a smoothed curve instead of straight segments |
 | L-007 | `data/line/line_step.json` | Validate step-line rendering | `series.step` | The line renders as step transitions between categories |
 | L-008 | `data/line/line_value_axis_pairs.json` | Validate numeric x-axis pairs | `xAxis.type=value`, `series.data=[[x,y],...]` | The line renders against a numeric x-axis using tuple point data |
@@ -24,7 +25,8 @@ This document describes the focused line-chart coverage cases used to validate t
 | L-016 | `data/line/line_legend_bottom_center.json` | Validate bottom-centered horizontal legend layout | `legend.top=bottom`, `legend.left=center`, `legend.orient=horizontal` | The legend renders below the plot as a centered horizontal row |
 | L-017 | `data/line/line_global_palette.json` | Validate global palette assignment | top-level `color=[...]` | Line series consume colors from the global palette in series order without per-series overrides |
 | L-018 | `data/line/line_background_color.json` | Validate chart background color | `backgroundColor` | Line chart renders with the configured non-default background color |
-| L-019 | `data/line/line_style_config.json` | Validate style-config override flow | `--style-config`, layered base/chart style configs | Rendered output reflects style-config overrides over the input option |
+| L-019 | `data/line/line_style_config.json` | Validate style-config override flow | `--style-config`, single chart style config file | Rendered output reflects style-config overrides over the input option |
+| L-020 | `data/line/line_vertical_split_line.json` | Validate vertical split-line rendering | `xAxis.splitLine.show`, `xAxis.splitLine.lineStyle`, `yAxis.splitLine.show=false` | The line chart renders category-aligned vertical grid lines without horizontal split lines |
 
 ## Notes
 

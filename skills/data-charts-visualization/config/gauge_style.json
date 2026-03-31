@@ -1,4 +1,28 @@
 {
+  "color": [
+    "#5470c6",
+    "#91cc75",
+    "#fac858",
+    "#ee6666",
+    "#73c0de",
+    "#3ba272",
+    "#fc8452",
+    "#9a60b4",
+    "#ea7ccc"
+  ],
+  "backgroundColor": "#ffffff",
+  "title": {
+    "left": "left",
+    "textStyle": {
+      "fontSize": 26,
+      "fontWeight": "bold",
+      "color": "#1f2937"
+    },
+    "subtextStyle": {
+      "fontSize": 11,
+      "color": "#6b7280"
+    }
+  },
   "series": [
     {
       "type": "gauge",
@@ -10,9 +34,18 @@
         "lineStyle": {
           "width": 20,
           "color": [
-            [0.4, "#ee6666"],
-            [0.75, "#fac858"],
-            [1.0, "#91cc75"]
+            [
+              0.4,
+              "#ee6666"
+            ],
+            [
+              0.75,
+              "#fac858"
+            ],
+            [
+              1.0,
+              "#91cc75"
+            ]
           ]
         }
       },

@@ -25,7 +25,7 @@ TEST_CASES = [
     ("funnel_legend_bottom_center.json", "funnel_legend_bottom_center.png"),
     ("funnel_global_palette.json", "funnel_global_palette.png"),
     ("funnel_background_color.json", "funnel_background_color.png"),
-    ("funnel_style_config.json", "funnel_style_config.png", ["base_test_style.json", "funnel_style_test.json"]),
+    ("funnel_style_config.json", "funnel_style_config.png", ["funnel_style_test.json"]),
 ]
 
 

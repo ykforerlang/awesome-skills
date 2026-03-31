@@ -327,6 +327,11 @@ def apply_axis_style(ax: Any, x_axis: dict[str, Any], y_axis: dict[str, Any]) ->
                     linewidth=split_conf.get("lineStyle", {}).get("width", 0.8),
                     color=split_conf.get("lineStyle", {}).get("color", "#e0e6f1"),
                 )
+            if axis_conf.get("type") == "value":
+                if axis_conf.get("min") is not None:
+                    ax.set_xlim(left=axis_conf["min"])
+                if axis_conf.get("max") is not None:
+                    ax.set_xlim(right=axis_conf["max"])
         else:
             if name:
                 ax.set_ylabel(name, **normalize_font(axis_conf.get("nameTextStyle")))
@@ -348,6 +353,11 @@ def apply_axis_style(ax: Any, x_axis: dict[str, Any], y_axis: dict[str, Any]) ->
                     color=split_conf.get("lineStyle", {}).get("color", "#e0e6f1"),
                     alpha=split_conf.get("lineStyle", {}).get("opacity", 1.0),
                 )
+            if axis_conf.get("type") != "category":
+                if axis_conf.get("min") is not None:
+                    ax.set_ylim(bottom=axis_conf["min"])
+                if axis_conf.get("max") is not None:
+                    ax.set_ylim(top=axis_conf["max"])
     axis_label = (x_axis or {}).get("axisLabel", {})
     formatter = axis_label.get("formatter")
     if isinstance(formatter, str) and "{value}" in formatter:
@@ -464,11 +474,12 @@ def apply_legend(ax: Any, option: dict[str, Any], handles: Sequence[Any] | None 
         legend_handles, legend_labels = ax.get_legend_handles_labels()
     if not legend_labels:
         return
-    loc = legend_loc(legend)
+    loc, bbox = legend_loc(legend)
     ax.legend(
         legend_handles,
         legend_labels,
         loc=loc,
+        bbox_to_anchor=bbox,
         ncol=len(legend_labels) if legend.get("orient") == "horizontal" else 1,
         frameon=False,
         fontsize=legend.get("textStyle", {}).get("fontSize"),
@@ -476,17 +487,23 @@ def apply_legend(ax: Any, option: dict[str, Any], handles: Sequence[Any] | None 
     )
 
 
-def legend_loc(legend: dict[str, Any]) -> str:
+def legend_loc(legend: dict[str, Any]) -> tuple[str, tuple[float, float]]:
     top = legend.get("top")
     left = legend.get("left")
-    orient = legend.get("orient", "horizontal")
-    if top == "bottom":
-        return "lower center"
-    if left == "right":
-        return "center right" if orient == "vertical" else "upper right"
-    if left == "center":
-        return "upper center"
-    return "upper left"
+    vertical_map = {
+        "top": ("upper", 1.0),
+        "middle": ("center", 0.5),
+        "center": ("center", 0.5),
+        "bottom": ("lower", 0.0),
+    }
+    horizontal_map = {
+        "left": ("left", 0.0),
+        "center": ("center", 0.5),
+        "right": ("right", 1.0),
+    }
+    vertical_word, y = vertical_map.get(top, ("upper", 1.0))
+    horizontal_word, x = horizontal_map.get(left, ("left", 0.0))
+    return f"{vertical_word} {horizontal_word}", (x, y)
 
 
 def save_figure(fig: Any, output: str, transparent: bool = False) -> None:
@@ -495,11 +512,18 @@ def save_figure(fig: Any, output: str, transparent: bool = False) -> None:
     plt.close(fig)
 
 
-def format_label(formatter: Any, name: Any, value: Any, percent: float | None = None) -> str:
+def format_label(
+    formatter: Any,
+    name: Any,
+    value: Any,
+    percent: float | None = None,
+    series_name: Any = None,
+) -> str:
     if not formatter:
         return f"{name}: {value}" if name not in (None, "") else str(value)
     if isinstance(formatter, str):
-        text = formatter.replace("{b}", "" if name is None else str(name))
+        text = formatter.replace("{a}", "" if series_name is None else str(series_name))
+        text = text.replace("{b}", "" if name is None else str(name))
         text = text.replace("{c}", "" if value is None else str(value))
         if percent is not None:
             text = text.replace("{d}", f"{percent:.0f}")
@@ -523,13 +547,21 @@ def gauge_angles(series: dict[str, Any]) -> tuple[float, float]:
     return start, end
 
 
+def gauge_sweep(start: float, end: float) -> float:
+    sweep = end - start
+    if sweep == 0:
+        return -360.0
+    if abs(sweep) > 360:
+        normalized = abs(sweep) % 360
+        sweep = math.copysign(normalized or 360.0, sweep)
+    return sweep
+
+
 def gauge_value_to_angle(value: float, min_value: float, max_value: float, start: float, end: float) -> float:
-    span = (end - start) % 360
-    if span == 0:
-        span = 360
+    sweep = gauge_sweep(start, end)
     ratio = 0.0 if max_value == min_value else (value - min_value) / (max_value - min_value)
     ratio = max(0.0, min(1.0, ratio))
-    return start + span * ratio
+    return start + sweep * ratio
 
 
 def gauge_point(angle_deg: float, radius: float) -> tuple[float, float]:
@@ -559,8 +591,38 @@ def gauge_radius(series: dict[str, Any]) -> float:
     return parse_percent(series.get("radius"), 1.0, 1.0)
 
 
+def add_gauge_wedge(
+    ax: Any,
+    center_x: float,
+    center_y: float,
+    radius: float,
+    start_angle: float,
+    end_angle: float,
+    width: float,
+    color: Any,
+) -> None:
+    sweep = end_angle - start_angle
+    if sweep >= 0:
+        theta1 = start_angle
+        theta2 = start_angle + sweep
+    else:
+        theta1 = start_angle + sweep
+        theta2 = start_angle
+    patch = Wedge(
+        (center_x, center_y),
+        radius,
+        theta1=theta1,
+        theta2=theta2,
+        width=width / 100.0,
+        facecolor=color,
+        edgecolor="none",
+    )
+    ax.add_patch(patch)
+
+
 def render_gauge_axis(ax: Any, series: dict[str, Any], value: float, min_value: float, max_value: float) -> None:
     start, end = gauge_angles(series)
+    sweep = gauge_sweep(start, end)
     line_style = series.get("axisLine", {}).get("lineStyle", {})
     width = line_style.get("width", 18)
     segments = line_style.get("color") or [[1, "#5470c6"]]
@@ -568,21 +630,9 @@ def render_gauge_axis(ax: Any, series: dict[str, Any], value: float, min_value: 
     radius = gauge_radius(series)
 
     current = start
-    span = (end - start) % 360
-    if span == 0:
-        span = 360
     for threshold, color in segments:
-        segment_end = start + span * float(threshold)
-        patch = Wedge(
-            (center_x, center_y),
-            radius,
-            theta1=current,
-            theta2=segment_end,
-            width=width / 100.0,
-            facecolor=color,
-            edgecolor="none",
-        )
-        ax.add_patch(patch)
+        segment_end = start + sweep * float(threshold)
+        add_gauge_wedge(ax, center_x, center_y, radius, current, segment_end, width, color)
         current = segment_end
 
     angle = gauge_value_to_angle(value, min_value, max_value, start, end)
@@ -590,16 +640,7 @@ def render_gauge_axis(ax: Any, series: dict[str, Any], value: float, min_value: 
     if progress_conf.get("show"):
         progress_width = progress_conf.get("width", width)
         progress_color = progress_conf.get("itemStyle", {}).get("color", series.get("pointer", {}).get("itemStyle", {}).get("color", "#5470c6"))
-        progress_patch = Wedge(
-            (center_x, center_y),
-            radius,
-            theta1=start,
-            theta2=angle,
-            width=progress_width / 100.0,
-            facecolor=progress_color,
-            edgecolor="none",
-        )
-        ax.add_patch(progress_patch)
+        add_gauge_wedge(ax, center_x, center_y, radius, start, angle, progress_width, progress_color)
 
     split_number = int(series.get("splitNumber", 10) or 10)
     split_line = series.get("splitLine", {})
@@ -610,7 +651,7 @@ def render_gauge_axis(ax: Any, series: dict[str, Any], value: float, min_value: 
         split_outer = radius + split_distance / 100.0
         split_inner = split_outer - split_length / 100.0
         for index in range(split_number + 1):
-            tick_angle = start + ((end - start) % 360 or 360) * index / split_number
+            tick_angle = start + sweep * index / split_number
             x1, y1 = gauge_point(tick_angle, split_outer)
             x2, y2 = gauge_point(tick_angle, split_inner)
             ax.plot(
@@ -630,7 +671,7 @@ def render_gauge_axis(ax: Any, series: dict[str, Any], value: float, min_value: 
         subdivisions = int(axis_tick.get("splitNumber", 5) or 5)
         total_ticks = split_number * subdivisions
         for index in range(total_ticks + 1):
-            tick_angle = start + ((end - start) % 360 or 360) * index / total_ticks
+            tick_angle = start + sweep * index / total_ticks
             x1, y1 = gauge_point(tick_angle, tick_outer)
             x2, y2 = gauge_point(tick_angle, tick_inner)
             ax.plot(
@@ -646,7 +687,7 @@ def render_gauge_axis(ax: Any, series: dict[str, Any], value: float, min_value: 
         label_radius = radius + label_distance / 100.0
         formatter = axis_label.get("formatter")
         for index in range(split_number + 1):
-            tick_angle = start + ((end - start) % 360 or 360) * index / split_number
+            tick_angle = start + sweep * index / split_number
             axis_value = min_value + (max_value - min_value) * index / split_number
             x, y = gauge_point(tick_angle, label_radius)
             ax.text(

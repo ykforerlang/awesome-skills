@@ -122,10 +122,26 @@ def main() -> None:
         default_size = float(series.get("symbolSize", 64) or 64)
         x_values = [point.get("value", [None, None])[0] for point in points]
         y_values = [point.get("value", [None, None])[1] for point in points]
-        sizes = [
+        raw_sizes = [
             float(point.get("value", [None, None, default_size])[2]) if len(point.get("value", [])) > 2 else default_size
             for point in points
         ]
+        has_explicit_bubble_size = any(len(point.get("value", [])) > 2 for point in points)
+        if has_explicit_bubble_size:
+            min_raw = min(raw_sizes)
+            max_raw = max(raw_sizes)
+            if max_raw > min_raw:
+                min_render = max(80.0, default_size * 1.15)
+                max_render = max(260.0, default_size * 3.8)
+                size_span = max_render - min_render
+                sizes = [
+                    min_render + ((size - min_raw) / (max_raw - min_raw)) * size_span
+                    for size in raw_sizes
+                ]
+            else:
+                sizes = [max(160.0, default_size * 2.2) for _ in raw_sizes]
+        else:
+            sizes = raw_sizes
         colors = [
             to_rgba(
                 point.get("itemStyle", {}).get("color", default_color),
@@ -161,7 +177,7 @@ def main() -> None:
                 ax.text(
                     x_value,
                     y_value,
-                    format_label(formatter, point.get("name"), raw_value),
+                    format_label(formatter, point.get("name"), raw_value, series_name=series.get("name")),
                     fontsize=label_conf.get("fontSize", 9),
                     color=label_conf.get("color"),
                     ha="left",

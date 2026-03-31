@@ -26,7 +26,7 @@ This document describes the focused area-chart coverage cases used to validate t
 | A-018 | `data/area/area_legend_bottom_center.json` | Validate bottom-centered horizontal legend layout | `legend.top=bottom`, `legend.left=center`, `legend.orient=horizontal` | The legend renders below the area plot as a centered horizontal row |
 | A-019 | `data/area/area_global_palette.json` | Validate global palette assignment | top-level `color=[...]` | Area series consume colors from the global palette in series order for line and fill styling |
 | A-020 | `data/area/area_background_color.json` | Validate chart background color | `backgroundColor` | Area chart renders with the configured non-default background color |
-| A-021 | `data/area/area_style_config.json` | Validate style-config override flow | `--style-config`, layered base/chart style configs | Rendered output reflects style-config overrides over the input option |
+| A-021 | `data/area/area_style_config.json` | Validate style-config override flow | `--style-config`, single chart style config file | Rendered output reflects style-config overrides over the input option |
 
 ## Notes
 

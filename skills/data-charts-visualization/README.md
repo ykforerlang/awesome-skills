@@ -8,9 +8,9 @@ This skill is built for agent workflows that need charts fast, with predictable 
 
 ## Why This Skill
 
-- Rich chart coverage: line, bar, pie, gauge, area, dual-axis, scatter, radar, and funnel.
+- Rich chart coverage: line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, and funnel.
 - ECharts-aligned option model: low learning cost if your data or prompts already target ECharts.
-- Strong configuration layering: data in `option`, persistent style in `config/*.json`, runtime overrides with `--style-config`.
+- Single-preset configuration model: each chart type owns one persistent style file under `config/*.json`.
 - Dataset support: plain arrays, object arrays, `dataset.source`, and `series.encode`.
 - Stable rendering workflow: every chart type is covered by golden-image test cases.
 
@@ -27,15 +27,25 @@ This skill is built for agent workflows that need charts fast, with predictable 
       <img src="./static/bar.png" alt="Bar chart" width="260"/>
     </td>
     <td align="center" width="33%">
-      <strong>Pie / Donut / Rose</strong><br/>
-      <img src="./static/pie.png" alt="Pie chart" width="260"/>
+      <strong>Pie</strong><br/>
+      <img src="./static/pie-basic.png" alt="Pie chart" width="260"/>
     </td>
   </tr>
   <tr>
     <td align="center">
+      <strong>Donut</strong><br/>
+      <img src="./static/donut.png" alt="Donut chart" width="260"/>
+    </td>
+    <td align="center">
+      <strong>Rose</strong><br/>
+      <img src="./static/rose.png" alt="Rose chart" width="260"/>
+    </td>
+    <td align="center">
       <strong>Gauge</strong><br/>
       <img src="./static/gauge.png" alt="Gauge chart" width="260"/>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <strong>Area</strong><br/>
       <img src="./static/area.png" alt="Area chart" width="260"/>
@@ -44,11 +54,15 @@ This skill is built for agent workflows that need charts fast, with predictable 
       <strong>Dual-Axis</strong><br/>
       <img src="./static/dual-axis.png" alt="Dual-axis chart" width="260"/>
     </td>
+    <td align="center">
+      <strong>Scatter</strong><br/>
+      <img src="./static/scatter-basic.png" alt="Scatter chart" width="260"/>
+    </td>
   </tr>
   <tr>
     <td align="center">
-      <strong>Scatter / Bubble</strong><br/>
-      <img src="./static/scatter.png" alt="Scatter chart" width="260"/>
+      <strong>Bubble</strong><br/>
+      <img src="./static/bubble.png" alt="Bubble chart" width="260"/>
     </td>
     <td align="center">
       <strong>Radar</strong><br/>
@@ -69,30 +83,28 @@ This skill is not just a thin chart wrapper. It already covers the chart behavio
 - Dataset-driven charts with `dataset.source` and `series.encode`, including table-header style 2D arrays.
 - Common interaction-independent styling such as legend placement, palette control, labels, axis formatting, grid layout, and background color.
 - Line and area behaviors such as `smooth`, `step`, `showSymbol`, `null` gaps, and `connectNulls`.
-- Pie variants such as donut, rose charts, label positions, selected offsets, start angles, and palette overrides.
+- Pie-family variants such as pie, donut, rose charts, label positions, selected offsets, start angles, and palette overrides.
 - Gauge capabilities such as segmented axis lines, progress arcs, custom angles, custom ranges, pointer styles, and detail formatting.
 - Dual-axis combinations with independent axis mapping, mixed bar/line rendering, horizontal layout, negative values, and area-on-secondary-axis support.
-- Scatter, radar, and funnel support for their common business-reporting scenarios, including bubble sizes, split areas, item styling, sorting, and size/gap control.
+- Scatter, bubble, radar, and funnel support for their common business-reporting scenarios, including bubble sizes, split areas, item styling, sorting, and size/gap control.
 
 ## Configuration Model
 
 The configuration path is intentionally simple:
 
 1. Put chart data and structure in `option`.
-2. Keep reusable visual rules in `config/base_style.json` and chart-specific presets.
-3. Pass one or more `--style-config` files at render time.
+2. Keep reusable visual rules in the corresponding `config/<chart>_style.json`.
+3. Pass that chart's `--style-config` file at render time.
 
 Priority is:
 
 1. input `option`
-2. `config/base_style.json`
-3. chart-specific style config
+2. chart-specific style config
 
 If the same field exists in multiple layers, the higher-priority config wins.
 
 Available presets:
 
-- `config/base_style.json`
 - `config/line_style.json`
 - `config/bar_style.json`
 - `config/pie_style.json`
@@ -103,7 +115,7 @@ Available presets:
 - `config/radar_style.json`
 - `config/funnel_style.json`
 
-This makes it practical to keep a stable visual language across reports while still letting each render request supply its own data.
+Each chart preset is self-contained, so editing one chart type no longer changes the defaults of other chart types.
 
 ## Quick Start
 
@@ -126,7 +138,6 @@ Render the same chart with reusable style presets:
 
 ```bash
 python3 skills/data-charts-visualization/scripts/line_chart.py \
-  --style-config skills/data-charts-visualization/config/base_style.json \
   --style-config skills/data-charts-visualization/config/line_style.json \
   --option skills/data-charts-visualization/test/data/line/line_basic_single_series.json \
   --output skills/data-charts-visualization/test/out/manual_line_chart_styled.png

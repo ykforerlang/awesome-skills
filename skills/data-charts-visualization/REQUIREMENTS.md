@@ -132,6 +132,12 @@
 
 - 多次传入 `--style-config`
 
+默认内置配置模型要求：
+
+- 每一种图表类型只对应一个内置持久化样式文件
+- 默认渲染流程应只依赖该图表自己的 `config/<chart>_style.json`
+- 多次传入 `--style-config` 只作为临时叠加覆盖能力保留，不作为内置配置体系的一部分
+
 ### 5.2 样式配置语义
 
 `option` 和 `style-config` 的职责区分如下：
@@ -159,8 +165,7 @@
 最终推荐优先级从低到高：
 
 1. 输入 `option`
-2. `config/base_style.json`
-3. 对应图表类型的 `config/<chart>_style.json`
+2. 对应图表类型的 `config/<chart>_style.json`
 
 ### 5.4 样式配置目录
 
@@ -178,19 +183,20 @@
 
 当前要求保留的配置文件：
 
-- `config/base_style.json`
 - `config/line_style.json`
 - `config/bar_style.json`
 - `config/pie_style.json`
 - `config/gauge_style.json`
 - `config/area_style.json`
 - `config/dual_axis_style.json`
+- `config/scatter_style.json`
+- `config/radar_style.json`
+- `config/funnel_style.json`
 
 不再保留单独的 `custom_*` 文件体系。
 
 用户如需持久化修改：
 
-- 改全局样式，直接修改 `base_style.json`
 - 改某一图表类型样式，直接修改对应 `*_style.json`
 
 ### 5.5 样式配置项要求

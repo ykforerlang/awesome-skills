@@ -22,7 +22,7 @@ TEST_CASES = [
     ("radar_legend_bottom_center.json", "radar_legend_bottom_center.png"),
     ("radar_global_palette.json", "radar_global_palette.png"),
     ("radar_background_color.json", "radar_background_color.png"),
-    ("radar_style_config.json", "radar_style_config.png", ["base_test_style.json", "radar_style_test.json"]),
+    ("radar_style_config.json", "radar_style_config.png", ["radar_style_test.json"]),
 ]
 
 

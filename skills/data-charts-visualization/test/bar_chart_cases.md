@@ -25,7 +25,7 @@ This document describes the focused bar-chart coverage cases used to validate th
 | BAR-017 | `data/bar/bar_legend_bottom_center.json` | Validate bottom-centered horizontal legend layout | `legend.top=bottom`, `legend.left=center`, `legend.orient=horizontal` | The legend renders below grouped bars as a centered horizontal row |
 | BAR-018 | `data/bar/bar_global_palette.json` | Validate global palette assignment | top-level `color=[...]` | Grouped bar series consume colors from the global palette in series order |
 | BAR-019 | `data/bar/bar_background_color.json` | Validate chart background color | `backgroundColor` | Bar chart renders with the configured non-default background color |
-| BAR-020 | `data/bar/bar_style_config.json` | Validate style-config override flow | `--style-config`, layered base/chart style configs | Rendered output reflects style-config overrides over the input option |
+| BAR-020 | `data/bar/bar_style_config.json` | Validate style-config override flow | `--style-config`, single chart style config file | Rendered output reflects style-config overrides over the input option |
 
 ## Notes
 

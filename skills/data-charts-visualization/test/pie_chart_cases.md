@@ -13,6 +13,7 @@ This document describes the focused pie-chart and donut-chart coverage cases use
 | PIE-005 | `data/pie/pie_inside_labels.json` | Validate inside labels | `series[].label.position=inside` | Inside labels render within the slices |
 | PIE-006 | `data/pie/pie_start_angle.json` | Validate start angle control | `series[].startAngle` | The pie layout rotates according to the configured angle |
 | PIE-007 | `data/pie/pie_item_style_details.json` | Validate border and opacity styling | `itemStyle.borderColor`, `itemStyle.borderWidth`, `itemStyle.opacity` | Slices render with visible borders and transparency |
+| PIE-007A | `data/pie/pie_series_name_formatter.json` | Validate series-name label formatter | `series.name`, `label.formatter="{a} / {b}: {d}%"` | Pie labels render ECharts-style `{a}` / `{b}` / `{d}` substitutions |
 | PIE-008 | `data/pie/pie_multilingual.json` | Validate multilingual title and labels | multilingual `title`, `legend`, `data[].name` | Pie chart renders multilingual text correctly |
 | PIE-009 | `data/pie/pie_dataset_encode.json` | Validate dataset + encode support | `dataset.source`, `series.encode.itemName/value` | Pie slices render from tabular dataset input |
 | PIE-010 | `data/pie/pie_center_offset.json` | Validate center positioning | `series.center` | Pie chart renders away from the default center |
@@ -24,7 +25,7 @@ This document describes the focused pie-chart and donut-chart coverage cases use
 | PIE-016 | `data/pie/pie_global_palette.json` | Validate global palette assignment | top-level `color=[...]` | Pie slices consume colors from the global palette in data order |
 | PIE-017 | `data/pie/pie_background_color.json` | Validate chart background color | `backgroundColor` | Pie chart renders with the configured non-default background color |
 | PIE-018 | `data/pie/pie_dataset_encode_table.json` | Validate dataset table + encode support | `dataset.source=[[...header...], ...]`, `series.encode.itemName/value` | Pie slices render from 2D tabular dataset input with header row |
-| PIE-019 | `data/pie/pie_style_config.json` | Validate style-config override flow | `--style-config`, layered base/chart style configs | Rendered output reflects style-config overrides over the input option |
+| PIE-019 | `data/pie/pie_style_config.json` | Validate style-config override flow | `--style-config`, single chart style config file | Rendered output reflects style-config overrides over the input option |
 
 ## Notes
 

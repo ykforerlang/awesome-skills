@@ -25,7 +25,8 @@ TEST_CASES = [
     ("gauge_axis_label_distance.json", "gauge_axis_label_distance.png"),
     ("gauge_axisline_segments.json", "gauge_axisline_segments.png"),
     ("gauge_background_color.json", "gauge_background_color.png"),
-    ("gauge_style_config.json", "gauge_style_config.png", ["base_test_style.json", "gauge_style_test.json"]),
+    ("gauge_style_config.json", "gauge_style_config.png", ["gauge_style_test.json"]),
+    ("gauge_compact_layout.json", "gauge_compact_layout.png"),
 ]
 
 

@@ -11,7 +11,6 @@ from pathlib import Path
 from typing import Any
 
 CHART_TYPE_TO_CONFIG = {
-    "base": "base_style.json",
     "line": "line_style.json",
     "bar": "bar_style.json",
     "pie": "pie_style.json",
