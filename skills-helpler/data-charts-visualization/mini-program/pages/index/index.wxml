@@ -1,0 +1,166 @@
+<view class="page-shell">
+  <view class="title-card">
+    <view class="eyebrow">Skills Helper</view>
+    <view class="title-row">
+      <view>
+        <view class="page-title">Data Charts Visualization</view>
+        <view class="page-subtitle">微信小程序配置面板</view>
+      </view>
+      <view class="title-badge">{{chartLabel}}</view>
+    </view>
+    <view class="page-note">{{chartBlurb}}</view>
+  </view>
+
+  <view class="preview-sticky">
+    <view class="preview-card">
+      <view class="section-head">
+        <view class="section-title">Preview</view>
+        <view class="section-chip">ECharts</view>
+      </view>
+      <ec-canvas id="preview-chart" canvas-id="preview-chart" ec="{{ec}}" class="preview-canvas"></ec-canvas>
+    </view>
+
+    <view class="tabs-card">
+      <scroll-view scroll-x class="tabs-scroll" show-scrollbar="{{false}}">
+        <view class="tabs-row">
+          <view
+            wx:for="{{chartTabs}}"
+            wx:key="id"
+            class="chart-tab {{item.active ? 'active' : ''}}"
+            data-chart-type="{{item.id}}"
+            bindtap="handleChartSwitch"
+          >
+            {{item.label}}
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+  </view>
+
+  <scroll-view scroll-y class="config-scroll" enhanced="{{true}}" show-scrollbar="{{false}}">
+    <view class="config-card">
+      <view class="section-head">
+        <view class="section-title">Foundation</view>
+        <view class="section-chip">Common</view>
+      </view>
+
+      <block wx:for="{{commonSections}}" wx:key="id">
+        <view class="form-section">
+          <view class="form-section-title">{{item.label}}</view>
+          <view class="field-grid">
+            <block wx:for="{{item.fields}}" wx:key="id">
+              <view class="field-card">
+                <view class="field-label">{{item.label}}</view>
+
+                <switch
+                  wx:if="{{item.type === 'checkbox'}}"
+                  checked="{{item.value}}"
+                  color="#bf5f2f"
+                  data-scope="common"
+                  data-field-id="{{item.id}}"
+                  bindchange="handleSwitch"
+                />
+
+                <picker
+                  wx:elif="{{item.type === 'select'}}"
+                  range="{{item.optionLabels}}"
+                  value="{{item.pickerIndex}}"
+                  data-scope="common"
+                  data-field-id="{{item.id}}"
+                  bindchange="handlePicker"
+                >
+                  <view class="picker-value">{{item.optionLabels[item.pickerIndex]}}</view>
+                </picker>
+
+                <textarea
+                  wx:elif="{{item.type === 'textarea'}}"
+                  class="field-textarea"
+                  auto-height="{{true}}"
+                  value="{{item.value}}"
+                  data-scope="common"
+                  data-field-id="{{item.id}}"
+                  bindinput="handleInput"
+                />
+
+                <view wx:else class="field-input-wrap">
+                  <input
+                    class="field-input"
+                    type="{{item.type === 'number' ? 'digit' : 'text'}}"
+                    value="{{item.value}}"
+                    data-scope="common"
+                    data-field-id="{{item.id}}"
+                    bindinput="handleInput"
+                  />
+                  <view wx:if="{{item.type === 'color'}}" class="color-dot" style="background: {{item.value}}"></view>
+                </view>
+              </view>
+            </block>
+          </view>
+        </view>
+      </block>
+    </view>
+
+    <view class="config-card config-card-last">
+      <view class="section-head">
+        <view class="section-title">Chart Specific</view>
+        <view class="section-chip">{{chartLabel}}</view>
+      </view>
+
+      <block wx:for="{{specificSections}}" wx:key="title">
+        <view class="form-section">
+          <view class="form-section-title">{{item.title}}</view>
+          <view wx:if="{{item.help}}" class="form-section-help">{{item.help}}</view>
+          <view class="field-grid">
+            <block wx:for="{{item.fields}}" wx:key="id">
+              <view class="field-card">
+                <view class="field-label">{{item.label}}</view>
+
+                <switch
+                  wx:if="{{item.type === 'checkbox'}}"
+                  checked="{{item.value}}"
+                  color="#bf5f2f"
+                  data-scope="specific"
+                  data-field-id="{{item.id}}"
+                  bindchange="handleSwitch"
+                />
+
+                <picker
+                  wx:elif="{{item.type === 'select'}}"
+                  range="{{item.optionLabels}}"
+                  value="{{item.pickerIndex}}"
+                  data-scope="specific"
+                  data-field-id="{{item.id}}"
+                  bindchange="handlePicker"
+                >
+                  <view class="picker-value">{{item.optionLabels[item.pickerIndex]}}</view>
+                </picker>
+
+                <textarea
+                  wx:elif="{{item.type === 'textarea'}}"
+                  class="field-textarea"
+                  auto-height="{{true}}"
+                  value="{{item.value}}"
+                  data-scope="specific"
+                  data-field-id="{{item.id}}"
+                  bindinput="handleInput"
+                />
+
+                <view wx:else class="field-input-wrap">
+                  <input
+                    class="field-input"
+                    type="{{item.type === 'number' ? 'digit' : 'text'}}"
+                    value="{{item.value}}"
+                    data-scope="specific"
+                    data-field-id="{{item.id}}"
+                    bindinput="handleInput"
+                  />
+                  <view wx:if="{{item.type === 'color'}}" class="color-dot" style="background: {{item.value}}"></view>
+                </view>
+              </view>
+            </block>
+          </view>
+        </view>
+      </block>
+    </view>
+  </scroll-view>
+</view>

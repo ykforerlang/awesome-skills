@@ -552,7 +552,12 @@
               <section class="subpanel preview-panel">
                 <div class="subpanel-head">
                   <h3>Preview</h3>
-                  <span id="preview-badge" class="ghost-badge">Live</span>
+                  <div class="subpanel-actions">
+                    <button id="export-preview-image" class="secondary-button small" type="button">
+                      Export Image
+                    </button>
+                    <span id="preview-badge" class="ghost-badge">Live</span>
+                  </div>
                 </div>
                 <p id="preview-status" class="helper-text preview-status">
                   Preview updates with your current configuration.
@@ -587,9 +592,14 @@
         <div class="preview-modal-shell">
           <div class="preview-modal-head">
             <h3>Chart Preview</h3>
-            <button id="close-preview-mobile" class="secondary-button small" type="button">
-              Close
-            </button>
+            <div class="subpanel-actions">
+              <button id="export-preview-image-mobile" class="secondary-button small" type="button">
+                Export Image
+              </button>
+              <button id="close-preview-mobile" class="secondary-button small" type="button">
+                Close
+              </button>
+            </div>
           </div>
           <p id="preview-status-mobile" class="helper-text preview-status"></p>
           <div id="dual-axis-preview-controls-mobile" class="dual-axis-preview-controls hidden"></div>
@@ -601,6 +611,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="../shared/option-builder.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

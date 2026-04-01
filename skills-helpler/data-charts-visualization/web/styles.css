@@ -108,6 +108,15 @@ button {
   gap: 12px;
 }
 
+.subpanel-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: auto;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
 .hero-actions {
   margin-top: 22px;
   flex-wrap: wrap;

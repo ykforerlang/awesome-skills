@@ -110,6 +110,8 @@ const UI_TEXT = {
     copied: "Copied",
     copyFailed: "Copy failed",
     agentPackageCopied: "Agent package copied",
+    previewExported: "Preview image exported",
+    previewExportFailed: "Preview export failed",
     dataLabel: "Data",
     jsonInvalidPrefix: "{label} JSON is invalid: ",
     fixOption: "// Fix JSON errors to regenerate option output.",
@@ -129,6 +131,8 @@ const UI_TEXT = {
     copied: "已复制",
     copyFailed: "复制失败",
     agentPackageCopied: "已复制 Agent Package",
+    previewExported: "已导出预览图片",
+    previewExportFailed: "导出预览图片失败",
     dataLabel: "数据",
     jsonInvalidPrefix: "{label} JSON 格式错误: ",
     fixOption: "// 请先修复 JSON 错误，再重新生成 option 输出。",
@@ -4591,38 +4595,30 @@ function updateOutputs() {
   renderDualAxisPreviewControls();
   clearEditorState();
   try {
+    const sharedOptionBuilder = globalThis.DataChartsOptionBuilder;
+    if (!sharedOptionBuilder || typeof sharedOptionBuilder.buildChartArtifacts !== "function") {
+      throw new Error("Shared option builder failed to load.");
+    }
+
     const definition = getCurrentDefinition();
     const commonState = getCommonState();
     const specificState = getSpecificState();
     const rawData = deepClone(getCurrentTemplate().data);
-
-    const baseOption = buildCommonOption(commonState, definition);
-    const structurePatch = buildStructurePatch(appState.chartType, specificState);
-    let rawOption;
-    if (appState.chartType === "dualAxis") {
-      const baseWithData = compactObject(deepMerge(baseOption, rawData));
-      rawOption = compactObject(deepMerge(baseWithData, structurePatch));
-      rawOption.series = compactObject(normalizeDualAxisSeriesStructure(baseWithData.series, specificState));
-      if (specificState.horizontal) {
-        rawOption = compactObject(normalizeDualAxisHorizontalOption(rawOption, baseWithData));
-      }
-    } else {
-      rawOption = compactObject(deepMerge(deepMerge(baseOption, structurePatch), rawData));
-    }
-
-    const stylePayload = {
-      recommendedStyleFiles: [
-        "config/base_style.json",
-        `config/${definition.styleFile}`,
-      ],
-      baseStyleConfig: buildBaseStyleConfig(commonState, definition),
-      chartStyleConfig: buildChartStyleConfig(appState.chartType, specificState, commonState, rawOption),
-    };
-
-    let resolved = applyStyleConfig(rawOption, stylePayload.baseStyleConfig);
-    resolved = applyStyleConfig(resolved, stylePayload.chartStyleConfig);
-    resolved = applyPreviewOnlyOverrides(appState.chartType, resolved);
-    resolved = compactObject(resolved);
+    const { rawOption, stylePayload, resolvedOption: resolved } = sharedOptionBuilder.buildChartArtifacts({
+      chartType: appState.chartType,
+      definition,
+      commonState,
+      specificState,
+      rawData,
+      previewState: {
+        previewStackMode: appState.previewStackMode,
+        previewBarHorizontal: appState.previewBarHorizontal,
+        previewPieMode: appState.previewPieMode,
+        dualAxisPreviewLeftType: appState.dualAxisPreviewLeftType,
+        dualAxisPreviewRightType: appState.dualAxisPreviewRightType,
+      },
+      previewViewportSize: getPreviewViewportSize(),
+    });
 
     const agentPackage = buildAgentPackage(
       appState.chartType,
@@ -4669,6 +4665,39 @@ function showToast(message) {
   }, 1800);
 }
 
+function getActivePreviewInstance() {
+  if (!window.echarts) {
+    return null;
+  }
+  const mobileVisible = !$("preview-modal")?.classList.contains("hidden");
+  if (mobileVisible) {
+    const mobileInstance = window.echarts.getInstanceByDom($("preview-canvas-mobile"));
+    if (mobileInstance) {
+      return mobileInstance;
+    }
+  }
+  return window.echarts.getInstanceByDom($("preview-canvas"));
+}
+
+function exportPreviewImage() {
+  const chart = getActivePreviewInstance();
+  if (!chart) {
+    throw new Error("Preview chart is unavailable.");
+  }
+  const backgroundColor = appState.latestResolvedOption?.backgroundColor || "#ffffff";
+  const dataUrl = chart.getDataURL({
+    type: "png",
+    pixelRatio: 2,
+    backgroundColor,
+  });
+  const link = document.createElement("a");
+  link.href = dataUrl;
+  link.download = `${appState.chartType || "chart"}-preview.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 function wireCopyButtons() {
   document.querySelectorAll("[data-copy-target]").forEach((button) => {
     button.addEventListener("click", async () => {
@@ -4706,6 +4735,23 @@ function wirePreviewControls() {
     if (appState.latestResolvedOption) {
       renderPreview(appState.latestResolvedOption);
     }
+  });
+}
+
+function wirePreviewExportButtons() {
+  ["export-preview-image", "export-preview-image-mobile"].forEach((id) => {
+    const button = $(id);
+    if (!button) {
+      return;
+    }
+    button.addEventListener("click", () => {
+      try {
+        exportPreviewImage();
+        showToast(getText("previewExported"));
+      } catch (error) {
+        showToast(getText("previewExportFailed"));
+      }
+    });
   });
 }
 
@@ -4912,6 +4958,7 @@ function init() {
   wireEvents();
   wireCopyButtons();
   wirePreviewControls();
+  wirePreviewExportButtons();
   applyChartBeautyDefaults(appState.chartType);
 }
 

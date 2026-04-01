@@ -549,7 +549,12 @@
               <section class="subpanel preview-panel">
                 <div class="subpanel-head">
                   <h3>图表预览</h3>
-                  <span id="preview-badge" class="ghost-badge">实时</span>
+                  <div class="subpanel-actions">
+                    <button id="export-preview-image" class="secondary-button small" type="button">
+                      导出图片
+                    </button>
+                    <span id="preview-badge" class="ghost-badge">实时</span>
+                  </div>
                 </div>
                 <p id="preview-status" class="helper-text preview-status">
                   预览会随着当前配置实时更新。
@@ -584,9 +589,14 @@
         <div class="preview-modal-shell">
           <div class="preview-modal-head">
             <h3>图表预览</h3>
-            <button id="close-preview-mobile" class="secondary-button small" type="button">
-              关闭
-            </button>
+            <div class="subpanel-actions">
+              <button id="export-preview-image-mobile" class="secondary-button small" type="button">
+                导出图片
+              </button>
+              <button id="close-preview-mobile" class="secondary-button small" type="button">
+                关闭
+              </button>
+            </div>
           </div>
           <p id="preview-status-mobile" class="helper-text preview-status"></p>
           <div id="dual-axis-preview-controls-mobile" class="dual-axis-preview-controls hidden"></div>
@@ -598,6 +608,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <script src="../shared/option-builder.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>
