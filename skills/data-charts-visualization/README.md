@@ -1,16 +1,17 @@
 # Data Charts Visualization
 
-Turn ECharts-style options into polished static chart images with Python and Matplotlib.
+Render static chart images with Apache ECharts SSR in Node.js, using the same helper-driven option pipeline as the web helper.
 
 [中文说明](./README.zh.md)
 
-This skill is built for agent workflows that need charts fast, with predictable output and production-friendly configuration. It covers mainstream business visualization needs, keeps the option model close to ECharts, and supports reusable style presets for consistent chart branding.
+This skill is built for agent workflows that need charts fast, with predictable output and production-friendly configuration. It keeps the option model close to ECharts, uses the helper config schema as the public style contract, and renders through `ECharts SSR -> SVG -> PNG`.
 
 ## Why This Skill
 
 - Rich chart coverage: line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, and funnel.
 - ECharts-aligned option model: low learning cost if your data or prompts already target ECharts.
-- Single-preset configuration model: each chart type owns one persistent style file under `config/*.json`.
+- Shared helper config model: the same config structure drives helper preview rendering and skill rendering.
+- Single-preset configuration model: each chart type owns one persistent helper config file under `config/*.json`.
 - Dataset support: plain arrays, object arrays, `dataset.source`, and `series.encode`.
 - Stable rendering workflow: every chart type is covered by golden-image test cases.
 
@@ -93,15 +94,10 @@ This skill is not just a thin chart wrapper. It already covers the chart behavio
 The configuration path is intentionally simple:
 
 1. Put chart data and structure in `option`.
-2. Keep reusable visual rules in the corresponding `config/<chart>_style.json`.
-3. Pass that chart's `--style-config` file at render time.
+2. Keep reusable helper-style visual rules in the corresponding `config/<chart>_style.json`.
+3. Resolve one final ECharts option through the shared helper option builder, then render it through SSR.
 
-Priority is:
-
-1. input `option`
-2. chart-specific style config
-
-If the same field exists in multiple layers, the higher-priority config wins.
+The skill does not independently approximate chart styling anymore. It resolves the same final ECharts option structure that the helper uses, then feeds that option into ECharts SSR.
 
 Available presets:
 
@@ -119,41 +115,44 @@ Each chart preset is self-contained, so editing one chart type no longer changes
 
 ## Quick Start
 
-Check or install Python dependencies:
+Primary CLI:
 
 ```bash
-python3 skills/data-charts-visualization/scripts/ensure_deps.py
-python3 skills/data-charts-visualization/scripts/ensure_deps.py --install
+data-charts-visualization render --chart-type line --option /tmp/line_basic_single_series.json --output /tmp/line.png
 ```
 
-Render a chart from an option file:
+Repo-local `npx` invocation without install/link:
 
 ```bash
-python3 skills/data-charts-visualization/scripts/line_chart.py \
-  --option skills/data-charts-visualization/test/data/line/line_basic_single_series.json \
-  --output skills/data-charts-visualization/test/out/manual_line_chart.png
+npx --yes --package ./skills/data-charts-visualization data-charts-visualization render --chart-type line --option /tmp/line_basic_single_series.json --output /tmp/line.png
 ```
 
-Render the same chart with reusable style presets:
+Inside this repo, the same entry can be called directly through the script:
 
 ```bash
-python3 skills/data-charts-visualization/scripts/line_chart.py \
-  --style-config skills/data-charts-visualization/config/line_style.json \
-  --option skills/data-charts-visualization/test/data/line/line_basic_single_series.json \
-  --output skills/data-charts-visualization/test/out/manual_line_chart_styled.png
-```
-
-Update persistent style configs from natural language:
-
-```bash
-python3 skills/data-charts-visualization/scripts/update_style_config.py \
+node skills/data-charts-visualization/scripts/cli.js render \
   --chart-type line \
-  --instruction "increase line width to 3, show labels, and move legend to bottom"
+  --option /tmp/line_basic_single_series.json \
+  --output skills/data-charts-visualization/test/manual/manual_line_chart.png
+```
+
+The recommended way to prepare that option file is to start from the shared default data source:
+
+- `skills-helpler/data-charts-visualization/shared/charts-default-data.js`
+
+Render the same chart with an explicit helper config:
+
+```bash
+node skills/data-charts-visualization/scripts/cli.js render \
+  --chart-type line \
+  --style-config skills/data-charts-visualization/config/line_style.json \
+  --option /tmp/line_basic_single_series.json \
+  --output skills/data-charts-visualization/test/manual/manual_line_chart_styled.png
 ```
 
 ## Reliability
 
-Every supported chart type has focused test data, text case descriptions, golden images, and a dedicated runner under `test/scripts/`. The current workflow is built to validate visual output, not just parse input JSON.
+The maintained validation flow is centered around the preview matrix generator under `test/scripts/`. Shared demo/default inputs live in `skills-helpler/data-charts-visualization/shared/charts-default-data.js`, and shared default config lives in `skills-helpler/data-charts-visualization/shared/charts-default-config.js`.
 
 Typical coverage includes:
 
@@ -172,4 +171,4 @@ Use this skill when you need one of these outcomes:
 - render a chart directly from structured option JSON
 - keep chart syntax close to ECharts while producing static images locally
 - maintain consistent report styling across many chart renders
-- validate chart output through golden-image regression tests
+- keep helper config and skill rendering on one shared contract

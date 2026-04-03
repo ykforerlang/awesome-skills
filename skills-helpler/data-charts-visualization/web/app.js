@@ -1,8 +1,303 @@
-const SKILL_STATIC_ROOT = "../../../skills/data-charts-visualization/static";
 const CURRENT_LOCALE = document.documentElement.lang.toLowerCase().startsWith("zh") ? "zh" : "en";
 const JSON_ERROR_CODES = {
   data: "__DATA_JSON__",
 };
+const FONT_SIZE_SELECT_OPTIONS = [10, 12, 14, 16, 18, 20, 22, 24];
+const DEFAULT_SIZE_SCALE_RATIO = 375 / 658;
+const DEFAULT_FONT_SCALE_RATIO = 650 / 375;
+const DEFAULT_COMMON_FONT_SIZE_OPTIONS = FONT_SIZE_SELECT_OPTIONS;
+const DEFAULT_COMMON_SPLIT_WIDTH_OPTIONS = [0.6, 1, 1.6];
+const TYPOGRAPHY_PRESET = Object.freeze({
+  titleFontSize: 24,
+  subtitleFontSize: 14,
+  legendFontSize: 12,
+  xAxisLabelFontSize: 12,
+  yAxisLabelFontSize: 12,
+  dataLabelFontSize: 12,
+});
+const NON_SCALING_DEFAULT_FIELD_IDS = new Set([
+  "minSize",
+  "maxSize",
+  "barGap",
+  "leftBarGap",
+  "rightBarGap",
+  "gridLeft",
+  "gridRight",
+  "gridTop",
+  "gridBottom",
+  "xRotate",
+  "startAngle",
+  "endAngle",
+  "splitNumber",
+]);
+const FIXED_PREVIEW_VIEWPORT = Object.freeze({
+  width: 650,
+  height: 360,
+});
+const PREVIEW_RENDERER = "svg";
+
+function toNumericDefaultValue(value) {
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return value;
+  }
+  if (typeof value !== "string") {
+    return null;
+  }
+  const trimmed = value.trim();
+  if (!trimmed || trimmed.includes("%")) {
+    return null;
+  }
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+function isScaledFontField(fieldId) {
+  return /FontSize$/.test(fieldId);
+}
+
+function isScaledSizeField(fieldId) {
+  return /SymbolSize$/.test(fieldId) || fieldId === "symbolSize" || fieldId === "anchorSize" || fieldId === "progressWidth" || fieldId === "axisWidth";
+}
+
+function isScaledSpacingField(fieldId) {
+  return /Length$/.test(fieldId) || /Distance$/.test(fieldId) || fieldId === "gap";
+}
+
+function shouldScaleDefaultField(fieldId, value) {
+  if (NON_SCALING_DEFAULT_FIELD_IDS.has(fieldId)) {
+    return false;
+  }
+  if (toNumericDefaultValue(value) === null) {
+    return false;
+  }
+  return (
+    isScaledFontField(fieldId) ||
+    isScaledSizeField(fieldId) ||
+    isScaledSpacingField(fieldId) ||
+    /Width$/.test(fieldId) ||
+    /Radius$/.test(fieldId)
+  );
+}
+
+function collectNumericOptionValues(options) {
+  if (!Array.isArray(options) || !options.length) {
+    return [];
+  }
+  return options
+    .map((item) => {
+      const rawValue = Array.isArray(item) ? item[0] : item;
+      const numericValue = toNumericDefaultValue(rawValue);
+      if (numericValue === null) {
+        return null;
+      }
+      return { rawValue, numericValue };
+    })
+    .filter(Boolean);
+}
+
+function preserveDefaultValueType(template, value) {
+  if (typeof template === "string") {
+    return String(value);
+  }
+  return value;
+}
+
+function roundScaledDefaultValue(fieldId, value) {
+  if (isScaledFontField(fieldId)) {
+    return Math.max(FONT_SIZE_SELECT_OPTIONS[0], Math.round(value));
+  }
+  if (isScaledSizeField(fieldId)) {
+    return Math.max(2, Math.round(value));
+  }
+  if (isScaledSpacingField(fieldId)) {
+    return Math.max(1, Math.round(value));
+  }
+  return Math.max(0.4, Math.round(value * 10) / 10);
+}
+
+function getMinimumScaledFieldValue(fieldId) {
+  if (isScaledFontField(fieldId)) {
+    return FONT_SIZE_SELECT_OPTIONS[0];
+  }
+  if (isScaledSizeField(fieldId)) {
+    return 2;
+  }
+  if (isScaledSpacingField(fieldId)) {
+    return 1;
+  }
+  return 0.4;
+}
+
+function scaleDefaultValue(fieldId, rawValue, options) {
+  if (!shouldScaleDefaultField(fieldId, rawValue)) {
+    return rawValue;
+  }
+  const numericValue = toNumericDefaultValue(rawValue);
+  if (numericValue === null || numericValue === 0) {
+    return rawValue;
+  }
+
+  const scaleRatio = isScaledFontField(fieldId) ? DEFAULT_FONT_SCALE_RATIO : DEFAULT_SIZE_SCALE_RATIO;
+  const scaledValue = Math.max(getMinimumScaledFieldValue(fieldId), numericValue * scaleRatio);
+  const numericOptions = collectNumericOptionValues(
+    Array.isArray(options) && options.length
+      ? options
+      : (isScaledFontField(fieldId) ? FONT_SIZE_SELECT_OPTIONS : []),
+  );
+  if (numericOptions.length) {
+    let nearest = numericOptions[0];
+    let nearestDistance = Math.abs(scaledValue - nearest.numericValue);
+    numericOptions.forEach((option) => {
+      const distance = Math.abs(scaledValue - option.numericValue);
+      if (distance < nearestDistance) {
+        nearest = option;
+        nearestDistance = distance;
+      }
+    });
+    return preserveDefaultValueType(rawValue, nearest.rawValue);
+  }
+
+  return preserveDefaultValueType(rawValue, roundScaledDefaultValue(fieldId, scaledValue));
+}
+
+function buildFieldMapFromDefinitions(definitions) {
+  const definitionFieldMap = {};
+  Object.keys(definitions || {}).forEach((chartType) => {
+    const fieldMap = {};
+    (definitions[chartType].fields || []).forEach((field) => {
+      if (field.type !== "group") {
+        fieldMap[field.id] = field;
+      }
+    });
+    definitionFieldMap[chartType] = fieldMap;
+  });
+  return definitionFieldMap;
+}
+
+function buildFieldMapFromGroups(groups) {
+  const fieldMap = {};
+  (groups || []).forEach((group) => {
+    (group.fields || []).forEach((field) => {
+      fieldMap[field.id] = field;
+    });
+  });
+  return fieldMap;
+}
+
+function applyScaledValuesToLocaleDefaults(defaultsByLocale, commonFieldOptions) {
+  Object.keys(defaultsByLocale || {}).forEach((localeKey) => {
+    const localeDefaults = defaultsByLocale[localeKey] || {};
+    Object.keys(localeDefaults).forEach((fieldId) => {
+      localeDefaults[fieldId] = scaleDefaultValue(fieldId, localeDefaults[fieldId], commonFieldOptions[fieldId]);
+    });
+  });
+}
+
+function applyScaledValuesToDefinitions(definitions) {
+  Object.keys(definitions || {}).forEach((chartType) => {
+    (definitions[chartType].fields || []).forEach((field) => {
+      if (field.type === "group" || field.default === undefined) {
+        return;
+      }
+      field.default = scaleDefaultValue(field.id, field.default, field.options);
+    });
+  });
+}
+
+function applyScaledValuesToBeautyDefaults(beautyDefaults, commonFieldOptions, definitionFieldMap) {
+  Object.keys(beautyDefaults || {}).forEach((chartType) => {
+    const beautyConfig = beautyDefaults[chartType] || {};
+    const specificFieldMap = definitionFieldMap[chartType] || {};
+    Object.keys(beautyConfig.common || {}).forEach((fieldId) => {
+      beautyConfig.common[fieldId] = scaleDefaultValue(fieldId, beautyConfig.common[fieldId], commonFieldOptions[fieldId]);
+    });
+    Object.keys(beautyConfig.specific || {}).forEach((fieldId) => {
+      beautyConfig.specific[fieldId] = scaleDefaultValue(
+        fieldId,
+        beautyConfig.specific[fieldId],
+        specificFieldMap[fieldId] && specificFieldMap[fieldId].options,
+      );
+    });
+  });
+}
+
+function setFieldDefault(chartType, fieldId, value) {
+  const field = CHART_DEFINITIONS[chartType]?.fields?.find((item) => item.id === fieldId);
+  if (field) {
+    field.default = value;
+  }
+}
+
+function setBeautySpecificDefault(chartType, fieldId, value) {
+  if (!CHART_BEAUTY_DEFAULTS[chartType]) {
+    return;
+  }
+  if (!CHART_BEAUTY_DEFAULTS[chartType].specific) {
+    CHART_BEAUTY_DEFAULTS[chartType].specific = {};
+  }
+  CHART_BEAUTY_DEFAULTS[chartType].specific[fieldId] = value;
+}
+
+function applyTypographyPreset() {
+  Object.values(COMMON_DEFAULTS).forEach((localeDefaults) => {
+    localeDefaults.titleFontSize = TYPOGRAPHY_PRESET.titleFontSize;
+    localeDefaults.subtitleFontSize = TYPOGRAPHY_PRESET.subtitleFontSize;
+    localeDefaults.legendFontSize = TYPOGRAPHY_PRESET.legendFontSize;
+    localeDefaults.xAxisLabelFontSize = TYPOGRAPHY_PRESET.xAxisLabelFontSize;
+    localeDefaults.yAxisLabelFontSize = TYPOGRAPHY_PRESET.yAxisLabelFontSize;
+  });
+
+  [
+    ["line", "labelFontSize"],
+    ["bar", "labelFontSize"],
+    ["pie", "labelFontSize"],
+    ["area", "labelFontSize"],
+    ["scatter", "labelFontSize"],
+    ["radar", "labelFontSize"],
+    ["funnel", "labelFontSize"],
+    ["dualAxis", "leftAxisLabelFontSize"],
+    ["dualAxis", "rightAxisLabelFontSize"],
+    ["dualAxis", "leftBarLabelFontSize"],
+    ["dualAxis", "rightBarLabelFontSize"],
+    ["dualAxis", "leftLineLabelFontSize"],
+    ["dualAxis", "rightLineLabelFontSize"],
+  ].forEach(([chartType, fieldId]) => {
+    setFieldDefault(chartType, fieldId, TYPOGRAPHY_PRESET.dataLabelFontSize);
+    if (CHART_BEAUTY_DEFAULTS[chartType]?.specific && fieldId in CHART_BEAUTY_DEFAULTS[chartType].specific) {
+      CHART_BEAUTY_DEFAULTS[chartType].specific[fieldId] = TYPOGRAPHY_PRESET.dataLabelFontSize;
+    }
+  });
+}
+
+function applyVisualPreset() {
+  [
+    ["line", "lineWidth", 4],
+    ["line", "symbolSize", 8],
+    ["area", "lineWidth", 3],
+    ["area", "symbolSize", 6],
+    ["area", "areaOpacity", 0.24],
+    ["bar", "borderRadius", 0],
+    ["pie", "labelLineWidth", 1],
+    ["gauge", "titleFontSize", 14],
+    ["gauge", "detailFontSize", 24],
+    ["gauge", "axisLabelFontSize", 12],
+    ["scatter", "symbolSize", 64],
+    ["radar", "lineWidth", 3],
+    ["radar", "symbolSize", 6],
+    ["radar", "axisNameFontSize", 12],
+    ["radar", "areaOpacity", 0.2],
+    ["funnel", "gap", 2],
+    ["dualAxis", "leftBarBorderRadius", 0],
+    ["dualAxis", "rightBarBorderRadius", 0],
+    ["dualAxis", "leftLineWidth", 4],
+    ["dualAxis", "rightLineWidth", 4],
+    ["dualAxis", "leftLineSymbolSize", 8],
+    ["dualAxis", "rightLineSymbolSize", 8],
+  ].forEach(([chartType, fieldId, value]) => {
+    setFieldDefault(chartType, fieldId, value);
+    setBeautySpecificDefault(chartType, fieldId, value);
+  });
+}
 
 const COMMON_DEFAULTS = {
   en: {
@@ -17,7 +312,7 @@ const COMMON_DEFAULTS = {
     subtitleFontSize: 11,
     subtitleColor: "#6b7280",
     backgroundColor: "#ffffff",
-    legendFontSize: 11,
+    legendFontSize: 6,
     legendColor: "#4b5563",
     palette: "#5470c6, #91cc75, #fac858, #ee6666, #73c0de",
     legendShow: true,
@@ -33,8 +328,6 @@ const COMMON_DEFAULTS = {
     xAxisTickShow: true,
     xAxisLineColor: "#9ca3af",
     xFormatter: "{value}",
-    xMin: "",
-    xMax: "",
     xRotate: 0,
     yAxisLabelFontSize: 11,
     yAxisLabelColor: "#4b5563",
@@ -42,8 +335,6 @@ const COMMON_DEFAULTS = {
     yAxisTickShow: true,
     yAxisLineColor: "#9ca3af",
     yFormatter: "{value}",
-    yMin: "",
-    yMax: "",
     splitLineShow: true,
     splitLineColor: "#e5e7eb",
     splitLineType: "dashed",
@@ -65,7 +356,7 @@ const COMMON_DEFAULTS = {
     subtitleFontSize: 11,
     subtitleColor: "#6b7280",
     backgroundColor: "#ffffff",
-    legendFontSize: 11,
+    legendFontSize: 6,
     legendColor: "#4b5563",
     palette: "#5470c6, #91cc75, #fac858, #ee6666, #73c0de",
     legendShow: true,
@@ -81,8 +372,6 @@ const COMMON_DEFAULTS = {
     xAxisTickShow: true,
     xAxisLineColor: "#9ca3af",
     xFormatter: "{value}",
-    xMin: "",
-    xMax: "",
     xRotate: 0,
     yAxisLabelFontSize: 11,
     yAxisLabelColor: "#4b5563",
@@ -90,8 +379,6 @@ const COMMON_DEFAULTS = {
     yAxisTickShow: true,
     yAxisLineColor: "#9ca3af",
     yFormatter: "{value}",
-    yMin: "",
-    yMax: "",
     splitLineShow: true,
     splitLineColor: "#e5e7eb",
     splitLineType: "dashed",
@@ -109,1376 +396,259 @@ const UI_TEXT = {
     fixJson: "Fix JSON",
     copied: "Copied",
     copyFailed: "Copy failed",
-    agentPackageCopied: "Agent package copied",
-    previewExported: "Preview image exported",
-    previewExportFailed: "Preview export failed",
     dataLabel: "Data",
     jsonInvalidPrefix: "{label} JSON is invalid: ",
-    fixOption: "// Fix JSON errors to regenerate option output.",
     fixStyle: "// Fix JSON errors to regenerate style output.",
-    fixResolved: "// Fix JSON errors to regenerate resolved preview.",
-    fixAgentPackage: "// Fix JSON errors to regenerate the agent package.",
-    fixAgentRequest: "// Fix JSON errors to regenerate the agent request.",
     specificFieldsSuffix: "fields",
-    agentRequestIntro: "Please use `skills/data-charts-visualization` to render a `{chartType}` chart ({chartLabel}).",
-    styleLayering: "Recommended style layering:",
-    rawOptionJson: "Raw option JSON:",
-    stylePayload: "Style payload:",
+    stylePayload: "Style Payload",
   },
   zh: {
     ready: "就绪",
     fixJson: "修复 JSON",
     copied: "已复制",
     copyFailed: "复制失败",
-    agentPackageCopied: "已复制 Agent Package",
-    previewExported: "已导出预览图片",
-    previewExportFailed: "导出预览图片失败",
     dataLabel: "数据",
     jsonInvalidPrefix: "{label} JSON 格式错误: ",
-    fixOption: "// 请先修复 JSON 错误，再重新生成 option 输出。",
-    fixStyle: "// 请先修复 JSON 错误，再重新生成 style 输出。",
-    fixResolved: "// 请先修复 JSON 错误，再重新生成最终预览。",
-    fixAgentPackage: "// 请先修复 JSON 错误，再重新生成 agent package。",
-    fixAgentRequest: "// 请先修复 JSON 错误，再重新生成 agent 请求。",
+    fixStyle: "// 请先修复 JSON 错误，再重新生成样式配置。",
     specificFieldsSuffix: "配置",
-    agentRequestIntro: "请使用 `skills/data-charts-visualization` 渲染一个 `{chartType}` 图表（{chartLabel}）。",
-    styleLayering: "推荐样式叠加顺序：",
-    rawOptionJson: "原始 option JSON：",
-    stylePayload: "Style payload：",
+    stylePayload: "样式配置",
   },
 };
 
-const LOCALIZED_DEFINITION_TEXT = {
+const webSchemaModule = globalThis.DataChartsSchema || null;
+if (!webSchemaModule) {
+  throw new Error("DataChartsSchema is required before app.js");
+}
+const { COMMON_GROUPS, LOCALIZED_DEFINITION_TEXT, CHART_DEFINITIONS, CHART_TYPE_ORDER } = webSchemaModule;
+const COMMON_FIELD_MAP = buildFieldMapFromGroups(COMMON_GROUPS);
+
+const COMMON_FIELD_DOM_IDS = {
+  titleShow: "title-show",
+  subtitleShow: "subtitle-show",
+  titleAlign: "title-align",
+  titleFontSize: "title-font-size",
+  titleColor: "title-color",
+  titleBold: "title-bold",
+  subtitleFontSize: "subtitle-font-size",
+  subtitleColor: "subtitle-color",
+  backgroundColor: "background-color",
+  legendFontSize: "legend-font-size",
+  legendColor: "legend-color",
+  palette: "palette-input",
+  legendShow: "legend-show",
+  legendPosition: "legend-position",
+  legendOrient: "legend-orient",
+  xSplitLineShow: "x-split-line-show",
+  xSplitLineColor: "x-split-line-color",
+  xSplitLineType: "x-split-line-type",
+  xSplitLineWidth: "x-split-line-width",
+  xAxisLabelFontSize: "x-axis-label-font-size",
+  xAxisLabelColor: "x-axis-label-color",
+  xAxisLineShow: "x-axis-line-show",
+  xAxisTickShow: "x-axis-tick-show",
+  xAxisLineColor: "x-axis-line-color",
+  xFormatter: "x-formatter",
+  xRotate: "x-rotate",
+  yAxisLabelFontSize: "y-axis-label-font-size",
+  yAxisLabelColor: "y-axis-label-color",
+  yAxisLineShow: "y-axis-line-show",
+  yAxisTickShow: "y-axis-tick-show",
+  yAxisLineColor: "y-axis-line-color",
+  yFormatter: "y-formatter",
+  splitLineShow: "split-line-show",
+  splitLineColor: "split-line-color",
+  splitLineType: "split-line-type",
+  splitLineWidth: "split-line-width",
+  gridLeft: "grid-left",
+  gridRight: "grid-right",
+  gridTop: "grid-top",
+  gridBottom: "grid-bottom",
+};
+
+const COMMON_FIELD_LABEL_DOM_IDS = {
+  xAxisLineShow: "x-axis-line-show-label",
+  xAxisTickShow: "x-axis-tick-show-label",
+  xRotate: "x-rotate-label",
+  xAxisLabelFontSize: "x-axis-label-font-size-label",
+  xAxisLabelColor: "x-axis-label-color-label",
+  xAxisLineColor: "x-axis-line-color-label",
+  xFormatter: "x-formatter-label",
+  yAxisLineShow: "y-axis-line-show-label",
+  yAxisTickShow: "y-axis-tick-show-label",
+  yAxisLabelFontSize: "y-axis-label-font-size-label",
+  yAxisLabelColor: "y-axis-label-color-label",
+  yAxisLineColor: "y-axis-line-color-label",
+  yFormatter: "y-formatter-label",
+};
+
+const COMMON_FIELD_WRAPPER_IDS = {
+  palette: "palette-field",
+  xSplitLineShow: "x-split-line-show-field",
+  xSplitLineColor: "x-split-line-color-field",
+  xSplitLineType: "x-split-line-type-field",
+  xSplitLineWidth: "x-split-line-width-field",
+};
+
+const COMMON_GROUP_FIELD_IDS = {
+  titleMain: ["titleShow", "titleAlign", "titleFontSize", "titleColor", "titleBold"],
+  titleSubtitle: ["subtitleShow", "subtitleFontSize", "subtitleColor"],
+  canvasStyle: ["backgroundColor", "palette"],
+  canvasSpacing: ["gridLeft", "gridRight", "gridTop", "gridBottom"],
+  axesX: ["xAxisLineShow", "xAxisTickShow", "xRotate", "xAxisLabelFontSize", "xAxisLabelColor", "xAxisLineColor", "xFormatter"],
+  axesY: ["yAxisLineShow", "yAxisTickShow", "yAxisLabelFontSize", "yAxisLabelColor", "yFormatter", "yAxisLineColor"],
+};
+
+const COMMON_GROUP_RENDER_TEXT = {
   zh: {
-    line: {
-      label: "折线图",
-      blurb: "适合展示时间趋势、多序列对比，以及连续变化的业务指标。",
-      tags: ["平滑", "拐点", "连接空值", "dataset + encode"],
-      fields: {
-        smooth: "平滑曲线",
-        showSymbol: "显示拐点",
-        connectNulls: "连接空值",
-        showLabel: "显示标签",
-        symbol: "拐点形状",
-        symbolSize: "拐点大小",
-        lineStyleType: "线条样式",
-        lineWidth: "线条宽度",
-        labelFontSize: "标签字号",
-        labelColor: "标签颜色",
-      },
-      options: {
-        symbol: { circle: "圆形", rect: "方形", triangle: "三角形", diamond: "菱形" },
-        lineStyleType: { solid: "实线", dashed: "虚线", dotted: "点线" },
-      },
-      templates: {
-        series: {
-          label: "系列数据",
-          help: "直接使用 `xAxis.data` 和 `series[].data` 的类目数据结构。",
-        },
-        dataset: {
-          label: "Dataset + Encode",
-          help: "使用表格型 `dataset.source`，并通过 `encode` 共享映射。",
-        },
-      },
+    groups: {
+      title: { title: "标题", help: "这里对应图表顶部的标题区域，包括主标题和副标题。" },
+      legend: { title: "图例" },
+      canvas: { title: "画布" },
+      axes: { title: "坐标轴" },
+      splitLines: { title: "分割线" },
     },
-    bar: {
-      label: "柱状图",
-      blurb: "适合做类目对比、分组排名、堆叠汇总等场景。",
-      tags: ["横向", "排名", "dataset + encode"],
-      fields: {
-        horizontal: "横向布局",
-        showLabel: "显示标签",
-        barGap: "柱间距",
-        labelPosition: "标签位置",
-        labelFontSize: "标签字号",
-        labelColor: "标签颜色",
-        itemOpacity: "柱透明度",
-        borderRadius: "圆角半径",
-        borderWidth: "描边宽度",
-        borderColor: "描边颜色",
-      },
-      options: {
-        labelPosition: {
-          top: "顶部",
-          inside: "内部",
-          insideTop: "内部顶部",
-          insideRight: "内部右侧",
-          outside: "外部",
-        },
-      },
-      templates: {
-        series: {
-          label: "系列数据",
-          help: "使用类目轴数据表达分组柱状图或堆叠柱状图。",
-        },
-        dataset: {
-          label: "Dataset + Encode",
-          help: "使用一份共享表格数据驱动多个指标。",
-        },
-      },
+    subgroups: {
+      titleMain: "主标题",
+      titleSubtitle: "副标题",
+      canvasStyle: "画布样式",
+      canvasSpacing: "绘图区",
+      axesX: "X 轴",
+      axesY: "Y 轴",
     },
-    pie: {
-      label: "饼图",
-      blurb: "适合表达简单占比关系，也支持环图和南丁格尔玫瑰图。",
-      tags: ["环图", "玫瑰图", "dataset + encode"],
-      fields: {
-        labelPosition: "标签位置",
-        startAngle: "起始角度",
-        showLabel: "显示标签",
-        labelFontSize: "标签字号",
-        labelColor: "标签颜色",
-        labelFormatter: "标签格式",
-        labelLineShow: "显示引导线",
-        labelLineColor: "引导线颜色",
-        labelLineWidth: "引导线宽度",
-        itemOpacity: "扇区透明度",
-        borderWidth: "描边宽度",
-        borderColor: "描边颜色",
-      },
-      options: {
-        labelPosition: { outside: "外侧", inside: "内部" },
-      },
-      templates: {
-        series: {
-          label: "系列数据",
-          help: "使用 `series[0].data` 中的 name/value 项。",
-        },
-        dataset: {
-          label: "Dataset + Encode",
-          help: "使用二维表格，并通过 `encode` 映射名称和值。",
-        },
-      },
+    descriptions: {
+      canvasSpacing: "这里的值表示绘图区四边留白占画布宽度或高度的百分比。",
     },
-    gauge: {
-      label: "仪表盘",
-      blurb: "适合展示单个 KPI、进度状态和阈值分段。",
-      tags: ["角度", "进度", "标题/明细", "分段"],
-      fields: {
-        startAngle: "起始角度",
-        endAngle: "结束角度",
-        progressShow: "显示进度",
-        progressWidth: "进度宽度",
-        progressColor: "进度颜色",
-        titleShow: "显示仪表名称",
-        titleFontSize: "仪表名称字号",
-        titleColor: "仪表名称颜色",
-        detailShow: "显示明细",
-        detailFormatter: "明细格式",
-        detailFontSize: "明细字号",
-        detailColor: "明细颜色",
-        axisWidth: "主环宽度",
-        bandStops: "分段颜色",
-        axisLabelShow: "显示刻度值",
-        axisLabelDistance: "刻度值距离",
-        axisLabelFontSize: "刻度值字号",
-        axisLabelColor: "刻度值颜色",
-        splitLineShow: "显示主刻度线",
-        splitLineLength: "主刻度线长度",
-        splitLineWidth: "主刻度线宽度",
-        splitLineColor: "主刻度线颜色",
-        axisTickShow: "显示次刻度线",
-        axisTickLength: "次刻度线长度",
-        axisTickWidth: "次刻度线宽度",
-        axisTickColor: "次刻度线颜色",
-        pointerShow: "显示指针",
-        pointerWidth: "指针宽度",
-        pointerColor: "指针颜色",
-        anchorShow: "显示圆心点",
-        anchorSize: "圆心点大小",
-        anchorColor: "圆心点颜色",
-      },
-      options: {
-        pointerWidth: {
-          2: "纤细",
-          3: "标准",
-          4: "稳重",
-          5: "醒目",
-          6: "粗壮",
-        },
-        anchorSize: {
-          8: "微小",
-          12: "小",
-          18: "中",
-          24: "大",
-          32: "超大",
-        },
-      },
-      templates: {
-        basic: {
-          label: "基础仪表盘",
-          help: "使用单个 gauge 系列和一个 KPI 值项。",
-        },
-      },
+    fields: {
+      titleShow: "显示主标题",
+      titleAlign: "标题对齐",
+      titleFontSize: "标题字号",
+      titleColor: "标题颜色",
+      titleBold: "标题加粗",
+      subtitleShow: "显示副标题",
+      subtitleFontSize: "副标题字号",
+      subtitleColor: "副标题颜色",
+      legendShow: "显示图例",
+      legendPosition: "图例位置",
+      legendOrient: "图例方向",
+      legendFontSize: "图例字号",
+      legendColor: "图例颜色",
+      backgroundColor: "背景色",
+      palette: "配色板",
+      gridLeft: "左边距",
+      gridRight: "右边距",
+      gridTop: "上边距",
+      gridBottom: "下边距",
+      xAxisLineShow: "显示 X 轴线",
+      xAxisTickShow: "显示 X 轴刻度",
+      xRotate: "X 轴标签旋转",
+      xAxisLabelFontSize: "X 轴标签字号",
+      xAxisLabelColor: "X 轴标签颜色",
+      xAxisLineColor: "X 轴线颜色",
+      xFormatter: "X 轴格式",
+      yAxisLineShow: "显示 Y 轴线",
+      yAxisTickShow: "显示 Y 轴刻度",
+      yAxisLabelFontSize: "Y 轴标签字号",
+      yAxisLabelColor: "Y 轴标签颜色",
+      yAxisLineColor: "Y 轴线颜色",
+      yFormatter: "Y 轴格式",
+      splitLineShow: "显示水平分割线",
+      splitLineColor: "水平分割线颜色",
+      splitLineType: "水平分割线样式",
+      splitLineWidth: "水平分割线宽度",
+      xSplitLineShow: "显示垂直分割线",
+      xSplitLineColor: "垂直分割线颜色",
+      xSplitLineType: "垂直分割线样式",
+      xSplitLineWidth: "垂直分割线宽度",
     },
-    area: {
-      label: "面积图",
-      blurb: "适合强调趋势变化的体量感，也适合累计感较强的场景。",
-      tags: ["面积透明度", "平滑", "渐变", "dataset + encode"],
-      fields: {
-        smooth: "平滑曲线",
-        showSymbol: "显示拐点",
-        connectNulls: "连接空值",
-        showLabel: "显示标签",
-        areaOpacity: "面积透明度",
-        areaFillMode: "填充样式",
-        symbol: "拐点形状",
-        symbolSize: "拐点大小",
-        lineStyleType: "线条样式",
-        lineWidth: "线条宽度",
-        labelFontSize: "标签字号",
-        labelColor: "标签颜色",
+    options: {
+      titleAlign: { left: "左对齐", center: "居中", right: "右对齐" },
+      legendPosition: {
+        "top-left": "左上",
+        "top-center": "上中",
+        "top-right": "右上",
+        "middle-left": "左中",
+        "middle-right": "右中",
+        "bottom-left": "左下",
+        "bottom-center": "下中",
+        "bottom-right": "右下",
       },
-      options: {
-        areaFillMode: { solid: "纯色（自动配色）", gradient: "渐变（自动配色）" },
-        symbol: { circle: "圆形", rect: "方形", triangle: "三角形", diamond: "菱形" },
-        lineStyleType: { solid: "实线", dashed: "虚线", dotted: "点线" },
-      },
-      templates: {
-        series: {
-          label: "系列数据",
-          help: "使用带填充的折线系列表达面积图。",
-        },
-        dataset: {
-          label: "Dataset + Encode",
-          help: "使用共享数据集表达类目和多个指标。",
-        },
-      },
+      legendOrient: { horizontal: "水平", vertical: "垂直" },
+      splitLineType: { solid: "实线", dashed: "虚线", dotted: "点线" },
+      xSplitLineType: { solid: "实线", dashed: "虚线", dotted: "点线" },
     },
-    dualAxis: {
-      label: "双轴图",
-      blurb: "适合双系列混合、两个量纲同时展示的复合场景，左右都可以选择柱或线。",
-      tags: ["柱/线组合", "副轴", "横向", "dataset + encode"],
-      fields: {
-        layoutGroup: "结构",
-        horizontal: "横向布局",
-        leftSeriesType: "左侧图形",
-        rightSeriesType: "右侧图形",
-        barGap: "柱间距",
-        splitLineAxisGroup: "分割线归属",
-        splitLineFollowAxis: "分割线跟随",
-        leftAxisGroup: "左轴",
-        leftAxisLabelFontSize: "左轴字号",
-        leftAxisLabelColor: "左轴颜色",
-        leftAxisLineShow: "显示左轴线",
-        leftAxisLineColor: "左轴线颜色",
-        leftAxisTickShow: "显示左轴刻度",
-        leftAxisFormatter: "左轴格式",
-        leftAxisMin: "左轴最小值",
-        leftAxisMax: "左轴最大值",
-        leftBarGroup: "左柱",
-        leftBarShowLabel: "显示左柱标签",
-        leftBarLabelPosition: "左柱标签位置",
-        leftBarLabelFontSize: "左柱标签字号",
-        leftBarLabelColor: "左柱标签颜色",
-        leftBarOpacity: "左柱透明度",
-        leftBarGap: "左柱间距",
-        leftBarBorderRadius: "左柱圆角半径",
-        leftBarBorderWidth: "左柱描边宽度",
-        leftBarBorderColor: "左柱描边颜色",
-        leftBarColors: "左柱配色",
-        leftLineGroup: "左线",
-        leftLineSmooth: "左线平滑",
-        leftLineArea: "左线带面积",
-        leftLineShowSymbol: "显示左线拐点",
-        leftLineConnectNulls: "连接左线空值",
-        leftLineShowLabel: "显示左线标签",
-        leftLineColors: "左线配色",
-        leftLineStyleType: "左线样式",
-        leftLineWidth: "左线宽度",
-        leftLineSymbol: "左线拐点形状",
-        leftLineSymbolSize: "左线拐点大小",
-        leftLineLabelFontSize: "左线标签字号",
-        leftLineLabelColor: "左线标签颜色",
-        rightAxisGroup: "右轴",
-        rightAxisLabelFontSize: "右轴字号",
-        rightAxisLabelColor: "右轴颜色",
-        rightAxisLineShow: "显示右轴线",
-        rightAxisLineColor: "右轴线颜色",
-        rightAxisTickShow: "显示右轴刻度",
-        rightAxisFormatter: "右轴格式",
-        rightAxisMin: "右轴最小值",
-        rightAxisMax: "右轴最大值",
-        rightBarGroup: "右柱",
-        rightBarShowLabel: "显示右柱标签",
-        rightBarLabelPosition: "右柱标签位置",
-        rightBarLabelFontSize: "右柱标签字号",
-        rightBarLabelColor: "右柱标签颜色",
-        rightBarOpacity: "右柱透明度",
-        rightBarGap: "右柱间距",
-        rightBarBorderRadius: "右柱圆角半径",
-        rightBarBorderWidth: "右柱描边宽度",
-        rightBarBorderColor: "右柱描边颜色",
-        rightBarColors: "右柱配色",
-        rightLineGroup: "右线",
-        rightLineSmooth: "右线平滑",
-        rightLineArea: "右线带面积",
-        rightLineShowSymbol: "显示右线拐点",
-        rightLineConnectNulls: "连接右线空值",
-        rightLineShowLabel: "显示右线标签",
-        rightLineColors: "右线配色",
-        rightLineStyleType: "右线样式",
-        rightLineWidth: "右线宽度",
-        rightLineSymbol: "右线拐点形状",
-        rightLineSymbolSize: "右线拐点大小",
-        rightLineLabelFontSize: "右线标签字号",
-        rightLineLabelColor: "右线标签颜色",
-      },
-      options: {
-        splitLineFollowAxis: { left: "左轴", right: "右轴" },
-        leftSeriesType: { bar: "柱", line: "线" },
-        rightSeriesType: { bar: "柱", line: "线" },
-        leftBarLabelPosition: { top: "顶部", inside: "内部", insideTop: "内部顶部", insideRight: "内部右侧", outside: "外部" },
-        rightBarLabelPosition: { top: "顶部", inside: "内部", insideTop: "内部顶部", insideRight: "内部右侧", outside: "外部" },
-        leftLineStyleType: { solid: "实线", dashed: "虚线", dotted: "点线" },
-        rightLineStyleType: { solid: "实线", dashed: "虚线", dotted: "点线" },
-        leftLineSymbol: { circle: "圆形", rect: "方形", triangle: "三角形", diamond: "菱形" },
-        rightLineSymbol: { circle: "圆形", rect: "方形", triangle: "三角形", diamond: "菱形" },
-      },
-      templates: {
-        series: {
-          label: "柱线组合",
-          help: "使用类目数据表达左轴柱状图和右轴折线。",
-        },
-        doubleBar: {
-          label: "双柱组合",
-          help: "使用类目数据表达左右两侧都为柱状图的双轴图。",
-        },
-        doubleLine: {
-          label: "双线组合",
-          help: "使用类目数据表达左右两侧都为折线图的双轴图。",
-        },
-        dataset: {
-          label: "Dataset + Encode",
-          help: "使用一张表同时驱动柱状图和折线图。",
-        },
-      },
-    },
-    scatter: {
-      label: "散点图",
-      blurb: "适合做相关性分析、聚类观察和数值轴上的点分布对比。",
-      tags: ["散点", "数值轴", "dataset + encode"],
-      fields: {
-        showLabel: "显示标签",
-        symbolSize: "默认点大小",
-        symbol: "点形状",
-        itemOpacity: "点透明度",
-        borderWidth: "描边宽度",
-        borderColor: "描边颜色",
-        labelFontSize: "标签字号",
-        labelColor: "标签颜色",
-      },
-      options: {
-        symbolSize: {
-          24: "很小",
-          40: "小",
-          64: "中",
-          88: "大",
-          116: "很大",
-        },
-        symbol: { circle: "圆形", rect: "方形", triangle: "三角形", diamond: "菱形" },
-      },
-      templates: {
-        series: {
-          label: "散点系列",
-          help: "使用数值型 `[x, y]` 点位表达多系列散点图。",
-        },
-        dataset: {
-          label: "Dataset + Encode",
-          help: "使用共享表格数据，并通过 `encode` 建立映射。",
-        },
-      },
-    },
-    radar: {
-      label: "雷达图",
-      blurb: "适合展示多维评分、能力画像和均衡度对比。",
-      tags: ["形状", "分割区域", "标签", "面积填充"],
-      fields: {
-        shape: "形状",
-        splitNumber: "分割段数",
-        showSymbol: "显示拐点",
-        showLabel: "显示标签",
-        labelFormatter: "标签格式",
-        areaOpacity: "面积透明度",
-        splitLineColor: "分割线颜色",
-        splitLineWidth: "分割线宽度",
-        splitLineType: "分割线样式",
-        axisLineColor: "轴线颜色",
-        axisLineWidth: "轴线宽度",
-        axisLineType: "轴线样式",
-        axisNameFontSize: "维度名字号",
-        axisNameColor: "维度名颜色",
-        axisNameBold: "维度名加粗",
-        symbol: "拐点形状",
-        symbolSize: "拐点大小",
-        lineStyleType: "线条样式",
-        lineWidth: "线条宽度",
-        labelFontSize: "标签字号",
-        labelColor: "标签颜色",
-      },
-      options: {
-        shape: { polygon: "多边形", circle: "圆形" },
-        symbol: { circle: "圆形", rect: "方形", triangle: "三角形", diamond: "菱形" },
-        lineStyleType: { solid: "实线", dashed: "虚线", dotted: "点线" },
-        splitLineType: { solid: "实线", dashed: "虚线", dotted: "点线" },
-        axisLineType: { solid: "实线", dashed: "虚线", dotted: "点线" },
-      },
-      templates: {
-        basic: {
-          label: "雷达数据",
-          help: "使用 radar indicator 和多组对比数值数组。",
-        },
-      },
-    },
-    funnel: {
-      label: "漏斗图",
-      blurb: "适合展示阶段转化、流程流失和有序业务漏斗。",
-      tags: ["排序", "间隔", "标签位置", "dataset + encode"],
-      fields: {
-        sort: "排序方式",
-        gap: "间隔",
-        minSize: "最小尺寸",
-        maxSize: "最大尺寸",
-        itemOpacity: "漏斗透明度",
-        labelPosition: "标签位置",
-        showLabel: "显示标签",
-        labelFormatter: "标签格式",
-        labelFontSize: "标签字号",
-        labelColor: "标签颜色",
-        left: "左侧位置",
-        top: "顶部位置",
-        width: "宽度",
-        height: "高度",
-      },
-      options: {
-        sort: { descending: "降序", ascending: "升序", none: "保持输入顺序" },
-        labelPosition: { outside: "外侧", inside: "内部" },
-      },
-      templates: {
-        series: {
-          label: "系列数据",
-          help: "使用有序阶段 name/value 项表达漏斗图。",
-        },
-        dataset: {
-          label: "Dataset + Encode",
-          help: "使用二维表格，并显式映射 stage/value。",
-        },
-      },
+    actions: {
+      customPalette: "自定义配色",
+      addColor: "添加颜色",
+      removeColor: "移除颜色",
     },
   },
-};
-
-const CHART_DEFINITIONS = {
-  line: {
-    label: "Line",
-    styleFile: "line_style.json",
-    asset: `${SKILL_STATIC_ROOT}/line.png`,
-    blurb: "Best for trends over time, multiple series comparison, and continuity-focused metrics.",
-    tags: ["smooth", "symbols", "connectNulls", "dataset + encode"],
-    usesGrid: true,
-    usesCartesian: true,
-    fields: [
-      { id: "smooth", label: "Smooth", type: "checkbox", default: true },
-      { id: "showSymbol", label: "Show Symbols", type: "checkbox", default: true },
-      { id: "connectNulls", label: "Connect Nulls", type: "checkbox", default: false },
-      { id: "showLabel", label: "Show Labels", type: "checkbox", default: true },
-      {
-        id: "symbol",
-        label: "Symbol",
-        type: "select",
-        default: "circle",
-        options: [
-          ["circle", "Circle"],
-          ["rect", "Rect"],
-          ["triangle", "Triangle"],
-          ["diamond", "Diamond"],
-        ],
-      },
-      { id: "symbolSize", label: "Symbol Size", type: "number", default: 5, step: 1 },
-      {
-        id: "lineStyleType",
-        label: "Line Style",
-        type: "select",
-        default: "solid",
-        options: [
-          ["solid", "Solid"],
-          ["dashed", "Dashed"],
-          ["dotted", "Dotted"],
-        ],
-      },
-      { id: "lineWidth", label: "Line Width", type: "number", default: 3, step: 0.2 },
-      { id: "labelFontSize", label: "Label Size", type: "number", default: 10, step: 1 },
-      { id: "labelColor", label: "Label Color", type: "color", default: "#334155" },
-    ],
-    templates: [
-      {
-        id: "series",
-        label: "Series Data",
-        help: "Use direct category data with `xAxis.data` and `series[].data`.",
-        data: {
-          xAxis: { data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] },
-          yAxis: {},
-          series: [
-            { type: "line", name: "Visits", data: [120, 132, 101, 134, 90, 230] },
-            { type: "line", name: "Orders", data: [32, 41, 38, 52, 49, 68] },
-          ],
-        },
-      },
-      {
-        id: "dataset",
-        label: "Dataset + Encode",
-        help: "Use tabular `dataset.source` with shared encode fields.",
-        data: {
-          dataset: {
-            source: [
-              ["day", "visits", "orders"],
-              ["Mon", 120, 32],
-              ["Tue", 132, 41],
-              ["Wed", 101, 38],
-              ["Thu", 134, 52],
-              ["Fri", 90, 49],
-              ["Sat", 230, 68],
-            ],
-          },
-          xAxis: { type: "category" },
-          yAxis: { type: "value" },
-          series: [
-            { type: "line", name: "Visits", encode: { x: "day", y: "visits" } },
-            { type: "line", name: "Orders", encode: { x: "day", y: "orders" } },
-          ],
-        },
-      },
-    ],
-  },
-  bar: {
-    label: "Bar",
-    styleFile: "bar_style.json",
-    asset: `${SKILL_STATIC_ROOT}/bar.png`,
-    blurb: "Best for category comparison, grouped bars, ranking, and stacked totals.",
-    tags: ["horizontal", "ranking", "dataset + encode"],
-    usesGrid: true,
-    usesCartesian: true,
-    fields: [
-      { id: "showLabel", label: "Show Labels", type: "checkbox", default: true },
-      { id: "barGap", label: "Bar Gap", type: "text", default: "10%" },
-      {
-        id: "labelPosition",
-        label: "Label Position",
-        type: "select",
-        default: "top",
-        options: [
-          ["top", "Top"],
-          ["inside", "Inside"],
-          ["insideTop", "Inside Top"],
-          ["insideRight", "Inside Right"],
-          ["outside", "Outside"],
-        ],
-      },
-      { id: "labelFontSize", label: "Label Size", type: "number", default: 10, step: 1 },
-      { id: "labelColor", label: "Label Color", type: "color", default: "#334155" },
-      { id: "itemOpacity", label: "Bar Opacity", type: "number", default: 0.92, step: 0.05 },
-      { id: "borderRadius", label: "Corner Radius", type: "number", default: 0, step: 0.5 },
-      { id: "borderWidth", label: "Border Width", type: "number", default: 0, step: 0.5 },
-      { id: "borderColor", label: "Border Color", type: "color", default: "#ffffff" },
-    ],
-    templates: [
-      {
-        id: "series",
-        label: "Series Data",
-        help: "Use category data for grouped or stacked bars.",
-        data: {
-          xAxis: { data: ["Q1", "Q2", "Q3", "Q4"] },
-          yAxis: {},
-          series: [
-            { type: "bar", name: "Revenue", data: [320, 410, 505, 620] },
-            { type: "bar", name: "Cost", data: [180, 240, 290, 330] },
-          ],
-        },
-      },
-      {
-        id: "dataset",
-        label: "Dataset + Encode",
-        help: "Use one shared tabular dataset with multiple metrics.",
-        data: {
-          dataset: {
-            source: [
-              ["quarter", "revenue", "cost"],
-              ["Q1", 320, 180],
-              ["Q2", 410, 240],
-              ["Q3", 505, 290],
-              ["Q4", 620, 330],
-            ],
-          },
-          xAxis: { type: "category" },
-          yAxis: { type: "value" },
-          series: [
-            { type: "bar", name: "Revenue", encode: { x: "quarter", y: "revenue" } },
-            { type: "bar", name: "Cost", encode: { x: "quarter", y: "cost" } },
-          ],
-        },
-      },
-    ],
-  },
-  pie: {
-    label: "Pie",
-    styleFile: "pie_style.json",
-    asset: `${SKILL_STATIC_ROOT}/pie-basic.png`,
-    blurb: "Best for simple part-to-whole storytelling with optional donut or rose variants.",
-    tags: ["donut", "rose", "dataset + encode"],
-    supportsPlotArea: true,
-    usesGrid: false,
-    usesCartesian: false,
-    fields: [
-      {
-        id: "labelPosition",
-        label: "Label Position",
-        type: "select",
-        default: "outside",
-        options: [
-          ["outside", "Outside"],
-          ["inside", "Inside"],
-        ],
-      },
-      { id: "startAngle", label: "Start Angle", type: "number", default: 90 },
-      { id: "showLabel", label: "Show Labels", type: "checkbox", default: true },
-      { id: "labelFontSize", label: "Label Size", type: "number", default: 11, step: 1 },
-      { id: "labelColor", label: "Label Color", type: "color", default: "#334155" },
-      { id: "labelFormatter", label: "Label Formatter", type: "text", default: "{b} {d}%" },
-      { id: "labelLineShow", label: "Show Label Line", type: "checkbox", default: true },
-      { id: "labelLineColor", label: "Label Line Color", type: "color", default: "#94a3b8" },
-      { id: "labelLineWidth", label: "Label Line Width", type: "number", default: 0.8, step: 0.1 },
-      { id: "itemOpacity", label: "Slice Opacity", type: "number", default: 0.96, step: 0.05 },
-      { id: "borderWidth", label: "Border Width", type: "number", default: 0, step: 0.5 },
-      { id: "borderColor", label: "Border Color", type: "color", default: "#ffffff" },
-    ],
-    templates: [
-      {
-        id: "series",
-        label: "Series Data",
-        help: "Use `series[0].data` items with name and value.",
-        data: {
-          series: [
-            {
-              type: "pie",
-              data: [
-                { name: "Search", value: 1048 },
-                { name: "Email", value: 735 },
-                { name: "Direct", value: 580 },
-                { name: "Ads", value: 484 },
-                { name: "Video", value: 300 },
-              ],
-            },
-          ],
-        },
-      },
-      {
-        id: "dataset",
-        label: "Dataset + Encode",
-        help: "Use a table and map itemName/value through encode.",
-        data: {
-          dataset: {
-            source: [
-              ["channel", "value"],
-              ["Search", 1048],
-              ["Email", 735],
-              ["Direct", 580],
-              ["Ads", 484],
-              ["Video", 300],
-            ],
-          },
-          series: [
-            { type: "pie", encode: { itemName: "channel", value: "value" } },
-          ],
-        },
-      },
-    ],
-  },
-  gauge: {
-    label: "Gauge",
-    styleFile: "gauge_style.json",
-    asset: `${SKILL_STATIC_ROOT}/gauge.png`,
-    blurb: "Best for a single KPI, progress-like states, and segmented threshold displays.",
-    tags: ["angles", "progress", "title/detail", "segments"],
-    supportsPlotArea: true,
-    usesGrid: false,
-    usesCartesian: false,
-    supportsLegend: false,
-    fields: [
-      { id: "gaugeFoundationGroup", label: "Foundation", type: "group", help: "Control gauge angles and progress ring." },
-      { id: "startAngle", label: "Start Angle", type: "number", default: 225 },
-      { id: "endAngle", label: "End Angle", type: "number", default: -45 },
-      { id: "progressShow", label: "Show Progress", type: "checkbox", default: true },
-      { id: "progressWidth", label: "Progress Width", type: "number", default: 20, step: 1 },
-      { id: "progressColor", label: "Progress Color", type: "color", default: "#5470c6" },
-      { id: "axisWidth", label: "Band Width", type: "number", default: 20, step: 1 },
-      {
-        id: "bandStops",
-        label: "Segment Colors",
-        type: "text",
-        default: "#22c55e, #84cc16, #facc15, #f97316, #ef4444",
-      },
-      { id: "gaugeTitleGroup", label: "Gauge Name", type: "group", help: "Control the small title inside the gauge." },
-      { id: "titleShow", label: "Show Gauge Name", type: "checkbox", default: true },
-      { id: "titleFontSize", label: "Gauge Name Size", type: "number", default: 12, step: 1 },
-      { id: "titleColor", label: "Gauge Name Color", type: "color", default: "#6e7079" },
-      { id: "gaugeDetailGroup", label: "Detail", type: "group", help: "Control the value detail text inside the gauge." },
-      { id: "detailShow", label: "Show Detail", type: "checkbox", default: true },
-      { id: "detailFormatter", label: "Detail Formatter", type: "text", default: "{value}%" },
-      { id: "detailFontSize", label: "Detail Size", type: "number", default: 22, step: 1 },
-      { id: "detailColor", label: "Detail Color", type: "color", default: "#464646" },
-      { id: "gaugeTicksGroup", label: "Ticks", type: "group", help: "Control scale labels and tick marks." },
-      { id: "axisLabelShow", label: "Show Axis Labels", type: "checkbox", default: true },
-      { id: "axisLabelDistance", label: "Axis Label Distance", type: "number", default: 25, step: 1 },
-      { id: "axisLabelFontSize", label: "Axis Label Size", type: "number", default: 10, step: 1 },
-      { id: "axisLabelColor", label: "Axis Label Color", type: "color", default: "#6e7079" },
-      { id: "splitLineShow", label: "Show Major Ticks", type: "checkbox", default: true },
-      { id: "splitLineLength", label: "Major Tick Length", type: "number", default: 12, step: 1 },
-      { id: "splitLineWidth", label: "Major Tick Width", type: "number", default: 2, step: 0.5 },
-      { id: "splitLineColor", label: "Major Tick Color", type: "color", default: "#6e7079" },
-      { id: "axisTickShow", label: "Show Minor Ticks", type: "checkbox", default: true },
-      { id: "axisTickLength", label: "Minor Tick Length", type: "number", default: 6, step: 1 },
-      { id: "axisTickWidth", label: "Minor Tick Width", type: "number", default: 1, step: 0.5 },
-      { id: "axisTickColor", label: "Minor Tick Color", type: "color", default: "#999999" },
-      { id: "gaugePointerGroup", label: "Pointer And Anchor", type: "group", help: "Control pointer and center anchor appearance." },
-      { id: "pointerShow", label: "Show Pointer", type: "checkbox", default: true },
-      {
-        id: "pointerWidth",
-        label: "Pointer Width",
-        type: "select",
-        default: "4",
-        options: [
-          ["2", "Slim"],
-          ["3", "Standard"],
-          ["4", "Balanced"],
-          ["5", "Bold"],
-          ["6", "Heavy"],
-        ],
-      },
-      { id: "pointerColor", label: "Pointer Color", type: "color", default: "#2f4554" },
-      { id: "anchorShow", label: "Show Anchor", type: "checkbox", default: true },
-      {
-        id: "anchorSize",
-        label: "Anchor Size",
-        type: "select",
-        default: "20",
-        options: [
-          ["8", "Tiny"],
-          ["12", "Small"],
-          ["20", "Medium"],
-          ["24", "Large"],
-          ["32", "XL"],
-        ],
-      },
-      { id: "anchorColor", label: "Anchor Color", type: "color", default: "#2f4554" },
-    ],
-    templates: [
-      {
-        id: "basic",
-        label: "Basic Gauge",
-        help: "Use one gauge series with one KPI value item.",
-        data: {
-          series: [
-            {
-              type: "gauge",
-              data: [{ value: 68, name: "Completion" }],
-            },
-          ],
-        },
-      },
-    ],
-  },
-  area: {
-    label: "Area",
-    styleFile: "area_style.json",
-    asset: `${SKILL_STATIC_ROOT}/area.png`,
-    blurb: "Best for trend comparison when filled volume or cumulative feel matters.",
-    tags: ["area opacity", "smooth", "gradient", "dataset + encode"],
-    usesGrid: true,
-    usesCartesian: true,
-    fields: [
-      { id: "smooth", label: "Smooth", type: "checkbox", default: true },
-      { id: "showSymbol", label: "Show Symbols", type: "checkbox", default: true },
-      {
-        id: "symbol",
-        label: "Symbol",
-        type: "select",
-        default: "circle",
-        options: [
-          ["circle", "Circle"],
-          ["rect", "Rect"],
-          ["triangle", "Triangle"],
-          ["diamond", "Diamond"],
-        ],
-      },
-      { id: "symbolSize", label: "Symbol Size", type: "number", default: 4, step: 1 },
-      { id: "connectNulls", label: "Connect Nulls", type: "checkbox", default: false },
-      { id: "showLabel", label: "Show Labels", type: "checkbox", default: true },
-      { id: "areaOpacity", label: "Area Opacity", type: "number", default: 0.35, step: 0.05 },
-      {
-        id: "areaFillMode",
-        label: "Fill Style",
-        type: "select",
-        default: "gradient",
-        options: [
-          ["solid", "Solid (Auto Palette)"],
-          ["gradient", "Gradient (Auto Palette)"],
-        ],
-      },
-      {
-        id: "lineStyleType",
-        label: "Line Style",
-        type: "select",
-        default: "solid",
-        options: [
-          ["solid", "Solid"],
-          ["dashed", "Dashed"],
-          ["dotted", "Dotted"],
-        ],
-      },
-      { id: "lineWidth", label: "Line Width", type: "number", default: 2, step: 0.2 },
-      { id: "labelFontSize", label: "Label Size", type: "number", default: 10, step: 1 },
-      { id: "labelColor", label: "Label Color", type: "color", default: "#334155" },
-    ],
-    templates: [
-      {
-        id: "series",
-        label: "Series Data",
-        help: "Use filled line series against category data.",
-        data: {
-          xAxis: { data: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"] },
-          yAxis: {},
-          series: [
-            { type: "line", name: "Signups", data: [120, 182, 191, 234, 290, 330] },
-            { type: "line", name: "Active", data: [80, 132, 151, 174, 220, 260] },
-          ],
-        },
-      },
-      {
-        id: "dataset",
-        label: "Dataset + Encode",
-        help: "Use a shared dataset with category and multiple metrics.",
-        data: {
-          dataset: {
-            source: [
-              ["month", "signups", "active"],
-              ["Jan", 120, 80],
-              ["Feb", 182, 132],
-              ["Mar", 191, 151],
-              ["Apr", 234, 174],
-              ["May", 290, 220],
-              ["Jun", 330, 260],
-            ],
-          },
-          xAxis: { type: "category" },
-          yAxis: { type: "value" },
-          series: [
-            { type: "line", name: "Signups", encode: { x: "month", y: "signups" } },
-            { type: "line", name: "Active", encode: { x: "month", y: "active" } },
-          ],
-        },
-      },
-    ],
-  },
-  dualAxis: {
-    label: "Dual-Axis",
-    styleFile: "dual_axis_style.json",
-    asset: `${SKILL_STATIC_ROOT}/dual-axis.png`,
-    blurb: "Best for mixed two-series layouts when two units must coexist in one chart. Each side can be a bar or a line.",
-    tags: ["bar/line mix", "secondary axis", "horizontal", "dataset + encode"],
-    usesGrid: true,
-    usesCartesian: true,
-      fields: [
-      { id: "layoutGroup", label: "Structure", type: "group", help: "Choose orientation and the left/right series types first." },
-      { id: "horizontal", label: "Horizontal Layout", type: "checkbox", default: false },
-      { id: "splitLineAxisGroup", label: "Split Line Binding", type: "group", help: "Choose which value axis the shared split lines follow." },
-      {
-        id: "splitLineFollowAxis",
-        label: "Split Line Follow",
-        type: "select",
-        default: "left",
-        options: [
-          ["left", "Left Axis"],
-          ["right", "Right Axis"],
-        ],
-      },
-      { id: "leftAxisGroup", label: "Left Value Axis", type: "group", help: "Control the bar axis scale, labels, ticks, and line styling." },
-      { id: "leftAxisLabelFontSize", label: "Left Axis Label Size", type: "number", default: 11, step: 1 },
-      { id: "leftAxisLabelColor", label: "Left Axis Label Color", type: "color", default: "#9ca3af" },
-      { id: "leftAxisLineShow", label: "Show Left Axis Line", type: "checkbox", default: true },
-      { id: "leftAxisLineColor", label: "Left Axis Line Color", type: "color", default: "#9ca3af" },
-      { id: "leftAxisTickShow", label: "Show Left Axis Ticks", type: "checkbox", default: true },
-      { id: "leftAxisFormatter", label: "Left Axis Formatter", type: "text", default: "{value}" },
-      { id: "leftAxisMin", label: "Left Axis Min", type: "text", default: "" },
-      { id: "leftAxisMax", label: "Left Axis Max", type: "text", default: "" },
-      { id: "leftBarGroup", label: "Left Bar", type: "group", help: "Bar-style controls for the left series." },
-      { id: "leftBarShowLabel", label: "Show Left Bar Labels", type: "checkbox", default: true },
-      {
-        id: "leftBarLabelPosition",
-        label: "Left Bar Label Position",
-        type: "select",
-        default: "top",
-        options: [
-          ["top", "Top"],
-          ["inside", "Inside"],
-          ["insideTop", "Inside Top"],
-          ["insideRight", "Inside Right"],
-          ["outside", "Outside"],
-        ],
-      },
-      { id: "leftBarLabelFontSize", label: "Left Bar Label Size", type: "number", default: 10, step: 1 },
-      { id: "leftBarLabelColor", label: "Left Bar Label Color", type: "color", default: "#334155" },
-      { id: "leftBarOpacity", label: "Left Bar Opacity", type: "number", default: 0.92, step: 0.05 },
-      { id: "leftBarGap", label: "Left Bar Gap", type: "text", default: "10%" },
-      { id: "leftBarBorderRadius", label: "Left Bar Corner Radius", type: "number", default: 0, step: 0.5 },
-      { id: "leftBarBorderWidth", label: "Left Bar Border Width", type: "number", default: 0, step: 0.5 },
-      { id: "leftBarBorderColor", label: "Left Bar Border Color", type: "color", default: "#ffffff" },
-      { id: "leftBarColors", label: "Left Bar Palette", type: "text", default: "#5470c6, #73c0de, #91cc75" },
-      { id: "leftLineGroup", label: "Left Line", type: "group", help: "Line-style controls for the left series." },
-      { id: "leftLineSmooth", label: "Smooth Left Line", type: "checkbox", default: true },
-      { id: "leftLineArea", label: "Left Line With Area", type: "checkbox", default: false },
-      { id: "leftLineShowSymbol", label: "Show Left Symbols", type: "checkbox", default: false },
-      { id: "leftLineConnectNulls", label: "Connect Left Nulls", type: "checkbox", default: false },
-      { id: "leftLineShowLabel", label: "Show Left Line Labels", type: "checkbox", default: false },
-      { id: "leftLineColors", label: "Left Line Palette", type: "text", default: "#5470c6, #3b82f6, #06b6d4" },
-      {
-        id: "leftLineStyleType",
-        label: "Left Line Style",
-        type: "select",
-        default: "solid",
-        options: [
-          ["solid", "Solid"],
-          ["dashed", "Dashed"],
-          ["dotted", "Dotted"],
-        ],
-      },
-      { id: "leftLineWidth", label: "Left Line Width", type: "number", default: 3, step: 0.2 },
-      {
-        id: "leftLineSymbol",
-        label: "Left Symbol",
-        type: "select",
-        default: "circle",
-        options: [
-          ["circle", "Circle"],
-          ["rect", "Rect"],
-          ["triangle", "Triangle"],
-          ["diamond", "Diamond"],
-        ],
-      },
-      { id: "leftLineSymbolSize", label: "Left Symbol Size", type: "number", default: 5, step: 1 },
-      { id: "leftLineLabelFontSize", label: "Left Line Label Size", type: "number", default: 10, step: 1 },
-      { id: "leftLineLabelColor", label: "Left Line Label Color", type: "color", default: "#334155" },
-      { id: "rightAxisGroup", label: "Right Value Axis", type: "group", help: "Control the right value axis scale, labels, ticks, and line styling." },
-      { id: "rightAxisLabelFontSize", label: "Right Axis Label Size", type: "number", default: 11, step: 1 },
-      { id: "rightAxisLabelColor", label: "Right Axis Label Color", type: "color", default: "#9ca3af" },
-      { id: "rightAxisLineShow", label: "Show Right Axis Line", type: "checkbox", default: true },
-      { id: "rightAxisLineColor", label: "Right Axis Line Color", type: "color", default: "#9ca3af" },
-      { id: "rightAxisTickShow", label: "Show Right Axis Ticks", type: "checkbox", default: true },
-      { id: "rightAxisFormatter", label: "Right Axis Formatter", type: "text", default: "{value}" },
-      { id: "rightAxisMin", label: "Right Axis Min", type: "text", default: "" },
-      { id: "rightAxisMax", label: "Right Axis Max", type: "text", default: "" },
-      { id: "rightBarGroup", label: "Right Bar", type: "group", help: "Bar-style controls for the right series." },
-      { id: "rightBarShowLabel", label: "Show Right Bar Labels", type: "checkbox", default: true },
-      {
-        id: "rightBarLabelPosition",
-        label: "Right Bar Label Position",
-        type: "select",
-        default: "top",
-        options: [
-          ["top", "Top"],
-          ["inside", "Inside"],
-          ["insideTop", "Inside Top"],
-          ["insideRight", "Inside Right"],
-          ["outside", "Outside"],
-        ],
-      },
-      { id: "rightBarLabelFontSize", label: "Right Bar Label Size", type: "number", default: 10, step: 1 },
-      { id: "rightBarLabelColor", label: "Right Bar Label Color", type: "color", default: "#334155" },
-      { id: "rightBarOpacity", label: "Right Bar Opacity", type: "number", default: 0.92, step: 0.05 },
-      { id: "rightBarGap", label: "Right Bar Gap", type: "text", default: "10%" },
-      { id: "rightBarBorderRadius", label: "Right Bar Corner Radius", type: "number", default: 0, step: 0.5 },
-      { id: "rightBarBorderWidth", label: "Right Bar Border Width", type: "number", default: 0, step: 0.5 },
-      { id: "rightBarBorderColor", label: "Right Bar Border Color", type: "color", default: "#ffffff" },
-      { id: "rightBarColors", label: "Right Bar Palette", type: "text", default: "#ef4444, #f97316, #f59e0b" },
-      { id: "rightLineGroup", label: "Right Line", type: "group", help: "Line-style controls for the right series." },
-      { id: "rightLineSmooth", label: "Smooth Right Line", type: "checkbox", default: true },
-      { id: "rightLineArea", label: "Right Line With Area", type: "checkbox", default: false },
-      { id: "rightLineShowSymbol", label: "Show Right Symbols", type: "checkbox", default: false },
-      { id: "rightLineConnectNulls", label: "Connect Right Nulls", type: "checkbox", default: false },
-      { id: "rightLineShowLabel", label: "Show Right Line Labels", type: "checkbox", default: false },
-      { id: "rightLineColors", label: "Right Line Palette", type: "text", default: "#ef4444, #f97316, #f59e0b" },
-      {
-        id: "rightLineStyleType",
-        label: "Right Line Style",
-        type: "select",
-        default: "solid",
-        options: [
-          ["solid", "Solid"],
-          ["dashed", "Dashed"],
-          ["dotted", "Dotted"],
-        ],
-      },
-      { id: "rightLineWidth", label: "Right Line Width", type: "number", default: 3, step: 0.2 },
-      {
-        id: "rightLineSymbol",
-        label: "Right Symbol",
-        type: "select",
-        default: "circle",
-        options: [
-          ["circle", "Circle"],
-          ["rect", "Rect"],
-          ["triangle", "Triangle"],
-          ["diamond", "Diamond"],
-        ],
-      },
-      { id: "rightLineSymbolSize", label: "Right Symbol Size", type: "number", default: 5, step: 1 },
-      { id: "rightLineLabelFontSize", label: "Right Label Size", type: "number", default: 10, step: 1 },
-      { id: "rightLineLabelColor", label: "Right Label Color", type: "color", default: "#334155" },
-    ],
-    templates: [
-      {
-        id: "series",
-        label: "Two Bars + Line",
-        help: "Use category data with two left-axis bars and one right-axis line.",
-        data: {
-          xAxis: { data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] },
-          yAxis: [{ name: "Volume" }, { name: "Rate" }],
-          series: [
-            { type: "bar", name: "Sales", yAxisIndex: 0, data: [320, 332, 301, 334, 390, 330] },
-            { type: "bar", name: "Orders", yAxisIndex: 0, data: [210, 226, 198, 245, 278, 256] },
-            { type: "line", name: "Rate", yAxisIndex: 1, data: [10, 12, 9, 14, 18, 16] },
-          ],
-        },
-      },
-      {
-        id: "doubleBar",
-        label: "Bar + Bar",
-        help: "Use category data with left and right series both rendered as bars.",
-        data: {
-          xAxis: { data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] },
-          yAxis: [{ name: "Sales" }, { name: "Target" }],
-          series: [
-            { type: "bar", name: "Sales", data: [320, 332, 301, 334, 390, 330] },
-            { type: "bar", name: "Target", data: [280, 300, 315, 340, 360, 320] },
-          ],
-        },
-      },
-      {
-        id: "doubleLine",
-        label: "Line + Line",
-        help: "Use category data with left and right series both rendered as lines.",
-        data: {
-          xAxis: { data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] },
-          yAxis: [{ name: "Sales" }, { name: "Rate" }],
-          series: [
-            { type: "line", name: "Sales", data: [320, 332, 301, 334, 390, 330] },
-            { type: "line", name: "Rate", data: [10, 12, 9, 14, 18, 16] },
-          ],
-        },
-      },
-      {
-        id: "dataset",
-        label: "Dataset + Encode",
-        help: "Use one table to drive two left-axis bars and one right-axis line.",
-        data: {
-          dataset: {
-            source: [
-              ["day", "sales", "orders", "rate"],
-              ["Mon", 320, 210, 10],
-              ["Tue", 332, 226, 12],
-              ["Wed", 301, 198, 9],
-              ["Thu", 334, 245, 14],
-              ["Fri", 390, 278, 18],
-              ["Sat", 330, 256, 16],
-            ],
-          },
-          xAxis: { type: "category" },
-          yAxis: [{ type: "value", name: "Volume" }, { type: "value", name: "Rate" }],
-          series: [
-            { type: "bar", name: "Sales", yAxisIndex: 0, encode: { x: "day", y: "sales" } },
-            { type: "bar", name: "Orders", yAxisIndex: 0, encode: { x: "day", y: "orders" } },
-            { type: "line", name: "Rate", yAxisIndex: 1, encode: { x: "day", y: "rate" } },
-          ],
-        },
-      },
-    ],
-  },
-  scatter: {
-    label: "Scatter",
-    styleFile: "scatter_style.json",
-    asset: `${SKILL_STATIC_ROOT}/scatter-basic.png`,
-    blurb: "Best for correlation, clusters, and point distributions on value axes.",
-    tags: ["scatter", "value axes", "dataset + encode"],
-    usesGrid: true,
-    usesCartesian: true,
-    fields: [
-      { id: "showLabel", label: "Show Labels", type: "checkbox", default: false },
-      {
-        id: "symbolSize",
-        label: "Default Symbol Size",
-        type: "select",
-        default: "64",
-        options: [
-          ["24", "Very Small"],
-          ["40", "Small"],
-          ["64", "Medium"],
-          ["88", "Large"],
-          ["116", "Very Large"],
-        ],
-      },
-      {
-        id: "symbol",
-        label: "Symbol",
-        type: "select",
-        default: "circle",
-        options: [
-          ["circle", "Circle"],
-          ["rect", "Rect"],
-          ["triangle", "Triangle"],
-          ["diamond", "Diamond"],
-        ],
-      },
-      { id: "itemOpacity", label: "Point Opacity", type: "number", default: 0.92, step: 0.05 },
-      { id: "borderWidth", label: "Border Width", type: "number", default: 0, step: 0.5 },
-      { id: "borderColor", label: "Border Color", type: "color", default: "#ffffff" },
-      { id: "labelFontSize", label: "Label Size", type: "number", default: 10, step: 1 },
-      { id: "labelColor", label: "Label Color", type: "color", default: "#334155" },
-    ],
-    templates: [
-      {
-        id: "series",
-        label: "Scatter Series",
-        help: "Use numeric `[x, y]` points for multi-series scatter.",
-        data: {
-          xAxis: { type: "value", name: "Spend" },
-          yAxis: { type: "value", name: "Revenue" },
-          series: [
-            { type: "scatter", name: "North", data: [[10, 18], [14, 22], [18, 28], [22, 34]] },
-            { type: "scatter", name: "South", data: [[9, 12], [13, 17], [20, 25], [26, 31]] },
-          ],
-        },
-      },
-      {
-        id: "dataset",
-        label: "Dataset + Encode",
-        help: "Use a shared table with encode mappings.",
-        data: {
-          dataset: {
-            source: [
-              ["spend", "north", "south"],
-              [10, 18, 12],
-              [14, 22, 17],
-              [18, 28, 25],
-              [22, 34, 31],
-            ],
-          },
-          xAxis: { type: "value" },
-          yAxis: { type: "value" },
-          series: [
-            { type: "scatter", name: "North", encode: { x: "spend", y: "north" } },
-            { type: "scatter", name: "South", encode: { x: "spend", y: "south" } },
-          ],
-        },
-      },
-    ],
-  },
-  radar: {
-    label: "Radar",
-    styleFile: "radar_style.json",
-    asset: `${SKILL_STATIC_ROOT}/radar.png`,
-    blurb: "Best for multi-dimension scoring, balanced comparisons, and capability profiles.",
-    tags: ["shape", "split area", "labels", "area fill"],
-    supportsPlotArea: true,
-    usesGrid: false,
-    usesCartesian: false,
-    fields: [
-      { id: "radarFoundationGroup", label: "Foundation", type: "group", help: "Control radar shape and split count." },
-      {
-        id: "shape",
-        label: "Shape",
-        type: "select",
-        default: "polygon",
-        options: [
-          ["polygon", "Polygon"],
-          ["circle", "Circle"],
-        ],
-      },
-      { id: "splitNumber", label: "Split Number", type: "number", default: 5 },
-      { id: "showSymbol", label: "Show Symbols", type: "checkbox", default: true },
-      { id: "showLabel", label: "Show Labels", type: "checkbox", default: false },
-      { id: "labelFormatter", label: "Label Formatter", type: "text", default: "{b}: {c}" },
-      { id: "areaOpacity", label: "Area Opacity", type: "number", default: 0.18, step: 0.05 },
-      { id: "radarGridGroup", label: "Grid Lines", type: "group", help: "Control split lines and axis lines." },
-      { id: "splitLineColor", label: "Split Line Color", type: "color", default: "#d0d7de" },
-      { id: "splitLineWidth", label: "Split Line Width", type: "number", default: 0.8, step: 0.1 },
-      {
-        id: "splitLineType",
-        label: "Split Line Style",
-        type: "select",
-        default: "solid",
-        options: [
-          ["solid", "Solid"],
-          ["dashed", "Dashed"],
-          ["dotted", "Dotted"],
-        ],
-      },
-      { id: "axisLineColor", label: "Axis Line Color", type: "color", default: "#94a3b8" },
-      { id: "axisLineWidth", label: "Axis Line Width", type: "number", default: 1, step: 0.1 },
-      {
-        id: "axisLineType",
-        label: "Axis Line Style",
-        type: "select",
-        default: "solid",
-        options: [
-          ["solid", "Solid"],
-          ["dashed", "Dashed"],
-          ["dotted", "Dotted"],
-        ],
-      },
-      { id: "axisNameFontSize", label: "Axis Name Size", type: "number", default: 11, step: 1 },
-      { id: "axisNameColor", label: "Axis Name Color", type: "color", default: "#334155" },
-      { id: "axisNameBold", label: "Bold Axis Names", type: "checkbox", default: true },
-      { id: "radarSeriesGroup", label: "Series Style", type: "group", help: "Control symbol and outline style for radar series." },
-      {
-        id: "symbol",
-        label: "Symbol",
-        type: "select",
-        default: "circle",
-        options: [
-          ["circle", "Circle"],
-          ["rect", "Rect"],
-          ["triangle", "Triangle"],
-          ["diamond", "Diamond"],
-        ],
-      },
-      { id: "symbolSize", label: "Symbol Size", type: "number", default: 5, step: 1 },
-      {
-        id: "lineStyleType",
-        label: "Line Style",
-        type: "select",
-        default: "solid",
-        options: [
-          ["solid", "Solid"],
-          ["dashed", "Dashed"],
-          ["dotted", "Dotted"],
-        ],
-      },
-      { id: "lineWidth", label: "Line Width", type: "number", default: 2.4, step: 0.2 },
-      { id: "labelFontSize", label: "Label Size", type: "number", default: 10, step: 1 },
-      { id: "labelColor", label: "Label Color", type: "color", default: "#334155" },
-    ],
-    templates: [
-      {
-        id: "basic",
-        label: "Radar Data",
-        help: "Use radar indicators and comparative value arrays.",
-        data: {
-          radar: {
-            indicator: [
-              { name: "Quality", max: 100 },
-              { name: "Speed", max: 100 },
-              { name: "Cost", max: 100 },
-              { name: "Scale", max: 100 },
-              { name: "Satisfaction", max: 100 },
-            ],
-          },
-          series: [
-            {
-              type: "radar",
-              data: [
-                { name: "Team A", value: [90, 82, 70, 88, 91] },
-                { name: "Team B", value: [76, 90, 82, 72, 84] },
-              ],
-            },
-          ],
-        },
-      },
-    ],
-  },
-  funnel: {
-    label: "Funnel",
-    styleFile: "funnel_style.json",
-    asset: `${SKILL_STATIC_ROOT}/funnel.png`,
-    blurb: "Best for stage conversion, process drop-off, and ordered business pipelines.",
-    tags: ["sort", "gap", "label position", "dataset + encode"],
-    supportsPlotArea: true,
-    usesGrid: false,
-    usesCartesian: false,
-    fields: [
-      { id: "funnelBaseGroup", label: "Foundation", type: "group", help: "Control ordering, gap, and width range." },
-      {
-        id: "sort",
-        label: "Sort",
-        type: "select",
-        default: "descending",
-        options: [
-          ["descending", "Descending"],
-          ["ascending", "Ascending"],
-          ["none", "Preserve Input Order"],
-        ],
-      },
-      { id: "gap", label: "Gap", type: "number", default: 4 },
-      { id: "minSize", label: "Min Size", type: "text", default: "20%" },
-      { id: "maxSize", label: "Max Size", type: "text", default: "80%" },
-      { id: "itemOpacity", label: "Funnel Opacity", type: "number", default: 0.92, step: 0.05 },
-      { id: "funnelLabelGroup", label: "Labels", type: "group", help: "Control label visibility, placement, formatter, and text style." },
-      {
-        id: "labelPosition",
-        label: "Label Position",
-        type: "select",
-        default: "outside",
-        options: [
-          ["outside", "Outside"],
-          ["inside", "Inside"],
-        ],
-      },
-      { id: "showLabel", label: "Show Labels", type: "checkbox", default: true },
-      { id: "labelFormatter", label: "Label Formatter", type: "text", default: "{b}: {c}" },
-      { id: "labelFontSize", label: "Label Size", type: "number", default: 10, step: 1 },
-      { id: "labelColor", label: "Label Color", type: "color", default: "#334155" },
-    ],
-    templates: [
-      {
-        id: "series",
-        label: "Series Data",
-        help: "Use ordered stage items with name and value.",
-        data: {
-          series: [
-            {
-              type: "funnel",
-              data: [
-                { name: "Visit", value: 1000 },
-                { name: "Sign Up", value: 600 },
-                { name: "Qualified", value: 320 },
-                { name: "Proposal", value: 180 },
-                { name: "Won", value: 96 },
-              ],
-            },
-          ],
-        },
-      },
-      {
-        id: "dataset",
-        label: "Dataset + Encode",
-        help: "Use tabular data with explicit stage/value mapping.",
-        data: {
-          dataset: {
-            source: [
-              ["stage", "value"],
-              ["Visit", 1000],
-              ["Sign Up", 600],
-              ["Qualified", 320],
-              ["Proposal", 180],
-              ["Won", 96],
-            ],
-          },
-          series: [
-            {
-              type: "funnel",
-              encode: { itemName: "stage", value: "value" },
-            },
-          ],
-        },
-      },
-    ],
+  en: {
+    groups: {
+      title: { title: "Title", help: "This section controls the title area at the top of the chart, including the main title and subtitle." },
+      legend: { title: "Legend" },
+      canvas: { title: "Canvas" },
+      axes: { title: "Axes" },
+      splitLines: { title: "Split Lines" },
+    },
+    subgroups: {
+      titleMain: "Main Title",
+      titleSubtitle: "Subtitle",
+      canvasStyle: "Canvas Style",
+      canvasSpacing: "Plot Area",
+      axesX: "X Axis",
+      axesY: "Y Axis",
+    },
+    descriptions: {
+      canvasSpacing: "These values control plot-area margins as a percentage of the canvas width or height.",
+    },
+    fields: {
+      titleShow: "Show Title",
+      titleAlign: "Title Align",
+      titleFontSize: "Title Size",
+      titleColor: "Title Color",
+      titleBold: "Bold Title",
+      subtitleShow: "Show Subtitle",
+      subtitleFontSize: "Subtitle Size",
+      subtitleColor: "Subtitle Color",
+      legendShow: "Show Legend",
+      legendPosition: "Legend Position",
+      legendOrient: "Legend Orient",
+      legendFontSize: "Legend Size",
+      legendColor: "Legend Color",
+      backgroundColor: "Background",
+      palette: "Palette",
+      gridLeft: "Left",
+      gridRight: "Right",
+      gridTop: "Top",
+      gridBottom: "Bottom",
+      xAxisLineShow: "Show X Axis Line",
+      xAxisTickShow: "Show X Ticks",
+      xRotate: "X Label Rotate",
+      xAxisLabelFontSize: "X Label Size",
+      xAxisLabelColor: "X Label Color",
+      xAxisLineColor: "X Axis Line Color",
+      xFormatter: "X Formatter",
+      yAxisLineShow: "Show Y Axis Line",
+      yAxisTickShow: "Show Y Ticks",
+      yAxisLabelFontSize: "Y Label Size",
+      yAxisLabelColor: "Y Label Color",
+      yAxisLineColor: "Y Axis Line Color",
+      yFormatter: "Y Formatter",
+      splitLineShow: "Show Horizontal Split Lines",
+      splitLineColor: "Horizontal Split Line Color",
+      splitLineType: "Horizontal Split Line Style",
+      splitLineWidth: "Horizontal Split Line Width",
+      xSplitLineShow: "Show Vertical Split Lines",
+      xSplitLineColor: "Vertical Split Line Color",
+      xSplitLineType: "Vertical Split Line Style",
+      xSplitLineWidth: "Vertical Split Line Width",
+    },
+    options: {},
+    actions: {
+      customPalette: "Custom Palette",
+      addColor: "Add Color",
+      removeColor: "Remove Color",
+    },
   },
 };
 
@@ -1487,13 +657,14 @@ const appState = {
   templateId: "series",
   dualAxisPreviewLeftType: null,
   dualAxisPreviewRightType: null,
+  previewDualAxisLeftSeriesCount: 2,
+  previewDualAxisRightSeriesCount: 2,
   previewStackMode: false,
   previewBarHorizontal: false,
   previewPieMode: "donut",
+  previewSeriesCount: 2,
   latestResolvedOption: null,
 };
-
-const CHART_TYPE_ORDER = ["line", "bar", "area", "dualAxis", "scatter", "pie", "gauge", "radar", "funnel"];
 
 const DUAL_AXIS_COLOR_LIST_FIELD_IDS = new Set([
   "leftBarColors",
@@ -1507,23 +678,6 @@ const DUAL_AXIS_COLOR_LIST_FALLBACKS = {
   leftLineColors: ["#5470c6", "#3b82f6", "#06b6d4"],
   rightBarColors: ["#ef4444", "#f97316", "#f59e0b"],
   rightLineColors: ["#ef4444", "#f97316", "#f59e0b"],
-};
-
-const PALETTE_PRESETS = {
-  en: [
-    { id: "classic", label: "Classic", colors: ["#5470c6", "#91cc75", "#fac858", "#ee6666", "#73c0de"] },
-    { id: "editorial", label: "Editorial", colors: ["#1d4ed8", "#0f766e", "#d97706", "#dc2626", "#7c3aed"] },
-    { id: "earth", label: "Earth", colors: ["#8d6e63", "#a1887f", "#c0a080", "#d4a373", "#6b8f71"] },
-    { id: "slate", label: "Slate", colors: ["#475569", "#0f766e", "#f59e0b", "#ef4444", "#2563eb"] },
-    { id: "candy", label: "Candy", colors: ["#ec4899", "#8b5cf6", "#06b6d4", "#f97316", "#84cc16"] },
-  ],
-  zh: [
-    { id: "classic", label: "经典", colors: ["#5470c6", "#91cc75", "#fac858", "#ee6666", "#73c0de"] },
-    { id: "editorial", label: "报告", colors: ["#1d4ed8", "#0f766e", "#d97706", "#dc2626", "#7c3aed"] },
-    { id: "earth", label: "大地", colors: ["#8d6e63", "#a1887f", "#c0a080", "#d4a373", "#6b8f71"] },
-    { id: "slate", label: "冷灰", colors: ["#475569", "#0f766e", "#f59e0b", "#ef4444", "#2563eb"] },
-    { id: "candy", label: "明快", colors: ["#ec4899", "#8b5cf6", "#06b6d4", "#f97316", "#84cc16"] },
-  ],
 };
 
 function paletteToText(colors) {
@@ -1566,14 +720,6 @@ function parseColorListText(rawValue, fallback) {
   return parsed.length ? parsed : fallbackList;
 }
 
-function getPalettePresets() {
-  return PALETTE_PRESETS[CURRENT_LOCALE] || PALETTE_PRESETS.en;
-}
-
-function getCurrentPaletteColors() {
-  return parsePalette($("palette-input").value);
-}
-
 function renderPaletteColorInputs(colors) {
   const container = $("palette-custom-colors");
   if (!container) {
@@ -1589,12 +735,12 @@ function renderPaletteColorInputs(colors) {
   });
 }
 
-function getCurrentBackgroundColor() {
-  return $("background-color").value;
-}
-
 function normalizeColorValue(color) {
   return String(color || "#ffffff").trim().toLowerCase();
+}
+
+function normalizeStrokeType(value) {
+  return value === "solid" || value === "dashed" || value === "dotted" ? value : "dashed";
 }
 
 function getNextDistinctPaletteColor(colors) {
@@ -1620,7 +766,6 @@ function getNextDistinctPaletteColor(colors) {
 function setPalette(colors) {
   $("palette-input").value = paletteToText(colors);
   renderPaletteColorInputs(colors);
-  renderPalettePresets();
 }
 
 function getCurrentGaugeBandColors() {
@@ -1701,31 +846,6 @@ function setBackgroundColorValue(color) {
   }
 }
 
-function renderPalettePresets() {
-  const container = $("palette-presets");
-  if (!container) {
-    return;
-  }
-  const current = JSON.stringify(getCurrentPaletteColors());
-  container.innerHTML = "";
-  getPalettePresets().forEach((preset) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = `palette-preset${JSON.stringify(preset.colors) === current ? " active" : ""}`;
-    button.dataset.palettePreset = preset.id;
-    button.innerHTML = `
-      <span class="palette-preset-name">${preset.label}</span>
-      <span class="palette-swatches">
-        ${preset.colors.map((color) => `<span class="palette-swatch" style="background:${color}"></span>`).join("")}
-      </span>
-    `;
-    button.addEventListener("click", () => {
-      setPalette(preset.colors);
-      updateOutputs();
-    });
-    container.appendChild(button);
-  });
-}
 const CHART_BEAUTY_DEFAULTS = {
   line: {
     common: {
@@ -1777,7 +897,7 @@ const CHART_BEAUTY_DEFAULTS = {
       gridLeft: "30%",
       gridRight: "30%",
       gridTop: "30%",
-      gridBottom: "30%",
+      gridBottom: "15%",
     },
     specific: { labelPosition: "outside", startAngle: 90 },
   },
@@ -1796,6 +916,7 @@ const CHART_BEAUTY_DEFAULTS = {
       progressShow: true,
       titleShow: true,
       detailShow: true,
+      detailFontSize: 12,
       axisLabelShow: true,
       axisTickShow: true,
       splitLineShow: true,
@@ -1885,13 +1006,14 @@ const CHART_BEAUTY_DEFAULTS = {
       gridLeft: "30%",
       gridRight: "30%",
       gridTop: "30%",
-      gridBottom: "30%",
+      gridBottom: "15%",
     },
     specific: {
       shape: "polygon",
       splitNumber: 5,
       showSymbol: false,
       showLabel: false,
+      labelFontSize: 6,
       labelFormatter: "{b}: {c}",
       areaOpacity: 0.18,
       axisNameBold: true,
@@ -1922,12 +1044,59 @@ const CHART_BEAUTY_DEFAULTS = {
   },
 };
 
+const WEB_COMMON_FIELD_OPTIONS = {
+  titleFontSize: DEFAULT_COMMON_FONT_SIZE_OPTIONS,
+  subtitleFontSize: DEFAULT_COMMON_FONT_SIZE_OPTIONS,
+  legendFontSize: DEFAULT_COMMON_FONT_SIZE_OPTIONS,
+  xAxisLabelFontSize: DEFAULT_COMMON_FONT_SIZE_OPTIONS,
+  yAxisLabelFontSize: DEFAULT_COMMON_FONT_SIZE_OPTIONS,
+  splitLineWidth: DEFAULT_COMMON_SPLIT_WIDTH_OPTIONS,
+  xSplitLineWidth: DEFAULT_COMMON_SPLIT_WIDTH_OPTIONS,
+};
+const WEB_DEFINITION_FIELD_MAP = buildFieldMapFromDefinitions(CHART_DEFINITIONS);
+
+applyScaledValuesToLocaleDefaults(COMMON_DEFAULTS, WEB_COMMON_FIELD_OPTIONS);
+applyScaledValuesToDefinitions(CHART_DEFINITIONS);
+applyScaledValuesToBeautyDefaults(CHART_BEAUTY_DEFAULTS, WEB_COMMON_FIELD_OPTIONS, WEB_DEFINITION_FIELD_MAP);
+applyTypographyPreset();
+applyVisualPreset();
+
 function getLocaleText() {
   return UI_TEXT[CURRENT_LOCALE] || UI_TEXT.en;
 }
 
+function getSharedDefaultConfigModule() {
+  return globalThis.DataChartsDefaultConfig || null;
+}
+
+function getSharedDefaultDataModule() {
+  return globalThis.DataChartsDefaultData || null;
+}
+
 function getCommonDefaults() {
+  const sharedConfig = getSharedDefaultConfigModule();
+  if (sharedConfig && typeof sharedConfig.getCommonDefaults === "function") {
+    return sharedConfig.getCommonDefaults(CURRENT_LOCALE);
+  }
   return COMMON_DEFAULTS[CURRENT_LOCALE] || COMMON_DEFAULTS.en;
+}
+
+function getChartBeautyDefaults(chartType) {
+  const sharedConfig = getSharedDefaultConfigModule();
+  if (sharedConfig && typeof sharedConfig.getBeautyDefaults === "function") {
+    return sharedConfig.getBeautyDefaults(chartType);
+  }
+  return deepClone(CHART_BEAUTY_DEFAULTS[chartType] || null);
+}
+
+function getDefaultRawDataForChart(chartType) {
+  const sharedData = getSharedDefaultDataModule();
+  if (sharedData && typeof sharedData.getDefaultRawData === "function") {
+    return sharedData.getDefaultRawData(chartType);
+  }
+  const definition = getCurrentDefinition();
+  const template = definition.templates.find((item) => item.id === appState.templateId) || definition.templates[0];
+  return deepClone(template?.data || {});
 }
 
 function getDefinitionLocaleConfig(chartType) {
@@ -2023,46 +1192,234 @@ function normalizeGridPercentValue(value, fallback = "10%") {
   return fallback;
 }
 
+function getCommonRenderText() {
+  return COMMON_GROUP_RENDER_TEXT[CURRENT_LOCALE] || COMMON_GROUP_RENDER_TEXT.en;
+}
+
+function getCommonGroupDefinition(groupId) {
+  return (COMMON_GROUPS || []).find((group) => group.id === groupId) || null;
+}
+
+function getCommonFieldDefinition(fieldId) {
+  return COMMON_FIELD_MAP[fieldId] || null;
+}
+
+function getCommonFieldLabel(fieldId) {
+  const localeText = getCommonRenderText();
+  return localeText.fields[fieldId] || getCommonFieldDefinition(fieldId)?.label || fieldId;
+}
+
+function getCommonOptionLabel(fieldId, value, fallbackLabel) {
+  const localeText = getCommonRenderText();
+  const scoped = localeText.options[fieldId];
+  if (!scoped) {
+    return fallbackLabel;
+  }
+  return scoped[String(value)] || scoped[value] || fallbackLabel;
+}
+
+function getCommonFieldWrapperId(fieldId) {
+  return COMMON_FIELD_WRAPPER_IDS[fieldId] || "";
+}
+
+function getCommonFieldLabelId(fieldId) {
+  return COMMON_FIELD_LABEL_DOM_IDS[fieldId] || "";
+}
+
+function renderCommonBooleanSelect(fieldId, value) {
+  const yesText = CURRENT_LOCALE === "zh" ? "是" : "Yes";
+  const noText = CURRENT_LOCALE === "zh" ? "否" : "No";
+  const selectedValue = booleanSelectValue(Boolean(value));
+  return `
+    <select id="${COMMON_FIELD_DOM_IDS[fieldId]}" data-boolean-select="true">
+      <option value="true" ${selectedValue === "true" ? "selected" : ""}>${yesText}</option>
+      <option value="false" ${selectedValue === "false" ? "selected" : ""}>${noText}</option>
+    </select>
+  `;
+}
+
+function renderCommonSelect(fieldId, field, value) {
+  const selectedValue = String(value ?? "");
+  return `
+    <select id="${COMMON_FIELD_DOM_IDS[fieldId]}">
+      ${(field.options || [])
+        .map(([optionValue, optionLabel]) => {
+          const label = getCommonOptionLabel(fieldId, optionValue, optionLabel);
+          return `<option value="${optionValue}" ${String(optionValue) === selectedValue ? "selected" : ""}>${label}</option>`;
+        })
+        .join("")}
+    </select>
+  `;
+}
+
+function renderCommonInput(fieldId, field, value) {
+  if (field.type === "checkbox") {
+    return renderCommonBooleanSelect(fieldId, value);
+  }
+  if (field.type === "select") {
+    return renderCommonSelect(fieldId, field, value);
+  }
+  if (field.type === "number") {
+    const step = field.step !== undefined ? ` step="${field.step}"` : "";
+    return `<input id="${COMMON_FIELD_DOM_IDS[fieldId]}" type="number" value="${value ?? ""}"${step} />`;
+  }
+  if (field.type === "color") {
+    return `<input id="${COMMON_FIELD_DOM_IDS[fieldId]}" type="color" value="${value ?? "#ffffff"}" />`;
+  }
+  return `<input id="${COMMON_FIELD_DOM_IDS[fieldId]}" type="text" value="${value ?? ""}" />`;
+}
+
+function renderBackgroundField(value) {
+  return `
+    <label class="field">
+      <span>${getCommonFieldLabel("backgroundColor")}</span>
+      <input id="background-color" class="background-hidden-input" type="color" value="${value || "#ffffff"}" />
+      <div class="background-picker">
+        <div class="background-customizer">
+          <div class="background-custom-row">
+            <input id="background-custom-input" class="background-color-input" type="color" value="${value || "#ffffff"}" />
+          </div>
+        </div>
+      </div>
+    </label>
+  `;
+}
+
+function renderPaletteField(value) {
+  const localeText = getCommonRenderText();
+  return `
+    <label id="palette-field" class="field field-wide">
+      <span>${getCommonFieldLabel("palette")}</span>
+      <textarea id="palette-input" class="palette-hidden-input" rows="3">${value || ""}</textarea>
+      <div class="palette-picker">
+        <div class="palette-customizer">
+          <div class="palette-customizer-head">
+            <strong>${localeText.actions.customPalette}</strong>
+            <div class="template-actions">
+              <button id="add-custom-palette" class="secondary-button small" type="button">${localeText.actions.addColor}</button>
+              <button id="remove-custom-palette" class="secondary-button small" type="button">${localeText.actions.removeColor}</button>
+            </div>
+          </div>
+          <div id="palette-custom-colors" class="palette-custom-colors"></div>
+        </div>
+      </div>
+    </label>
+  `;
+}
+
+function renderCommonFieldControl(fieldId, values) {
+  const field = getCommonFieldDefinition(fieldId);
+  if (!field) {
+    return "";
+  }
+  const value = values[fieldId];
+  if (fieldId === "backgroundColor") {
+    return renderBackgroundField(value);
+  }
+  if (fieldId === "palette") {
+    return renderPaletteField(value);
+  }
+  const wrapperId = getCommonFieldWrapperId(fieldId);
+  const labelId = getCommonFieldLabelId(fieldId);
+  return `
+    <label${wrapperId ? ` id="${wrapperId}"` : ""} class="field">
+      <span${labelId ? ` id="${labelId}"` : ""}>${getCommonFieldLabel(fieldId)}</span>
+      ${renderCommonInput(fieldId, field, value)}
+    </label>
+  `;
+}
+
+function renderCommonFieldGrid(fieldIds, values) {
+  return fieldIds
+    .map((fieldId) => renderCommonFieldControl(fieldId, values))
+    .filter(Boolean)
+    .join("");
+}
+
+function renderCommonFoundationSections() {
+  const localeText = getCommonRenderText();
+  const defaults = getCommonDefaults();
+  const titleGroup = $("title-group");
+  const legendGroup = $("legend-group");
+  const canvasGroup = $("layout-group");
+  const axesGroup = $("axes-group");
+  const splitLinesGroup = $("split-lines-group");
+
+  if (titleGroup && getCommonGroupDefinition("title")) {
+    titleGroup.innerHTML = `
+      <div class="foundation-group-head">
+        <h4>${localeText.groups.title.title}</h4>
+        <p>${localeText.groups.title.help}</p>
+      </div>
+      <div class="foundation-subgroup">
+        <div class="foundation-subgroup-head">${localeText.subgroups.titleMain}</div>
+        <div class="field-grid">${renderCommonFieldGrid(COMMON_GROUP_FIELD_IDS.titleMain, defaults)}</div>
+      </div>
+      <div class="foundation-subgroup">
+        <div class="foundation-subgroup-head">${localeText.subgroups.titleSubtitle}</div>
+        <div class="field-grid">${renderCommonFieldGrid(COMMON_GROUP_FIELD_IDS.titleSubtitle, defaults)}</div>
+      </div>
+    `;
+  }
+
+  if (legendGroup && getCommonGroupDefinition("legend")) {
+    const legendFieldIds = (getCommonGroupDefinition("legend").fields || []).map((field) => field.id);
+    legendGroup.innerHTML = `
+      <div class="foundation-group-head">
+        <h4>${localeText.groups.legend.title}</h4>
+      </div>
+      <div class="field-grid">${renderCommonFieldGrid(legendFieldIds, defaults)}</div>
+    `;
+  }
+
+  if (canvasGroup && getCommonGroupDefinition("canvas")) {
+    canvasGroup.innerHTML = `
+      <div class="foundation-group-head">
+        <h4>${localeText.groups.canvas.title}</h4>
+      </div>
+      <div class="foundation-subgroup">
+        <div class="foundation-subgroup-head">${localeText.subgroups.canvasStyle}</div>
+        <div class="field-grid">${renderCommonFieldGrid(COMMON_GROUP_FIELD_IDS.canvasStyle, defaults)}</div>
+      </div>
+      <div id="layout-spacing-group" class="foundation-subgroup">
+        <div class="foundation-subgroup-head">${localeText.subgroups.canvasSpacing}</div>
+        <p>${localeText.descriptions.canvasSpacing}</p>
+        <div class="field-grid">${renderCommonFieldGrid(COMMON_GROUP_FIELD_IDS.canvasSpacing, defaults)}</div>
+      </div>
+    `;
+  }
+
+  if (axesGroup && getCommonGroupDefinition("axes")) {
+    axesGroup.innerHTML = `
+      <div class="foundation-group-head">
+        <h4 id="axes-group-title">${localeText.groups.axes.title}</h4>
+      </div>
+      <div id="x-axis-subgroup" class="foundation-subgroup">
+        <div id="x-axis-subgroup-head" class="foundation-subgroup-head">${localeText.subgroups.axesX}</div>
+        <div class="field-grid">${renderCommonFieldGrid(COMMON_GROUP_FIELD_IDS.axesX, defaults)}</div>
+      </div>
+      <div id="y-axis-subgroup" class="foundation-subgroup">
+        <div id="y-axis-subgroup-head" class="foundation-subgroup-head">${localeText.subgroups.axesY}</div>
+        <div class="field-grid">${renderCommonFieldGrid(COMMON_GROUP_FIELD_IDS.axesY, defaults)}</div>
+      </div>
+      <div id="dual-axis-extra-axes" class="hidden"></div>
+    `;
+  }
+
+  if (splitLinesGroup && getCommonGroupDefinition("splitLines")) {
+    const splitFieldIds = (getCommonGroupDefinition("splitLines").fields || []).map((field) => field.id);
+    splitLinesGroup.innerHTML = `
+      <div class="foundation-group-head">
+        <h4>${localeText.groups.splitLines.title}</h4>
+      </div>
+      <div class="field-grid">${renderCommonFieldGrid(splitFieldIds, defaults)}</div>
+    `;
+  }
+}
+
 function applyCommonFieldValues(values) {
-  const fieldMap = {
-    titleShow: "title-show",
-    subtitleShow: "subtitle-show",
-    titleAlign: "title-align",
-    titleFontSize: "title-font-size",
-    titleColor: "title-color",
-    titleBold: "title-bold",
-    subtitleFontSize: "subtitle-font-size",
-    subtitleColor: "subtitle-color",
-    backgroundColor: "background-color",
-    legendFontSize: "legend-font-size",
-    legendColor: "legend-color",
-    palette: "palette-input",
-    legendShow: "legend-show",
-    legendPosition: "legend-position",
-    legendOrient: "legend-orient",
-    xSplitLineShow: "x-split-line-show",
-    xSplitLineColor: "x-split-line-color",
-    xSplitLineType: "x-split-line-type",
-    xSplitLineWidth: "x-split-line-width",
-    xAxisLabelFontSize: "x-axis-label-font-size",
-    xAxisLabelColor: "x-axis-label-color",
-    xAxisLineShow: "x-axis-line-show",
-    xAxisLineColor: "x-axis-line-color",
-    xRotate: "x-rotate",
-    yAxisLabelFontSize: "y-axis-label-font-size",
-    yAxisLabelColor: "y-axis-label-color",
-    yAxisLineShow: "y-axis-line-show",
-    splitLineShow: "split-line-show",
-    splitLineColor: "split-line-color",
-    splitLineType: "split-line-type",
-    splitLineWidth: "split-line-width",
-    gridLeft: "grid-left",
-    gridRight: "grid-right",
-    gridTop: "grid-top",
-    gridBottom: "grid-bottom",
-  };
   Object.entries(values || {}).forEach(([key, value]) => {
-    setValueIfExists(fieldMap[key], value);
+    setValueIfExists(COMMON_FIELD_DOM_IDS[key], value);
   });
   if (values?.palette) {
     setPalette(parsePalette(values.palette));
@@ -2090,7 +1447,7 @@ function applySpecificFieldValues(values) {
 }
 
 function applyChartBeautyDefaults(chartType) {
-  const config = CHART_BEAUTY_DEFAULTS[chartType];
+  const config = getChartBeautyDefaults(chartType);
   resetCommonFields();
   if (chartType === "pie") {
     appState.previewPieMode = "donut";
@@ -2133,130 +1490,6 @@ function deepMerge(base, patch) {
   return deepClone(patch);
 }
 
-function applyStyleConfig(optionValue, styleValue, path = []) {
-  if (styleValue === undefined || styleValue === null) {
-    return deepClone(optionValue);
-  }
-  if (optionValue === undefined || optionValue === null) {
-    return deepClone(styleValue);
-  }
-
-  if (isObject(optionValue) && isObject(styleValue)) {
-    const merged = {};
-    const keys = new Set([...Object.keys(optionValue), ...Object.keys(styleValue)]);
-    keys.forEach((key) => {
-      merged[key] = applyStyleConfig(optionValue[key], styleValue[key], path.concat(key));
-    });
-    return merged;
-  }
-
-  if (Array.isArray(optionValue) && Array.isArray(styleValue)) {
-    const currentKey = path[path.length - 1] || "";
-    if (currentKey === "series") {
-      return applySeriesStyle(optionValue, styleValue, path);
-    }
-    const dictLike = optionValue.concat(styleValue).every((item) => item === undefined || isObject(item));
-    if (dictLike) {
-      const maxLength = Math.max(optionValue.length, styleValue.length);
-      const mergedItems = [];
-      for (let index = 0; index < maxLength; index += 1) {
-        mergedItems.push(
-          applyStyleConfig(optionValue[index], styleValue[index], path.concat(String(index))),
-        );
-      }
-      return mergedItems;
-    }
-    return styleValue.length ? deepClone(styleValue) : deepClone(optionValue);
-  }
-
-  return deepClone(styleValue);
-}
-
-function mergeSeriesByStructure(optionSeries, structureSeries) {
-  const sourceSeries = Array.isArray(optionSeries) ? optionSeries : [];
-  const patchSeries = Array.isArray(structureSeries) ? structureSeries : [];
-  const maxLength = Math.max(sourceSeries.length, patchSeries.length);
-  const merged = [];
-  for (let index = 0; index < maxLength; index += 1) {
-    const sourceItem = sourceSeries[index];
-    const patchItem = patchSeries[index];
-    if (isObject(sourceItem) && isObject(patchItem)) {
-      merged.push(deepMerge(sourceItem, patchItem));
-    } else if (patchItem !== undefined) {
-      merged.push(deepClone(patchItem));
-    } else if (sourceItem !== undefined) {
-      merged.push(deepClone(sourceItem));
-    }
-  }
-  return merged;
-}
-
-function applySeriesStyle(optionSeries, styleSeries, path) {
-  if (!styleSeries.length) {
-    return deepClone(optionSeries);
-  }
-  if (!optionSeries.length) {
-    return deepClone(styleSeries);
-  }
-
-  if (styleSeries.length === 1 && isObject(styleSeries[0])) {
-    const template = styleSeries[0];
-    return optionSeries.map((series, index) => {
-      if (!isObject(series)) {
-        return series;
-      }
-      const optionType = series.type;
-      const styleType = template.type;
-      if (optionType && styleType && optionType !== styleType) {
-        return deepClone(series);
-      }
-      return applyStyleConfig(series, template, path.concat(String(index)));
-    });
-  }
-
-  const merged = [];
-  const maxLength = Math.max(optionSeries.length, styleSeries.length);
-  for (let index = 0; index < maxLength; index += 1) {
-    const optionItem = optionSeries[index];
-    const styleItem = styleSeries[index];
-    if (isObject(optionItem) && isObject(styleItem)) {
-      const optionType = optionItem.type;
-      const styleType = styleItem.type;
-      if (optionType && styleType && optionType !== styleType) {
-        merged.push(deepClone(optionItem));
-      } else {
-        merged.push(applyStyleConfig(optionItem, styleItem, path.concat(String(index))));
-      }
-    } else {
-      merged.push(styleItem !== undefined ? deepClone(styleItem) : deepClone(optionItem));
-    }
-  }
-  return merged;
-}
-
-function compactObject(value) {
-  if (Array.isArray(value)) {
-    const cleaned = value
-      .map((item) => compactObject(item))
-      .filter((item) => item !== undefined);
-    return cleaned;
-  }
-  if (!isObject(value)) {
-    return value === undefined ? undefined : value;
-  }
-
-  const result = {};
-  Object.entries(value).forEach(([key, item]) => {
-    const cleaned = compactObject(item);
-    const isEmptyObject = isObject(cleaned) && Object.keys(cleaned).length === 0;
-    const isEmptyArray = Array.isArray(cleaned) && cleaned.length === 0;
-    if (cleaned !== undefined && !isEmptyObject && !isEmptyArray) {
-      result[key] = cleaned;
-    }
-  });
-  return result;
-}
-
 function numberOr(value, fallback) {
   const numeric = Number(value);
   return Number.isFinite(numeric) ? numeric : fallback;
@@ -2275,24 +1508,6 @@ function parsePalette(raw) {
     .split(/[\n,]+/)
     .map((item) => item.trim())
     .filter(Boolean);
-}
-
-function legendPlacement(position) {
-  const placementMap = {
-    "top-left": { left: "left", top: "top" },
-    "top-center": { left: "center", top: "top" },
-    "top-right": { left: "right", top: "top" },
-    "middle-left": { left: "left", top: "middle" },
-    "middle-right": { left: "right", top: "middle" },
-    "bottom-left": { left: "left", top: "bottom" },
-    "bottom-center": { left: "center", top: "bottom" },
-    "bottom-right": { left: "right", top: "bottom" },
-    top: { left: "center", top: "top" },
-    right: { left: "right", top: "middle" },
-    bottom: { left: "center", top: "bottom" },
-    left: { left: "left", top: "middle" },
-  };
-  return placementMap[position] || placementMap["top-left"];
 }
 
 function getCurrentDefinition() {
@@ -2327,20 +1542,82 @@ function renderChartSummary() {
   `;
 }
 
+function buildPreviewToggleButtons(buttons, datasetKey) {
+  return buttons
+    .map((button) => `
+      <button
+        type="button"
+        class="dual-axis-preview-button${button.active ? " active" : ""}"
+        ${Object.entries(button.dataset || {})
+          .map(([key, value]) => `data-${datasetKey || key}="${value}"`)
+          .join(" ")}
+      >${button.label}</button>
+    `)
+    .join("");
+}
+
+function buildPreviewControlCard(label, buttons, options = {}) {
+  const cardClassName = `dual-axis-preview-control${options.wide ? " dual-axis-preview-control-wide" : ""}`;
+  const toggleClassName = `dual-axis-preview-toggle${options.wrap ? " dual-axis-preview-toggle-wrap" : ""}`;
+  return `
+    <div class="${cardClassName}">
+      <div class="dual-axis-preview-label">${label}</div>
+      <div class="${toggleClassName}">
+        ${buttons}
+      </div>
+    </div>
+  `;
+}
+
+function supportsSeriesCountPreview(chartType) {
+  return chartType === "line"
+    || chartType === "bar"
+    || chartType === "area"
+    || chartType === "scatter";
+}
+
 function renderDualAxisPreviewControls() {
-  const containers = [$("dual-axis-preview-controls"), $("dual-axis-preview-controls-mobile")];
+  const containers = [$("dual-axis-preview-controls")];
   const isDualAxis = appState.chartType === "dualAxis";
+  const isLinePreviewChart = appState.chartType === "line";
   const isBarPreviewChart = appState.chartType === "bar";
   const isAreaPreviewChart = appState.chartType === "area";
+  const isScatterPreviewChart = appState.chartType === "scatter";
   const isPiePreviewChart = appState.chartType === "pie";
+  const panelTitle = CURRENT_LOCALE === "zh" ? "预览配置" : "Preview Config";
+  const panelNote = CURRENT_LOCALE === "zh"
+    ? "这里只切换预览展示方式，不影响复制出的配置结构，Agent会自动选择合适的图形方式。"
+    : "These switches only change the preview presentation and do not change the copied config structure. The agent will choose an appropriate chart form automatically.";
+  const seriesCountLabel = CURRENT_LOCALE === "zh" ? "模拟数据数量" : "Mock Data Count";
+  const seriesCountButtons = buildPreviewToggleButtons(
+    [1, 2, 5, 8].map((count) => ({
+      label: String(count),
+      active: Number(appState.previewSeriesCount) === count,
+      dataset: { "preview-series-count": String(count) },
+    })),
+  );
 
   containers.forEach((container) => {
     if (!container) {
       return;
     }
-    if (!isDualAxis && !isBarPreviewChart && !isAreaPreviewChart && !isPiePreviewChart) {
+    if (!isDualAxis && !isLinePreviewChart && !isBarPreviewChart && !isAreaPreviewChart && !isScatterPreviewChart && !isPiePreviewChart) {
       container.innerHTML = "";
       container.classList.add("hidden");
+      return;
+    }
+
+    if (isLinePreviewChart || isScatterPreviewChart) {
+      container.innerHTML = `
+        <div class="dual-axis-preview-head">
+          <div class="dual-axis-preview-title">${panelTitle}</div>
+          <p class="dual-axis-preview-note">${panelNote}</p>
+        </div>
+        <div class="dual-axis-preview-grid">
+          ${buildPreviewControlCard(seriesCountLabel, seriesCountButtons, { wide: true, wrap: true })}
+        </div>
+      `;
+      container.classList.remove("hidden");
       return;
     }
 
@@ -2352,19 +1629,26 @@ function renderDualAxisPreviewControls() {
       const normalText = CURRENT_LOCALE === "zh" ? "普通" : "Normal";
       const stackedText = CURRENT_LOCALE === "zh" ? "堆叠" : "Stacked";
       container.innerHTML = `
-        <div class="dual-axis-preview-control">
-          <div class="dual-axis-preview-label">${layoutLabel}</div>
-          <div class="dual-axis-preview-toggle">
-            <button type="button" class="dual-axis-preview-button${!appState.previewBarHorizontal ? " active" : ""}" data-preview-bar-layout="vertical">${verticalText}</button>
-            <button type="button" class="dual-axis-preview-button${appState.previewBarHorizontal ? " active" : ""}" data-preview-bar-layout="horizontal">${horizontalText}</button>
-          </div>
+        <div class="dual-axis-preview-head">
+          <div class="dual-axis-preview-title">${panelTitle}</div>
+          <p class="dual-axis-preview-note">${panelNote}</p>
         </div>
-        <div class="dual-axis-preview-control">
-          <div class="dual-axis-preview-label">${modeLabel}</div>
-          <div class="dual-axis-preview-toggle">
-            <button type="button" class="dual-axis-preview-button${!appState.previewStackMode ? " active" : ""}" data-preview-stack-mode="normal">${normalText}</button>
-            <button type="button" class="dual-axis-preview-button${appState.previewStackMode ? " active" : ""}" data-preview-stack-mode="stacked">${stackedText}</button>
-          </div>
+        <div class="dual-axis-preview-grid">
+          ${buildPreviewControlCard(seriesCountLabel, seriesCountButtons, { wide: true, wrap: true })}
+          ${buildPreviewControlCard(
+            layoutLabel,
+            buildPreviewToggleButtons([
+              { label: verticalText, active: !appState.previewBarHorizontal, dataset: { "preview-bar-layout": "vertical" } },
+              { label: horizontalText, active: appState.previewBarHorizontal, dataset: { "preview-bar-layout": "horizontal" } },
+            ]),
+          )}
+          ${buildPreviewControlCard(
+            modeLabel,
+            buildPreviewToggleButtons([
+              { label: normalText, active: !appState.previewStackMode, dataset: { "preview-stack-mode": "normal" } },
+              { label: stackedText, active: appState.previewStackMode, dataset: { "preview-stack-mode": "stacked" } },
+            ]),
+          )}
         </div>
       `;
       container.classList.remove("hidden");
@@ -2376,12 +1660,19 @@ function renderDualAxisPreviewControls() {
       const normalText = CURRENT_LOCALE === "zh" ? "普通" : "Normal";
       const stackedText = CURRENT_LOCALE === "zh" ? "堆叠" : "Stacked";
       container.innerHTML = `
-        <div class="dual-axis-preview-control">
-          <div class="dual-axis-preview-label">${label}</div>
-          <div class="dual-axis-preview-toggle">
-            <button type="button" class="dual-axis-preview-button${!appState.previewStackMode ? " active" : ""}" data-preview-stack-mode="normal">${normalText}</button>
-            <button type="button" class="dual-axis-preview-button${appState.previewStackMode ? " active" : ""}" data-preview-stack-mode="stacked">${stackedText}</button>
-          </div>
+        <div class="dual-axis-preview-head">
+          <div class="dual-axis-preview-title">${panelTitle}</div>
+          <p class="dual-axis-preview-note">${panelNote}</p>
+        </div>
+        <div class="dual-axis-preview-grid">
+          ${buildPreviewControlCard(seriesCountLabel, seriesCountButtons, { wide: true, wrap: true })}
+          ${buildPreviewControlCard(
+            label,
+            buildPreviewToggleButtons([
+              { label: normalText, active: !appState.previewStackMode, dataset: { "preview-stack-mode": "normal" } },
+              { label: stackedText, active: appState.previewStackMode, dataset: { "preview-stack-mode": "stacked" } },
+            ]),
+          )}
         </div>
       `;
       container.classList.remove("hidden");
@@ -2395,14 +1686,21 @@ function renderDualAxisPreviewControls() {
       const roseAreaText = CURRENT_LOCALE === "zh" ? "玫瑰面积" : "Rose Area";
       const roseRadiusText = CURRENT_LOCALE === "zh" ? "玫瑰半径" : "Rose Radius";
       container.innerHTML = `
-        <div class="dual-axis-preview-control">
-          <div class="dual-axis-preview-label">${label}</div>
-          <div class="dual-axis-preview-toggle">
-            <button type="button" class="dual-axis-preview-button${appState.previewPieMode === "pie" ? " active" : ""}" data-preview-pie-mode="pie">${pieText}</button>
-            <button type="button" class="dual-axis-preview-button${appState.previewPieMode === "donut" ? " active" : ""}" data-preview-pie-mode="donut">${donutText}</button>
-            <button type="button" class="dual-axis-preview-button${appState.previewPieMode === "roseArea" ? " active" : ""}" data-preview-pie-mode="roseArea">${roseAreaText}</button>
-            <button type="button" class="dual-axis-preview-button${appState.previewPieMode === "roseRadius" ? " active" : ""}" data-preview-pie-mode="roseRadius">${roseRadiusText}</button>
-          </div>
+        <div class="dual-axis-preview-head">
+          <div class="dual-axis-preview-title">${panelTitle}</div>
+          <p class="dual-axis-preview-note">${panelNote}</p>
+        </div>
+        <div class="dual-axis-preview-grid">
+          ${buildPreviewControlCard(
+            label,
+            buildPreviewToggleButtons([
+              { label: pieText, active: appState.previewPieMode === "pie", dataset: { "preview-pie-mode": "pie" } },
+              { label: donutText, active: appState.previewPieMode === "donut", dataset: { "preview-pie-mode": "donut" } },
+              { label: roseAreaText, active: appState.previewPieMode === "roseArea", dataset: { "preview-pie-mode": "roseArea" } },
+              { label: roseRadiusText, active: appState.previewPieMode === "roseRadius", dataset: { "preview-pie-mode": "roseRadius" } },
+            ]),
+            { wide: true, wrap: true },
+          )}
         </div>
       `;
       container.classList.remove("hidden");
@@ -2410,25 +1708,45 @@ function renderDualAxisPreviewControls() {
     }
 
     const { leftType, rightType } = resolveDualAxisSeriesTypes();
+    const dualAxisLeftCountLabel = CURRENT_LOCALE === "zh" ? "左侧数量" : "Left Count";
+    const dualAxisRightCountLabel = CURRENT_LOCALE === "zh" ? "右侧数量" : "Right Count";
+    const dualAxisCountButtons = (side) => buildPreviewToggleButtons(
+      [1, 2, 4].map((count) => ({
+        label: String(count),
+        active: Number(side === "left" ? appState.previewDualAxisLeftSeriesCount : appState.previewDualAxisRightSeriesCount) === count,
+        dataset: {
+          "preview-dual-axis-series-side": side,
+          "preview-dual-axis-series-count": String(count),
+        },
+      })),
+    );
     const leftLabel = CURRENT_LOCALE === "zh" ? "左侧预览类型" : "Left Preview Type";
     const rightLabel = CURRENT_LOCALE === "zh" ? "右侧预览类型" : "Right Preview Type";
     const barText = CURRENT_LOCALE === "zh" ? "柱" : "Bar";
     const lineText = CURRENT_LOCALE === "zh" ? "线" : "Line";
 
-    container.innerHTML = `
-      <div class="dual-axis-preview-control">
-        <div class="dual-axis-preview-label">${leftLabel}</div>
-        <div class="dual-axis-preview-toggle">
-          <button type="button" class="dual-axis-preview-button${leftType === "bar" ? " active" : ""}" data-dual-axis-side="left" data-dual-axis-type="bar">${barText}</button>
-          <button type="button" class="dual-axis-preview-button${leftType === "line" ? " active" : ""}" data-dual-axis-side="left" data-dual-axis-type="line">${lineText}</button>
+      container.innerHTML = `
+        <div class="dual-axis-preview-head">
+          <div class="dual-axis-preview-title">${panelTitle}</div>
+          <p class="dual-axis-preview-note">${panelNote}</p>
         </div>
-      </div>
-      <div class="dual-axis-preview-control">
-        <div class="dual-axis-preview-label">${rightLabel}</div>
-        <div class="dual-axis-preview-toggle">
-          <button type="button" class="dual-axis-preview-button${rightType === "bar" ? " active" : ""}" data-dual-axis-side="right" data-dual-axis-type="bar">${barText}</button>
-          <button type="button" class="dual-axis-preview-button${rightType === "line" ? " active" : ""}" data-dual-axis-side="right" data-dual-axis-type="line">${lineText}</button>
-        </div>
+        <div class="dual-axis-preview-grid">
+          ${buildPreviewControlCard(dualAxisLeftCountLabel, dualAxisCountButtons("left"))}
+          ${buildPreviewControlCard(dualAxisRightCountLabel, dualAxisCountButtons("right"))}
+          ${buildPreviewControlCard(
+            leftLabel,
+            buildPreviewToggleButtons([
+            { label: barText, active: leftType === "bar", dataset: { "dual-axis-side": "left", "dual-axis-type": "bar" } },
+            { label: lineText, active: leftType === "line", dataset: { "dual-axis-side": "left", "dual-axis-type": "line" } },
+          ]),
+        )}
+        ${buildPreviewControlCard(
+          rightLabel,
+          buildPreviewToggleButtons([
+            { label: barText, active: rightType === "bar", dataset: { "dual-axis-side": "right", "dual-axis-type": "bar" } },
+            { label: lineText, active: rightType === "line", dataset: { "dual-axis-side": "right", "dual-axis-type": "line" } },
+          ]),
+        )}
       </div>
     `;
     container.classList.remove("hidden");
@@ -2443,16 +1761,12 @@ const DUAL_AXIS_FOUNDATION_AXIS_FIELD_IDS = new Set([
   "leftAxisLineColor",
   "leftAxisTickShow",
   "leftAxisFormatter",
-  "leftAxisMin",
-  "leftAxisMax",
   "rightAxisLabelFontSize",
   "rightAxisLabelColor",
   "rightAxisLineShow",
   "rightAxisLineColor",
   "rightAxisTickShow",
   "rightAxisFormatter",
-  "rightAxisMin",
-  "rightAxisMax",
 ]);
 
 const DUAL_AXIS_FOUNDATION_AXIS_GROUP_IDS = new Set(["splitLineAxisGroup", "leftAxisGroup", "rightAxisGroup"]);
@@ -2745,8 +2059,6 @@ function renderDualAxisFoundationAxes(snapshot) {
         "leftAxisLineColor",
         "leftAxisTickShow",
         "leftAxisFormatter",
-        "leftAxisMin",
-        "leftAxisMax",
       ],
     },
     {
@@ -2758,8 +2070,6 @@ function renderDualAxisFoundationAxes(snapshot) {
         "rightAxisLineColor",
         "rightAxisTickShow",
         "rightAxisFormatter",
-        "rightAxisMin",
-        "rightAxisMax",
       ],
     },
   ];
@@ -2947,7 +2257,7 @@ function getSpecificFieldHelper(field, chartType) {
   return "";
 }
 
-const FONT_SIZE_PRESETS = [8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28];
+const FONT_SIZE_PRESETS = FONT_SIZE_SELECT_OPTIONS;
 
 function isFontSizeField(field) {
   return typeof field?.id === "string" && field.id.endsWith("FontSize");
@@ -3013,36 +2323,7 @@ function renderFieldInput(field, value = field.default) {
   if (field.type === "color") {
     return `<input data-specific-field="${field.id}" type="color" value="${value}" />`;
   }
-  const autoPlaceholderFields = new Set([
-    "leftAxisMin",
-    "leftAxisMax",
-    "rightAxisMin",
-    "rightAxisMax",
-  ]);
-  const placeholder = autoPlaceholderFields.has(field.id)
-    ? ` placeholder="${CURRENT_LOCALE === "zh" ? "自动" : "auto"}"`
-    : "";
-  return `<input data-specific-field="${field.id}" type="text" value="${value}"${placeholder} />`;
-}
-
-function renderTemplateSelect() {
-  const select = $("data-template-select");
-  if (!select) {
-    return;
-  }
-  const definition = getCurrentDefinition();
-  select.innerHTML = definition.templates
-    .map(
-      (template) =>
-        `<option value="${template.id}" ${template.id === appState.templateId ? "selected" : ""}>${template.label}</option>`,
-    )
-    .join("");
-
-  if (!definition.templates.some((template) => template.id === appState.templateId)) {
-    appState.templateId = definition.templates[0].id;
-    select.value = appState.templateId;
-  }
-  updateTemplateHelp();
+  return `<input data-specific-field="${field.id}" type="text" value="${value}" />`;
 }
 
 function getCurrentTemplate() {
@@ -3054,10 +2335,10 @@ function getTemplateDualAxisSeriesTypes() {
   if (appState.chartType !== "dualAxis") {
     return { leftType: "bar", rightType: "line" };
   }
-  const template = getCurrentTemplate();
-  const seriesList = Array.isArray(template?.data?.series) ? template.data.series : [];
-  const xAxes = Array.isArray(template?.data?.xAxis) ? template.data.xAxis : [template?.data?.xAxis || {}];
-  const yAxes = Array.isArray(template?.data?.yAxis) ? template.data.yAxis : [template?.data?.yAxis || {}];
+  const rawData = getDefaultRawDataForChart("dualAxis");
+  const seriesList = Array.isArray(rawData?.series) ? rawData.series : [];
+  const xAxes = Array.isArray(rawData?.xAxis) ? rawData.xAxis : [rawData?.xAxis || {}];
+  const yAxes = Array.isArray(rawData?.yAxis) ? rawData.yAxis : [rawData?.yAxis || {}];
   const horizontal = (xAxes[0]?.type === "value" || xAxes[1]?.type === "value") && yAxes[0]?.type === "category";
   let leftType = null;
   let rightType = null;
@@ -3103,13 +2384,6 @@ function syncDualAxisPreviewTypesWithTemplate() {
   appState.dualAxisPreviewRightType = rightType;
 }
 
-function updateTemplateHelp() {
-  const help = $("data-template-help");
-  if (help) {
-    help.textContent = getCurrentTemplate().help;
-  }
-}
-
 function renderFoundationVisibility() {
   const definition = getCurrentDefinition();
   const axesGroup = $("axes-group");
@@ -3124,10 +2398,6 @@ function renderFoundationVisibility() {
   const plotAreaGroup = $("layout-spacing-group");
   const xAxisSubgroup = $("x-axis-subgroup");
   const yAxisSubgroup = $("y-axis-subgroup");
-  const xMinField = $("x-min-field");
-  const xMaxField = $("x-max-field");
-  const yMinField = $("y-min-field");
-  const yMaxField = $("y-max-field");
   const axesGroupTitle = $("axes-group-title");
   const xAxisSubgroupHead = $("x-axis-subgroup-head");
   const yAxisSubgroupHead = $("y-axis-subgroup-head");
@@ -3169,8 +2439,6 @@ function renderFoundationVisibility() {
           labelColor: "X 轴标签颜色",
           lineColor: "X 轴线颜色",
           formatter: "X 轴格式",
-          min: "X 轴最小值",
-          max: "X 轴最大值",
         },
         y: {
           lineShow: "显示 Y 轴线",
@@ -3179,8 +2447,6 @@ function renderFoundationVisibility() {
           labelColor: "Y 轴标签颜色",
           lineColor: "Y 轴线颜色",
           formatter: "Y 轴格式",
-          min: "Y 轴最小值",
-          max: "Y 轴最大值",
         },
         category: {
           lineShow: "显示类目轴线",
@@ -3190,8 +2456,6 @@ function renderFoundationVisibility() {
           labelColor: "类目标签颜色",
           lineColor: "类目轴线颜色",
           formatter: "类目格式",
-          min: "类目最小值",
-          max: "类目最大值",
         },
       }
     : {
@@ -3203,8 +2467,6 @@ function renderFoundationVisibility() {
           labelColor: "X Label Color",
           lineColor: "X Axis Line Color",
           formatter: "X Formatter",
-          min: "X Min",
-          max: "X Max",
         },
         y: {
           lineShow: "Show Y Axis Line",
@@ -3213,8 +2475,6 @@ function renderFoundationVisibility() {
           labelColor: "Y Label Color",
           lineColor: "Y Axis Line Color",
           formatter: "Y Formatter",
-          min: "Y Min",
-          max: "Y Max",
         },
         category: {
           lineShow: "Show Category Axis Line",
@@ -3224,8 +2484,6 @@ function renderFoundationVisibility() {
           labelColor: "Category Label Color",
           lineColor: "Category Axis Line Color",
           formatter: "Category Formatter",
-          min: "Category Min",
-          max: "Category Max",
         },
       };
 
@@ -3236,8 +2494,6 @@ function renderFoundationVisibility() {
     setTextIfExists(`${axisKey}-axis-label-color-label`, labels.labelColor);
     setTextIfExists(`${axisKey}-axis-line-color-label`, labels.lineColor);
     setTextIfExists(`${axisKey}-formatter-label`, labels.formatter);
-    setTextIfExists(`${axisKey}-min-label`, labels.min);
-    setTextIfExists(`${axisKey}-max-label`, labels.max);
     if (axisKey === "x") {
       setTextIfExists("x-rotate-label", labels.rotate);
     }
@@ -3255,16 +2511,12 @@ function renderFoundationVisibility() {
       if (yAxisSubgroupHead) {
         yAxisSubgroupHead.textContent = CURRENT_LOCALE === "zh" ? "类目轴" : "Category Axis";
       }
-      if (yMinField) yMinField.classList.add("hidden");
-      if (yMaxField) yMaxField.classList.add("hidden");
     } else {
       if (xAxisSubgroup) xAxisSubgroup.classList.remove("hidden");
       if (yAxisSubgroup) yAxisSubgroup.classList.add("hidden");
       if (xAxisSubgroupHead) {
         xAxisSubgroupHead.textContent = CURRENT_LOCALE === "zh" ? "类目轴" : "Category Axis";
       }
-      if (xMinField) xMinField.classList.add("hidden");
-      if (xMaxField) xMaxField.classList.add("hidden");
     }
     return;
   }
@@ -3279,25 +2531,6 @@ function renderFoundationVisibility() {
   if (yAxisSubgroup) yAxisSubgroup.classList.remove("hidden");
   if (xAxisSubgroupHead) xAxisSubgroupHead.textContent = CURRENT_LOCALE === "zh" ? "X 轴" : "X Axis";
   if (yAxisSubgroupHead) yAxisSubgroupHead.textContent = CURRENT_LOCALE === "zh" ? "Y 轴" : "Y Axis";
-  if (xMinField) xMinField.classList.remove("hidden");
-  if (xMaxField) xMaxField.classList.remove("hidden");
-  if (yMinField) yMinField.classList.remove("hidden");
-  if (yMaxField) yMaxField.classList.remove("hidden");
-}
-
-function resetTemplateEditor() {
-  const editor = $("data-editor");
-  if (editor) {
-    editor.value = JSON.stringify(getCurrentTemplate().data, null, 2);
-  }
-  clearEditorState();
-}
-
-function clearEditorState() {
-  const dataEditor = $("data-editor");
-  if (dataEditor) {
-    dataEditor.classList.remove("invalid");
-  }
 }
 
 function resetCommonFields() {
@@ -3305,12 +2538,12 @@ function resetCommonFields() {
   $("title-show").value = booleanSelectValue(defaults.titleShow);
   $("subtitle-show").value = booleanSelectValue(defaults.subtitleShow);
   $("title-align").value = defaults.titleAlign;
-  $("title-font-size").value = normalizeFontSizePresetValue(defaults.titleFontSize, 26);
+  $("title-font-size").value = normalizeFontSizePresetValue(defaults.titleFontSize, TYPOGRAPHY_PRESET.titleFontSize);
   $("title-color").value = defaults.titleColor;
   $("title-bold").value = booleanSelectValue(defaults.titleBold);
-  $("subtitle-font-size").value = normalizeFontSizePresetValue(defaults.subtitleFontSize, 12);
+  $("subtitle-font-size").value = normalizeFontSizePresetValue(defaults.subtitleFontSize, TYPOGRAPHY_PRESET.subtitleFontSize);
   $("subtitle-color").value = defaults.subtitleColor;
-  $("legend-font-size").value = normalizeFontSizePresetValue(defaults.legendFontSize, 12);
+  $("legend-font-size").value = normalizeFontSizePresetValue(defaults.legendFontSize, TYPOGRAPHY_PRESET.legendFontSize);
   $("legend-color").value = defaults.legendColor;
   $("palette-input").value = defaults.palette;
   $("legend-show").value = booleanSelectValue(defaults.legendShow);
@@ -3320,23 +2553,19 @@ function resetCommonFields() {
   $("x-split-line-color").value = defaults.xSplitLineColor;
   $("x-split-line-type").value = defaults.xSplitLineType;
   $("x-split-line-width").value = defaults.xSplitLineWidth;
-  $("x-axis-label-font-size").value = normalizeFontSizePresetValue(defaults.xAxisLabelFontSize, 12);
+  $("x-axis-label-font-size").value = normalizeFontSizePresetValue(defaults.xAxisLabelFontSize, TYPOGRAPHY_PRESET.xAxisLabelFontSize);
   $("x-axis-label-color").value = defaults.xAxisLabelColor;
   $("x-axis-line-show").value = booleanSelectValue(defaults.xAxisLineShow);
   $("x-axis-tick-show").value = booleanSelectValue(defaults.xAxisTickShow);
   $("x-axis-line-color").value = defaults.xAxisLineColor;
   $("x-formatter").value = defaults.xFormatter;
-  $("x-min").value = defaults.xMin;
-  $("x-max").value = defaults.xMax;
   $("x-rotate").value = defaults.xRotate;
-  $("y-axis-label-font-size").value = normalizeFontSizePresetValue(defaults.yAxisLabelFontSize, 12);
+  $("y-axis-label-font-size").value = normalizeFontSizePresetValue(defaults.yAxisLabelFontSize, TYPOGRAPHY_PRESET.yAxisLabelFontSize);
   $("y-axis-label-color").value = defaults.yAxisLabelColor;
   $("y-axis-line-show").value = booleanSelectValue(defaults.yAxisLineShow);
   $("y-axis-tick-show").value = booleanSelectValue(defaults.yAxisTickShow);
   $("y-axis-line-color").value = defaults.yAxisLineColor;
   $("y-formatter").value = defaults.yFormatter;
-  $("y-min").value = defaults.yMin;
-  $("y-max").value = defaults.yMax;
   $("split-line-show").value = booleanSelectValue(defaults.splitLineShow);
   $("split-line-color").value = defaults.splitLineColor;
   $("split-line-type").value = defaults.splitLineType;
@@ -3371,7 +2600,7 @@ function getCommonState() {
     legendOrient: $("legend-orient").value,
     xSplitLineShow: readBooleanControl($("x-split-line-show"), defaults.xSplitLineShow),
     xSplitLineColor: $("x-split-line-color").value,
-    xSplitLineType: $("x-split-line-type").value,
+    xSplitLineType: normalizeStrokeType($("x-split-line-type").value),
     xSplitLineWidth: numberOr($("x-split-line-width").value, defaults.xSplitLineWidth),
     xAxisLabelFontSize: numberOr($("x-axis-label-font-size").value, defaults.xAxisLabelFontSize),
     xAxisLabelColor: $("x-axis-label-color").value,
@@ -3379,8 +2608,6 @@ function getCommonState() {
     xAxisTickShow: readBooleanControl($("x-axis-tick-show"), defaults.xAxisTickShow),
     xAxisLineColor: $("x-axis-line-color").value,
     xFormatter: $("x-formatter").value.trim() || "{value}",
-    xMin: optionalNumber($("x-min").value),
-    xMax: optionalNumber($("x-max").value),
     xRotate: numberOr($("x-rotate").value, 0),
     yAxisLabelFontSize: numberOr($("y-axis-label-font-size").value, defaults.yAxisLabelFontSize),
     yAxisLabelColor: $("y-axis-label-color").value,
@@ -3388,11 +2615,9 @@ function getCommonState() {
     yAxisTickShow: readBooleanControl($("y-axis-tick-show"), defaults.yAxisTickShow),
     yAxisLineColor: $("y-axis-line-color").value,
     yFormatter: $("y-formatter").value.trim() || "{value}",
-    yMin: optionalNumber($("y-min").value),
-    yMax: optionalNumber($("y-max").value),
     splitLineShow: readBooleanControl($("split-line-show"), defaults.splitLineShow),
     splitLineColor: $("split-line-color").value,
-    splitLineType: $("split-line-type").value,
+    splitLineType: normalizeStrokeType($("split-line-type").value),
     splitLineWidth: numberOr($("split-line-width").value, defaults.splitLineWidth),
     gridLeft: normalizeGridPercentValue($("grid-left").value, "12%"),
     gridRight: normalizeGridPercentValue($("grid-right").value, "9%"),
@@ -3419,1107 +2644,54 @@ function getSpecificState() {
   return state;
 }
 
-function buildCommonOption(commonState, definition) {
-  const titleText = commonState.titleShow ? commonState.titleText : "";
-  const subtitleText = commonState.subtitleShow ? commonState.subtitleText : "";
-  const option = {
-    title: {
-      show: commonState.titleShow || commonState.subtitleShow,
-      text: titleText,
-      subtext: subtitleText,
-      left: commonState.titleAlign,
-    },
-    backgroundColor: commonState.backgroundColor,
-    color: commonState.palette,
-  };
-
-  if (definition.supportsLegend !== false) {
-    option.legend = {
-      show: commonState.legendShow,
-      orient: commonState.legendOrient,
-      ...legendPlacement(commonState.legendPosition),
-    };
-  }
-
-  if (definition.usesGrid || definition.supportsPlotArea) {
-    option.grid = {
-      left: commonState.gridLeft,
-      right: commonState.gridRight,
-      top: commonState.gridTop,
-      bottom: commonState.gridBottom,
-    };
-  }
-
-  return compactObject(option);
-}
-
-function buildBaseStyleConfig(commonState, definition) {
-  const titleText = commonState.titleShow ? commonState.titleText : "";
-  const subtitleText = commonState.subtitleShow ? commonState.subtitleText : "";
-  const base = {
-    color: commonState.palette,
-    backgroundColor: commonState.backgroundColor,
-    title: {
-      show: commonState.titleShow || commonState.subtitleShow,
-      text: titleText,
-      subtext: subtitleText,
-      left: commonState.titleAlign,
-      textStyle: {
-        fontSize: commonState.titleFontSize,
-        fontWeight: commonState.titleBold ? "bold" : "normal",
-        color: commonState.titleColor,
-      },
-      subtextStyle: {
-        fontSize: commonState.subtitleFontSize,
-        color: commonState.subtitleColor,
-      },
-    },
-  };
-
-  if (definition.supportsLegend !== false) {
-    base.legend = {
-      show: commonState.legendShow,
-      orient: commonState.legendOrient,
-      ...legendPlacement(commonState.legendPosition),
-      textStyle: {
-        fontSize: commonState.legendFontSize,
-        color: commonState.legendColor,
-      },
-    };
-  }
-
-  if (definition.usesGrid || definition.supportsPlotArea) {
-    base.grid = {
-      left: commonState.gridLeft,
-      right: commonState.gridRight,
-      top: commonState.gridTop,
-      bottom: commonState.gridBottom,
-    };
-  }
-
-  if (definition.usesCartesian) {
-    base.xAxis = {
-      axisLabel: {
-        rotate: commonState.xRotate,
-        fontSize: commonState.xAxisLabelFontSize,
-        color: commonState.xAxisLabelColor,
-        formatter: commonState.xFormatter,
-      },
-      axisTick: {
-        show: commonState.xAxisTickShow,
-      },
-      min: commonState.xMin,
-      max: commonState.xMax,
-      axisLine: {
-        show: commonState.xAxisLineShow,
-        lineStyle: {
-          color: commonState.xAxisLineColor,
-        },
-      },
-      splitLine: {
-        show: commonState.xSplitLineShow,
-        lineStyle: {
-          color: commonState.xSplitLineColor,
-          type: commonState.xSplitLineType,
-          width: commonState.xSplitLineWidth,
-        },
-      },
-    };
-    base.yAxis = {
-      axisLabel: {
-        fontSize: commonState.yAxisLabelFontSize,
-        color: commonState.yAxisLabelColor,
-        formatter: commonState.yFormatter,
-      },
-      axisTick: {
-        show: commonState.yAxisTickShow,
-      },
-      min: commonState.yMin,
-      max: commonState.yMax,
-      axisLine: {
-        show: commonState.yAxisLineShow,
-        lineStyle: {
-          color: commonState.yAxisLineColor,
-        },
-      },
-      splitLine: {
-        show: commonState.splitLineShow,
-        lineStyle: {
-          color: commonState.splitLineColor,
-          type: commonState.splitLineType,
-          width: commonState.splitLineWidth,
-        },
-      },
-    };
-  }
-
-  return compactObject(base);
-}
-
-function buildStructurePatch(chartType, specificState) {
-  switch (chartType) {
-    case "line":
-    case "area":
-      return {
-        xAxis: { type: "category" },
-        yAxis: { type: "value" },
-      };
-    case "bar":
-      return { xAxis: { type: "category" }, yAxis: { type: "value" } };
-    case "dualAxis":
-      return specificState.horizontal
-        ? {
-            xAxis: [{ type: "value" }, { type: "value" }],
-            yAxis: { type: "category" },
-          }
-        : {
-            xAxis: { type: "category" },
-            yAxis: [{ type: "value" }, { type: "value" }],
-          };
-    case "scatter":
-      return {
-        xAxis: { type: "value" },
-        yAxis: { type: "value" },
-      };
-    default:
-      return {};
-  }
-}
-
-function clampLayoutPercent(value) {
-  return Math.max(0, Math.min(42, Number(value) || 0));
-}
-
-function parseLayoutPercentValue(value, fallback = 10) {
-  if (typeof value === "string" && value.trim().endsWith("%")) {
-    return clampLayoutPercent(Number.parseFloat(value));
-  }
-  const numeric = Number(value);
-  if (Number.isFinite(numeric)) {
-    return clampLayoutPercent(numeric / 10);
-  }
-  return clampLayoutPercent(fallback);
-}
-
-function buildLayoutBox(commonState) {
-  const left = parseLayoutPercentValue(commonState.gridLeft, 12);
-  const right = parseLayoutPercentValue(commonState.gridRight, 9);
-  const top = parseLayoutPercentValue(commonState.gridTop, 21);
-  const bottom = parseLayoutPercentValue(commonState.gridBottom, 15);
-  const width = Math.max(16, 100 - left - right);
-  const height = Math.max(16, 100 - top - bottom);
-  return {
-    left,
-    right,
-    top,
-    bottom,
-    width,
-    height,
-    centerX: left + width / 2,
-    centerY: top + height / 2,
-  };
-}
-
-function parsePercentValue(value, fallback) {
-  const parsed = Number.parseFloat(String(value).replace("%", ""));
-  return Number.isFinite(parsed) ? parsed : fallback;
-}
-
 function getPreviewViewportSize() {
-  const desktop = $("preview-canvas");
-  if (desktop?.clientWidth && desktop?.clientHeight) {
-    return { width: desktop.clientWidth, height: desktop.clientHeight };
+  return FIXED_PREVIEW_VIEWPORT;
+}
+
+function syncPreviewCanvasDimensions() {
+  const canvas = $("preview-canvas");
+  if (!canvas) {
+    return;
   }
-  const mobile = $("preview-canvas-mobile");
-  if (mobile?.clientWidth && mobile?.clientHeight) {
-    return { width: mobile.clientWidth, height: mobile.clientHeight };
-  }
-  return { width: 960, height: 520 };
-}
-
-function resolveLayoutCenterValues(layoutBox, centerX, centerY) {
-  return {
-    x: parsePercentValue(centerX, layoutBox.centerX),
-    y: parsePercentValue(centerY, layoutBox.centerY),
-  };
-}
-
-function buildCircularPlotMaxRadiusPercent(layoutBox, viewportSize) {
-  const viewportWidth = Math.max(1, Number(viewportSize?.width) || 0);
-  const viewportHeight = Math.max(1, Number(viewportSize?.height) || 0);
-  const viewportShort = Math.min(viewportWidth, viewportHeight);
-  const plotWidthPx = viewportWidth * (layoutBox.width / 100);
-  const plotHeightPx = viewportHeight * (layoutBox.height / 100);
-  const radiusPx = Math.min(plotWidthPx, plotHeightPx) / 2;
-  return Math.max(10, (radiusPx / (viewportShort / 2)) * 100);
-}
-
-function buildCircleLayout(layoutBox, viewportSize, outerRatio = 1, innerRatio = 0) {
-  const maxRadiusPercent = buildCircularPlotMaxRadiusPercent(layoutBox, viewportSize);
-  const outer = Math.max(10, Math.round(maxRadiusPercent * outerRatio));
-  if (innerRatio > 0) {
-    return [`${Math.round(outer * innerRatio)}%`, `${outer}%`];
-  }
-  return `${outer}%`;
-}
-
-function resolveLayoutCenter(layoutBox, centerX, centerY) {
-  const resolved = resolveLayoutCenterValues(layoutBox, centerX, centerY);
-  return [
-    `${Math.round(resolved.x)}%`,
-    `${Math.round(resolved.y)}%`,
-  ];
-}
-
-function resolveGaugeLayoutCenter(layoutBox, centerX, centerY) {
-  const autoCenterX = layoutBox.centerX;
-  const autoCenterY = layoutBox.top + layoutBox.height * 0.58;
-  const resolved = resolveLayoutCenterValues(layoutBox, centerX === "auto" ? autoCenterX : centerX, centerY === "auto" ? autoCenterY : centerY);
-  return [
-    `${Math.round(resolved.x)}%`,
-    `${Math.round(resolved.y)}%`,
-  ];
-}
-
-function buildGaugeAutoRadius(layoutBox, viewportSize) {
-  return buildCircleLayout(layoutBox, viewportSize, 1);
-}
-
-function resolveGaugeRadius(layoutBox, viewportSize) {
-  return buildGaugeAutoRadius(layoutBox, viewportSize);
-}
-
-function resolveRadarRadius(layoutBox, viewportSize) {
-  return buildCircleLayout(layoutBox, viewportSize, 1);
-}
-
-function resolvePieRadius(layoutBox, viewportSize, pieMode) {
-  const modeMap = {
-    pie: { radius: buildCircleLayout(layoutBox, viewportSize, 1) },
-    donut: { radius: buildCircleLayout(layoutBox, viewportSize, 1, 0.6), innerRatio: 0.6 },
-    roseArea: { radius: buildCircleLayout(layoutBox, viewportSize, 1, 0.25), roseType: "area", innerRatio: 0.25 },
-    roseRadius: { radius: buildCircleLayout(layoutBox, viewportSize, 1, 0.25), roseType: "radius", innerRatio: 0.25 },
-  };
-  return modeMap[pieMode];
-}
-
-function resolveAxisOverride(formatter, min, max) {
-  return compactObject({
-    axisLabel: {
-      formatter: formatter || undefined,
-    },
-    min: optionalNumber(min),
-    max: optionalNumber(max),
-  });
-}
-
-function buildDualAxisValueAxisConfig(commonState, specificState, side) {
-  const isLeft = side === "left";
-  const formatter = isLeft ? specificState.leftAxisFormatter : specificState.rightAxisFormatter;
-  const min = isLeft ? specificState.leftAxisMin : specificState.rightAxisMin;
-  const max = isLeft ? specificState.leftAxisMax : specificState.rightAxisMax;
-  const labelFontSize = isLeft ? specificState.leftAxisLabelFontSize : specificState.rightAxisLabelFontSize;
-  const labelColor = isLeft ? specificState.leftAxisLabelColor : specificState.rightAxisLabelColor;
-  const axisLineShow = isLeft ? specificState.leftAxisLineShow : specificState.rightAxisLineShow;
-  const axisLineColor = isLeft ? specificState.leftAxisLineColor : specificState.rightAxisLineColor;
-  const axisTickShow = isLeft ? specificState.leftAxisTickShow : specificState.rightAxisTickShow;
-  const followAxis = specificState.splitLineFollowAxis || "left";
-  const horizontal = Boolean(specificState.horizontal);
-  const sharedSplitLineShow = horizontal ? commonState.xSplitLineShow : commonState.splitLineShow;
-  const sharedSplitLineColor = horizontal ? commonState.xSplitLineColor : commonState.splitLineColor;
-  const sharedSplitLineType = horizontal ? commonState.xSplitLineType : commonState.splitLineType;
-  const sharedSplitLineWidth = horizontal ? commonState.xSplitLineWidth : commonState.splitLineWidth;
-  const effectiveSplitLineShow = side === followAxis ? sharedSplitLineShow : false;
-
-  return compactObject({
-    type: "value",
-    axisLabel: {
-      formatter: formatter || undefined,
-      fontSize: labelFontSize,
-      color: labelColor,
-    },
-    axisTick: {
-      show: axisTickShow,
-    },
-    axisLine: {
-      show: axisLineShow,
-      lineStyle: {
-        color: axisLineColor,
-      },
-    },
-    splitLine: {
-      show: effectiveSplitLineShow,
-      lineStyle: {
-        color: sharedSplitLineColor,
-        type: sharedSplitLineType,
-        width: sharedSplitLineWidth,
-      },
-    },
-    min: optionalNumber(min),
-    max: optionalNumber(max),
-  });
-}
-
-function buildDualAxisSeriesAxisRef(specificState, side) {
-  const axisIndex = side === "left" ? 0 : 1;
-  return specificState.horizontal ? { xAxisIndex: axisIndex, yAxisIndex: 0 } : { yAxisIndex: axisIndex };
-}
-
-function resolveDualAxisSeriesSide(series, specificState, index = 0) {
-  const horizontal = Boolean(specificState.horizontal);
-  const axisIndex = horizontal
-    ? (series?.xAxisIndex ?? series?.yAxisIndex)
-    : (series?.yAxisIndex ?? series?.xAxisIndex);
-  if (axisIndex === 1) {
-    return "right";
-  }
-  if (axisIndex === 0) {
-    return "left";
-  }
-  return index === 1 ? "right" : "left";
-}
-
-function buildDualAxisSeriesStructure(specificState, side) {
-  const { leftType, rightType } = resolveDualAxisSeriesTypesFromState();
-  const isLeft = side === "left";
-  return compactObject({
-    type: isLeft ? leftType : rightType,
-    ...buildDualAxisSeriesAxisRef(specificState, side),
-  });
-}
-
-function normalizeDualAxisSeriesStructure(sourceSeries, specificState) {
-  const seriesList = Array.isArray(sourceSeries) ? sourceSeries : [];
-  if (!seriesList.length) {
-    return [
-      buildDualAxisSeriesStructure(specificState, "left"),
-      buildDualAxisSeriesStructure(specificState, "right"),
-    ];
-  }
-  return seriesList.map((series, index) => {
-    const side = resolveDualAxisSeriesSide(series, specificState, index);
-    return compactObject(deepMerge(series, buildDualAxisSeriesStructure(specificState, side)));
-  });
-}
-
-function normalizeDualAxisHorizontalOption(option, sourceOption = {}) {
-  const normalized = deepClone(option) || {};
-  const sourceXAxis = Array.isArray(sourceOption?.xAxis) ? (sourceOption.xAxis[0] || {}) : (sourceOption?.xAxis || {});
-  const categoryData = Array.isArray(sourceXAxis?.data) ? sourceXAxis.data : undefined;
-
-  normalized.yAxis = compactObject({
-    ...(isObject(normalized.yAxis) ? normalized.yAxis : {}),
-    type: "category",
-    data: categoryData,
-  });
-
-  if (Array.isArray(normalized.series)) {
-    normalized.series = normalized.series.map((series) => {
-      if (!isObject(series) || !isObject(series.encode)) {
-        return series;
-      }
-      const encode = series.encode;
-      if (encode.x === undefined && encode.y === undefined) {
-        return series;
-      }
-      return {
-        ...series,
-        encode: {
-          ...encode,
-          x: encode.y,
-          y: encode.x,
-        },
-      };
-    });
-  }
-
-  return normalized;
-}
-
-function buildDualAxisSeriesConfig(specificState, side) {
-  const isLeft = side === "left";
-  const { leftType, rightType } = resolveDualAxisSeriesTypesFromState();
-  const seriesType = isLeft ? leftType : rightType;
-  const axisRef = buildDualAxisSeriesAxisRef(specificState, side);
-
-  if (seriesType === "bar") {
-    return compactObject({
-      type: "bar",
-      ...axisRef,
-      barGap: isLeft ? specificState.leftBarGap : specificState.rightBarGap,
-      itemStyle: {
-        color: isLeft ? specificState.leftBarColor : specificState.rightBarColor,
-        opacity: isLeft ? specificState.leftBarOpacity : specificState.rightBarOpacity,
-        borderRadius: isLeft ? specificState.leftBarBorderRadius : specificState.rightBarBorderRadius,
-        borderWidth: isLeft ? specificState.leftBarBorderWidth : specificState.rightBarBorderWidth,
-        borderColor: isLeft ? specificState.leftBarBorderColor : specificState.rightBarBorderColor,
-      },
-      label: {
-        show: isLeft ? specificState.leftBarShowLabel : specificState.rightBarShowLabel,
-        position: isLeft ? specificState.leftBarLabelPosition : specificState.rightBarLabelPosition,
-        fontSize: isLeft ? specificState.leftBarLabelFontSize : specificState.rightBarLabelFontSize,
-        color: isLeft ? specificState.leftBarLabelColor : specificState.rightBarLabelColor,
-      },
-    });
-  }
-
-  return compactObject({
-    type: "line",
-    ...axisRef,
-    smooth: isLeft ? specificState.leftLineSmooth : specificState.rightLineSmooth,
-    showSymbol: isLeft ? specificState.leftLineShowSymbol : specificState.rightLineShowSymbol,
-    connectNulls: isLeft ? specificState.leftLineConnectNulls : specificState.rightLineConnectNulls,
-    lineStyle: {
-      width: isLeft ? specificState.leftLineWidth : specificState.rightLineWidth,
-      type: isLeft ? specificState.leftLineStyleType : specificState.rightLineStyleType,
-      color: isLeft ? specificState.leftLineColor : specificState.rightLineColor,
-    },
-    symbol: isLeft ? specificState.leftLineSymbol : specificState.rightLineSymbol,
-    symbolSize: isLeft ? specificState.leftLineSymbolSize : specificState.rightLineSymbolSize,
-    label: {
-      show: isLeft ? specificState.leftLineShowLabel : specificState.rightLineShowLabel,
-      fontSize: isLeft ? specificState.leftLineLabelFontSize : specificState.rightLineLabelFontSize,
-      color: isLeft ? specificState.leftLineLabelColor : specificState.rightLineLabelColor,
-    },
-    areaStyle: (isLeft ? specificState.leftLineArea : specificState.rightLineArea)
-      ? {
-          color: isLeft ? specificState.leftLineAreaColor : specificState.rightLineAreaColor,
-          opacity: 0.22,
-        }
-      : undefined,
-  });
-}
-
-function resolveDualAxisSeriesPalette(specificState, side, seriesType) {
-  const fieldId = `${side}${seriesType === "bar" ? "Bar" : "Line"}Colors`;
-  return parseColorListText(specificState[fieldId], getDualAxisColorListFallback(fieldId));
-}
-
-function resolveDualAxisSeriesColor(specificState, side, seriesType, sideIndex = 0) {
-  const palette = resolveDualAxisSeriesPalette(specificState, side, seriesType);
-  return palette[sideIndex % palette.length] || palette[0];
-}
-
-function buildDualAxisSeriesConfigForSeries(specificState, series, index = 0, sideIndex = 0) {
-  const side = resolveDualAxisSeriesSide(series, specificState, index);
-  const { leftType, rightType } = resolveDualAxisSeriesTypesFromState();
-  const seriesType = side === "left" ? leftType : rightType;
-  const sideColor = resolveDualAxisSeriesColor(specificState, side, seriesType, sideIndex);
-  const baseConfig = buildDualAxisSeriesConfig(specificState, side);
-  if (seriesType === "bar") {
-    return compactObject(deepMerge(baseConfig, {
-      itemStyle: { color: sideColor },
-    }));
-  }
-  return compactObject(deepMerge(baseConfig, {
-    lineStyle: { color: sideColor },
-    areaStyle: baseConfig.areaStyle
-      ? {
-          color: hexToRgba(sideColor, 0.22),
-          opacity: 0.22,
-        }
-      : undefined,
-  }));
-}
-
-function buildDualAxisCategoryAxisConfig(commonState, horizontal) {
-  if (horizontal) {
-    return compactObject({
-      type: "category",
-      axisLabel: {
-        fontSize: commonState.yAxisLabelFontSize,
-        color: commonState.yAxisLabelColor,
-        formatter: commonState.yFormatter,
-      },
-      axisTick: {
-        show: commonState.yAxisTickShow,
-      },
-      axisLine: {
-        show: commonState.yAxisLineShow,
-        lineStyle: {
-          color: commonState.yAxisLineColor,
-        },
-      },
-      splitLine: {
-        show: commonState.splitLineShow,
-        lineStyle: {
-          color: commonState.splitLineColor,
-          type: commonState.splitLineType,
-          width: commonState.splitLineWidth,
-        },
-      },
-    });
-  }
-
-  return compactObject({
-    type: "category",
-    axisLabel: {
-      rotate: commonState.xRotate,
-      fontSize: commonState.xAxisLabelFontSize,
-      color: commonState.xAxisLabelColor,
-      formatter: commonState.xFormatter,
-    },
-    axisTick: {
-      show: commonState.xAxisTickShow,
-    },
-    axisLine: {
-      show: commonState.xAxisLineShow,
-      lineStyle: {
-        color: commonState.xAxisLineColor,
-      },
-    },
-    splitLine: {
-      show: commonState.xSplitLineShow,
-      lineStyle: {
-        color: commonState.xSplitLineColor,
-        type: commonState.xSplitLineType,
-        width: commonState.xSplitLineWidth,
-      },
-    },
-  });
-}
-
-function resolveGaugeBands(specificState) {
-  const colors = parseGaugeBandColorsText(specificState.bandStops);
-  const bandCount = Math.max(colors.length, 1);
-  return colors.map((color, index) => [Number(((index + 1) / bandCount).toFixed(4)), color]);
-}
-
-function normalizeGaugeFormatter(formatter) {
-  if (typeof formatter !== "string") {
-    return formatter;
-  }
-  return formatter.replaceAll("{c}", "{value}");
-}
-
-function hexToRgba(color, alpha) {
-  const source = String(color || "").trim();
-  const normalized = source.startsWith("#") ? source.slice(1) : source;
-  const safeAlpha = Math.max(0, Math.min(1, Number(alpha) || 0));
-  if (/^[0-9a-fA-F]{6}$/.test(normalized)) {
-    const r = Number.parseInt(normalized.slice(0, 2), 16);
-    const g = Number.parseInt(normalized.slice(2, 4), 16);
-    const b = Number.parseInt(normalized.slice(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${safeAlpha})`;
-  }
-  if (/^[0-9a-fA-F]{3}$/.test(normalized)) {
-    const r = Number.parseInt(normalized[0] + normalized[0], 16);
-    const g = Number.parseInt(normalized[1] + normalized[1], 16);
-    const b = Number.parseInt(normalized[2] + normalized[2], 16);
-    return `rgba(${r}, ${g}, ${b}, ${safeAlpha})`;
-  }
-  return color;
-}
-
-function resolveAreaFill(specificState, commonState, seriesIndex = 0) {
-  const palette = Array.isArray(commonState?.palette) && commonState.palette.length
-    ? commonState.palette
-    : ["#5470c6"];
-  const baseColor = palette[seriesIndex % palette.length] || palette[0];
-  const topAlpha = Math.max(0, Math.min(1, numberOr(specificState.areaOpacity, 0.24)));
-  const bottomAlpha = Math.min(topAlpha, Math.max(0.02, Number((topAlpha * 0.18).toFixed(3))));
-  if (specificState.areaFillMode === "gradient") {
-    return {
-      color: {
-        type: "linear",
-        x: 0,
-        y: 0,
-        x2: 0,
-        y2: 1,
-        colorStops: [
-          { offset: 0, color: hexToRgba(baseColor, topAlpha) },
-          { offset: 1, color: hexToRgba(baseColor, bottomAlpha) },
-        ],
-      },
-    };
-  }
-  return {
-    color: baseColor,
-    opacity: specificState.areaOpacity,
-  };
-}
-
-function resolveLinePreviewSymbolVisibility(showSymbol, showLabel) {
-  return showSymbol || showLabel;
-}
-
-function resolveLinePreviewSymbolSize(symbolSize, showSymbol) {
-  return showSymbol ? symbolSize : 0.01;
-}
-
-function applyPreviewOnlyOverrides(chartType, option) {
-  const previewOption = deepClone(option);
-  if (chartType === "pie") {
-    const layoutBox = buildLayoutBox({
-      gridLeft: previewOption.grid?.left || "12%",
-      gridRight: previewOption.grid?.right || "9%",
-      gridTop: previewOption.grid?.top || "21%",
-      gridBottom: previewOption.grid?.bottom || "15%",
-    });
-    if (Array.isArray(previewOption.series) && previewOption.series[0]?.type === "pie") {
-      previewOption.series[0] = compactObject({
-        ...previewOption.series[0],
-        center: resolveLayoutCenter(layoutBox, "auto", "auto"),
-      });
-    }
-    return previewOption;
-  }
-  if (chartType === "bar") {
-    if (appState.previewBarHorizontal) {
-      const sourceXAxis = Array.isArray(previewOption.xAxis) ? (previewOption.xAxis[0] || {}) : (previewOption.xAxis || {});
-      const sourceYAxis = Array.isArray(previewOption.yAxis) ? (previewOption.yAxis[0] || {}) : (previewOption.yAxis || {});
-      const categoryData = Array.isArray(sourceXAxis?.data) ? sourceXAxis.data : undefined;
-      previewOption.xAxis = compactObject({
-        ...sourceXAxis,
-        type: "value",
-        data: undefined,
-      });
-      previewOption.yAxis = compactObject({
-        ...sourceYAxis,
-        type: "category",
-        data: Array.isArray(sourceYAxis?.data) ? sourceYAxis.data : categoryData,
-      });
-      if (Array.isArray(previewOption.series)) {
-        previewOption.series = previewOption.series.map((series) => {
-          if (series?.type !== "bar") {
-            return series;
-          }
-          if (series?.encode && (series.encode.x !== undefined || series.encode.y !== undefined)) {
-            return {
-              ...series,
-              encode: {
-                ...series.encode,
-                x: series.encode.y,
-                y: series.encode.x,
-              },
-            };
-          }
-          return series;
-        });
-      }
-    }
-    if (appState.previewStackMode && Array.isArray(previewOption.series)) {
-      previewOption.series = previewOption.series.map((series) =>
-        series?.type === "bar" ? { ...series, stack: "preview-stack" } : series,
-      );
-    }
-    return previewOption;
-  }
-
-  if (chartType === "area" && appState.previewStackMode && Array.isArray(previewOption.series)) {
-    previewOption.series = previewOption.series.map((series) =>
-      series?.type === "line" ? { ...series, stack: "preview-stack" } : series,
-    );
-  }
-
-  return previewOption;
-}
-
-function buildChartStyleConfig(chartType, specificState, commonState, rawOption = null) {
-  const layoutBox = buildLayoutBox(commonState);
-  const previewViewportSize = getPreviewViewportSize();
-  switch (chartType) {
-    case "line":
-      return compactObject({
-        xAxis: { type: "category" },
-        yAxis: { type: "value" },
-        series: [
-          {
-            type: "line",
-            symbol: specificState.symbol,
-            symbolSize: resolveLinePreviewSymbolSize(specificState.symbolSize, specificState.showSymbol),
-            smooth: specificState.smooth,
-            showSymbol: resolveLinePreviewSymbolVisibility(specificState.showSymbol, specificState.showLabel),
-            connectNulls: specificState.connectNulls,
-            lineStyle: {
-              width: specificState.lineWidth,
-              type: specificState.lineStyleType,
-            },
-            label: {
-              show: specificState.showLabel,
-              fontSize: specificState.labelFontSize,
-              color: specificState.labelColor,
-            },
-          },
-        ],
-      });
-    case "bar":
-      return compactObject({
-        xAxis: { type: "category" },
-        yAxis: { type: "value" },
-        series: [
-          {
-            type: "bar",
-            barGap: specificState.barGap,
-            itemStyle: {
-              opacity: specificState.itemOpacity,
-              borderRadius: specificState.borderRadius,
-              borderWidth: specificState.borderWidth,
-              borderColor: specificState.borderColor,
-            },
-            label: {
-              show: specificState.showLabel,
-              position: specificState.labelPosition,
-              formatter: specificState.labelFormatter,
-              fontSize: specificState.labelFontSize,
-              color: specificState.labelColor,
-            },
-          },
-        ],
-      });
-    case "pie": {
-      const resolvedPieConfig = resolvePieRadius(layoutBox, previewViewportSize, appState.previewPieMode);
-      return compactObject({
-        series: [
-          {
-            type: "pie",
-            radius: resolvedPieConfig.radius,
-            roseType: resolvedPieConfig.roseType,
-            center: resolveLayoutCenter(layoutBox, "auto", "auto"),
-            startAngle: specificState.startAngle,
-            label: {
-              show: specificState.showLabel,
-              position: specificState.labelPosition,
-              fontSize: specificState.labelFontSize,
-              color: specificState.labelColor,
-              formatter: specificState.labelFormatter,
-            },
-            labelLine: {
-              show: specificState.labelLineShow,
-              lineStyle: {
-                color: specificState.labelLineColor,
-                width: specificState.labelLineWidth,
-              },
-            },
-            itemStyle: {
-              opacity: specificState.itemOpacity,
-              borderWidth: specificState.borderWidth,
-              borderColor: specificState.borderColor,
-            },
-          },
-        ],
-      });
-    }
-    case "gauge":
-      return compactObject({
-        series: [
-          {
-            type: "gauge",
-            startAngle: specificState.startAngle,
-            endAngle: specificState.endAngle,
-            center: resolveGaugeLayoutCenter(layoutBox, "auto", "auto"),
-            radius: resolveGaugeRadius(layoutBox, previewViewportSize),
-            progress: {
-              show: specificState.progressShow,
-              width: specificState.progressWidth,
-              itemStyle: { color: specificState.progressColor },
-            },
-            title: {
-              show: specificState.titleShow,
-              fontSize: specificState.titleFontSize,
-              color: specificState.titleColor,
-            },
-            detail: {
-              show: specificState.detailShow,
-              fontSize: specificState.detailFontSize,
-              fontWeight: "bold",
-              color: specificState.detailColor,
-              formatter: normalizeGaugeFormatter(specificState.detailFormatter),
-            },
-            axisLabel: {
-              show: specificState.axisLabelShow,
-              distance: specificState.axisLabelDistance,
-              fontSize: specificState.axisLabelFontSize,
-              color: specificState.axisLabelColor,
-            },
-            splitLine: {
-              show: specificState.splitLineShow,
-              length: specificState.splitLineLength,
-              lineStyle: {
-                width: specificState.splitLineWidth,
-                color: specificState.splitLineColor,
-              },
-            },
-            axisTick: {
-              show: specificState.axisTickShow,
-              length: specificState.axisTickLength,
-              lineStyle: {
-                width: specificState.axisTickWidth,
-                color: specificState.axisTickColor,
-              },
-            },
-            pointer: {
-              show: specificState.pointerShow,
-              width: numberOr(specificState.pointerWidth, 4),
-              itemStyle: { color: specificState.pointerColor },
-            },
-            anchor: {
-              show: specificState.anchorShow,
-              size: numberOr(specificState.anchorSize, 18),
-              itemStyle: { color: specificState.anchorColor },
-            },
-            axisLine: {
-              lineStyle: {
-                width: specificState.axisWidth,
-                color: resolveGaugeBands(specificState),
-              },
-            },
-          },
-        ],
-      });
-    case "area":
-      return compactObject({
-        xAxis: { type: "category" },
-        yAxis: { type: "value" },
-        series: [
-          {
-            type: "line",
-            smooth: specificState.smooth,
-            showSymbol: resolveLinePreviewSymbolVisibility(specificState.showSymbol, specificState.showLabel),
-            symbol: specificState.symbol,
-            symbolSize: resolveLinePreviewSymbolSize(specificState.symbolSize, specificState.showSymbol),
-            connectNulls: specificState.connectNulls,
-            lineStyle: {
-              width: specificState.lineWidth,
-              type: specificState.lineStyleType,
-            },
-            label: {
-              show: specificState.showLabel,
-              fontSize: specificState.labelFontSize,
-              color: specificState.labelColor,
-            },
-            areaStyle: resolveAreaFill(specificState, commonState, 0),
-          },
-        ],
-      });
-    case "dualAxis":
-      {
-        const sourceSeries = Array.isArray(rawOption?.series) ? rawOption.series : [];
-        const sideCounters = { left: 0, right: 0 };
-        const styleSeries = (sourceSeries.length ? sourceSeries : [{}, {}]).map((series, index) => {
-          const side = resolveDualAxisSeriesSide(series, specificState, index);
-          const sideIndex = sideCounters[side];
-          sideCounters[side] += 1;
-          return buildDualAxisSeriesConfigForSeries(specificState, series, index, sideIndex);
-        });
-        return compactObject({
-          xAxis: specificState.horizontal
-            ? [
-                buildDualAxisValueAxisConfig(commonState, specificState, "left"),
-                buildDualAxisValueAxisConfig(commonState, specificState, "right"),
-              ]
-            : buildDualAxisCategoryAxisConfig(commonState, false),
-          yAxis: specificState.horizontal
-            ? buildDualAxisCategoryAxisConfig(commonState, true)
-            : [
-                buildDualAxisValueAxisConfig(commonState, specificState, "left"),
-                buildDualAxisValueAxisConfig(commonState, specificState, "right"),
-              ],
-          series: styleSeries,
-        });
-      }
-    case "scatter":
-      return compactObject({
-        xAxis: { type: "value" },
-        yAxis: { type: "value" },
-        series: [
-          {
-            type: "scatter",
-            symbol: specificState.symbol,
-            symbolSize: numberOr(specificState.symbolSize, 64),
-            itemStyle: {
-              opacity: specificState.itemOpacity,
-              borderWidth: specificState.borderWidth,
-              borderColor: specificState.borderColor,
-            },
-            label: {
-              show: specificState.showLabel,
-              fontSize: specificState.labelFontSize,
-              color: specificState.labelColor,
-            },
-          },
-        ],
-      });
-    case "radar":
-      return compactObject({
-        radar: {
-          shape: specificState.shape,
-          splitNumber: specificState.splitNumber,
-          center: resolveLayoutCenter(layoutBox, "auto", "auto"),
-          radius: resolveRadarRadius(layoutBox, previewViewportSize),
-          axisName: {
-            fontSize: specificState.axisNameFontSize,
-            color: specificState.axisNameColor,
-            fontWeight: specificState.axisNameBold ? "bold" : "normal",
-          },
-          splitLine: {
-            lineStyle: {
-              color: specificState.splitLineColor,
-              width: specificState.splitLineWidth,
-              type: specificState.splitLineType,
-            },
-          },
-          axisLine: {
-            lineStyle: {
-              color: specificState.axisLineColor,
-              width: specificState.axisLineWidth,
-              type: specificState.axisLineType,
-            },
-          },
-          splitArea: {
-            show: false,
-          },
-        },
-        series: [
-          {
-            type: "radar",
-            symbol: specificState.symbol,
-            showSymbol: specificState.showSymbol,
-            symbolSize: specificState.symbolSize,
-            label: {
-              show: specificState.showLabel,
-              formatter: specificState.labelFormatter,
-              fontSize: specificState.labelFontSize,
-              color: specificState.labelColor,
-            },
-            lineStyle: {
-              width: specificState.lineWidth,
-              type: specificState.lineStyleType,
-            },
-            areaStyle: { opacity: specificState.areaOpacity },
-          },
-        ],
-      });
-    case "funnel":
-      return compactObject({
-        series: [
-          {
-            type: "funnel",
-            left: `${Math.round(layoutBox.left)}%`,
-            top: `${Math.round(layoutBox.top)}%`,
-            width: `${Math.round(layoutBox.width)}%`,
-            height: `${Math.round(layoutBox.height)}%`,
-            sort: specificState.sort,
-            gap: specificState.gap,
-            minSize: specificState.minSize,
-            maxSize: specificState.maxSize,
-            label: {
-              show: specificState.showLabel,
-              position: specificState.labelPosition,
-              formatter: specificState.labelFormatter,
-              fontSize: specificState.labelFontSize,
-              color: specificState.labelColor,
-            },
-            itemStyle: {
-              opacity: specificState.itemOpacity,
-              borderColor: specificState.borderColor,
-              borderWidth: specificState.borderWidth,
-            },
-          },
-        ],
-      });
-    default:
-      return {};
-  }
-}
-
-function parseJsonWithContext(raw, label, errorCode) {
-  const trimmed = raw.trim();
-  if (!trimmed) {
-    return {};
-  }
-  try {
-    return JSON.parse(trimmed);
-  } catch (error) {
-    throw new Error(`${errorCode}${getText("jsonInvalidPrefix").replace("{label}", label)}${error.message}`);
-  }
-}
-
-function buildAgentRequest(chartType, rawOption, stylePayload) {
-  const definition = getLocalizedDefinition(chartType);
-  return [
-    getText("agentRequestIntro")
-      .replace("{chartType}", `\`${chartType}\``)
-      .replace("{chartLabel}", definition.label),
-    ``,
-    getText("styleLayering"),
-    `- \`config/base_style.json\``,
-    `- \`config/${definition.styleFile}\``,
-    ``,
-    getText("rawOptionJson"),
-    "```json",
-    JSON.stringify(rawOption, null, 2),
-    "```",
-    ``,
-    getText("stylePayload"),
-    "```json",
-    JSON.stringify(stylePayload, null, 2),
-    "```",
-  ].join("\n");
-}
-
-function buildAgentPackage(chartType, rawOption, stylePayload, resolvedPreview) {
-  const definition = getLocalizedDefinition(chartType);
-  return {
-    skill: "data-charts-visualization",
-    chartType,
-    chartLabel: definition.label,
-    templateId: appState.templateId,
-    recommendedStyleFiles: stylePayload.recommendedStyleFiles,
-    option: rawOption,
-    stylePayload,
-    resolvedPreview,
-  };
+  canvas.style.width = `${FIXED_PREVIEW_VIEWPORT.width}px`;
+  canvas.style.minWidth = `${FIXED_PREVIEW_VIEWPORT.width}px`;
+  canvas.style.height = `${FIXED_PREVIEW_VIEWPORT.height}px`;
 }
 
 function setStatusReady() {
   const badge = $("status-badge");
+  if (!badge) {
+    return;
+  }
   badge.textContent = getText("ready");
   badge.classList.remove("error");
 }
 
 function setStatusError() {
   const badge = $("status-badge");
+  if (!badge) {
+    return;
+  }
   badge.textContent = getText("fixJson");
   badge.classList.add("error");
 }
 
 function showError(message) {
   const box = $("error-box");
+  if (!box) {
+    return;
+  }
   box.textContent = message;
   box.classList.remove("hidden");
 }
 
 function hideError() {
-  $("error-box").classList.add("hidden");
-  $("error-box").textContent = "";
-}
-
-function getPreviewText(key) {
-  const textMap = {
-    en: {
-      live: "Preview updates with your current configuration.",
-      unavailable: "Preview unavailable. ECharts failed to load in this browser.",
-      invalid: "Preview unavailable until the current JSON errors are fixed.",
-    },
-    zh: {
-      live: "预览会随着当前配置实时更新。",
-      unavailable: "当前无法预览。浏览器侧 ECharts 加载失败。",
-      invalid: "请先修复当前 JSON 错误，再查看预览。",
-    },
-  };
-  return textMap[CURRENT_LOCALE]?.[key] || textMap.en[key];
-}
-
-function setPreviewStatus(message) {
-  const desktop = $("preview-status");
-  const mobile = $("preview-status-mobile");
-  if (desktop) {
-    desktop.textContent = message;
+  const box = $("error-box");
+  if (!box) {
+    return;
   }
-  if (mobile) {
-    mobile.textContent = message;
-  }
+  box.classList.add("hidden");
+  box.textContent = "";
 }
 
 function disposePreviewInstance(element) {
@@ -4544,56 +2716,36 @@ function renderPreviewInto(containerId, option) {
     return;
   }
 
-  const chart = window.echarts.getInstanceByDom(container) || window.echarts.init(container, null, {
-    renderer: "canvas",
+  let chart = window.echarts.getInstanceByDom(container);
+  const activeRenderer = chart?.getZr?.()?.painter?.getType?.();
+  if (chart && activeRenderer !== PREVIEW_RENDERER) {
+    chart.dispose();
+    chart = null;
+  }
+  chart = chart || window.echarts.init(container, null, {
+    renderer: PREVIEW_RENDERER,
   });
   chart.setOption(option, true);
   chart.resize();
 }
 
 function renderPreview(option) {
+  syncPreviewCanvasDimensions();
   appState.latestResolvedOption = option || null;
   if (!option) {
-    setPreviewStatus(getPreviewText("invalid"));
     disposePreviewInstance($("preview-canvas"));
-    disposePreviewInstance($("preview-canvas-mobile"));
     return;
   }
   if (!window.echarts) {
-    setPreviewStatus(getPreviewText("unavailable"));
     return;
   }
 
-  setPreviewStatus(getPreviewText("live"));
   renderPreviewInto("preview-canvas", option);
-  if (!$("preview-modal")?.classList.contains("hidden")) {
-    renderPreviewInto("preview-canvas-mobile", option);
-  }
-}
-
-function openPreviewModal() {
-  const modal = $("preview-modal");
-  if (!modal) {
-    return;
-  }
-  modal.classList.remove("hidden");
-  requestAnimationFrame(() => {
-    renderPreview(appState.latestResolvedOption);
-  });
-}
-
-function closePreviewModal() {
-  const modal = $("preview-modal");
-  if (!modal) {
-    return;
-  }
-  modal.classList.add("hidden");
 }
 
 function updateOutputs() {
   renderFoundationVisibility();
   renderDualAxisPreviewControls();
-  clearEditorState();
   try {
     const sharedOptionBuilder = globalThis.DataChartsOptionBuilder;
     if (!sharedOptionBuilder || typeof sharedOptionBuilder.buildChartArtifacts !== "function") {
@@ -4603,8 +2755,8 @@ function updateOutputs() {
     const definition = getCurrentDefinition();
     const commonState = getCommonState();
     const specificState = getSpecificState();
-    const rawData = deepClone(getCurrentTemplate().data);
-    const { rawOption, stylePayload, resolvedOption: resolved } = sharedOptionBuilder.buildChartArtifacts({
+    const rawData = getDefaultRawDataForChart(appState.chartType);
+    const { stylePayload, resolvedOption: resolved } = sharedOptionBuilder.buildChartArtifacts({
       chartType: appState.chartType,
       definition,
       commonState,
@@ -4614,19 +2766,14 @@ function updateOutputs() {
         previewStackMode: appState.previewStackMode,
         previewBarHorizontal: appState.previewBarHorizontal,
         previewPieMode: appState.previewPieMode,
+        previewSeriesCount: appState.previewSeriesCount,
+        previewDualAxisLeftSeriesCount: appState.previewDualAxisLeftSeriesCount,
+        previewDualAxisRightSeriesCount: appState.previewDualAxisRightSeriesCount,
         dualAxisPreviewLeftType: appState.dualAxisPreviewLeftType,
         dualAxisPreviewRightType: appState.dualAxisPreviewRightType,
       },
       previewViewportSize: getPreviewViewportSize(),
     });
-
-    const agentPackage = buildAgentPackage(
-      appState.chartType,
-      rawOption,
-      stylePayload,
-      resolved,
-    );
-    const agentRequest = buildAgentRequest(appState.chartType, rawOption, stylePayload);
 
     setTextIfExists("style-output", JSON.stringify(stylePayload, null, 2));
     renderPreview(resolved);
@@ -4665,39 +2812,6 @@ function showToast(message) {
   }, 1800);
 }
 
-function getActivePreviewInstance() {
-  if (!window.echarts) {
-    return null;
-  }
-  const mobileVisible = !$("preview-modal")?.classList.contains("hidden");
-  if (mobileVisible) {
-    const mobileInstance = window.echarts.getInstanceByDom($("preview-canvas-mobile"));
-    if (mobileInstance) {
-      return mobileInstance;
-    }
-  }
-  return window.echarts.getInstanceByDom($("preview-canvas"));
-}
-
-function exportPreviewImage() {
-  const chart = getActivePreviewInstance();
-  if (!chart) {
-    throw new Error("Preview chart is unavailable.");
-  }
-  const backgroundColor = appState.latestResolvedOption?.backgroundColor || "#ffffff";
-  const dataUrl = chart.getDataURL({
-    type: "png",
-    pixelRatio: 2,
-    backgroundColor,
-  });
-  const link = document.createElement("a");
-  link.href = dataUrl;
-  link.download = `${appState.chartType || "chart"}-preview.png`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
 function wireCopyButtons() {
   document.querySelectorAll("[data-copy-target]").forEach((button) => {
     button.addEventListener("click", async () => {
@@ -4713,45 +2827,15 @@ function wireCopyButtons() {
 }
 
 function wirePreviewControls() {
-  const openButton = $("open-preview-mobile");
-  const closeButton = $("close-preview-mobile");
-  const modal = $("preview-modal");
-
-  if (openButton) {
-    openButton.addEventListener("click", openPreviewModal);
-  }
-  if (closeButton) {
-    closeButton.addEventListener("click", closePreviewModal);
-  }
-  if (modal) {
-    modal.addEventListener("click", (event) => {
-      if (event.target === modal) {
-        closePreviewModal();
-      }
-    });
-  }
-
   window.addEventListener("resize", () => {
-    if (appState.latestResolvedOption) {
-      renderPreview(appState.latestResolvedOption);
+    syncPreviewCanvasDimensions();
+    const previewChart = window.echarts?.getInstanceByDom($("preview-canvas"));
+    if (previewChart) {
+      previewChart.resize({
+        width: FIXED_PREVIEW_VIEWPORT.width,
+        height: FIXED_PREVIEW_VIEWPORT.height,
+      });
     }
-  });
-}
-
-function wirePreviewExportButtons() {
-  ["export-preview-image", "export-preview-image-mobile"].forEach((id) => {
-    const button = $(id);
-    if (!button) {
-      return;
-    }
-    button.addEventListener("click", () => {
-      try {
-        exportPreviewImage();
-        showToast(getText("previewExported"));
-      } catch (error) {
-        showToast(getText("previewExportFailed"));
-      }
-    });
   });
 }
 
@@ -4761,14 +2845,15 @@ function switchChart(chartType) {
   appState.previewStackMode = false;
   appState.previewBarHorizontal = false;
   appState.previewPieMode = chartType === "pie" ? "donut" : appState.previewPieMode;
+  appState.previewSeriesCount = supportsSeriesCountPreview(chartType) ? 2 : 1;
+  appState.previewDualAxisLeftSeriesCount = 2;
+  appState.previewDualAxisRightSeriesCount = 2;
   syncDualAxisPreviewTypesWithTemplate();
   buildChartCards();
   renderChartSummary();
   renderDualAxisPreviewControls();
   renderFoundationVisibility();
   renderSpecificFields({ source: "defaults" });
-  renderTemplateSelect();
-  resetTemplateEditor();
   applyChartBeautyDefaults(chartType);
 }
 
@@ -4804,19 +2889,6 @@ function wireEvents() {
       updateOutputs();
     }
   });
-
-  const templateSelect = $("data-template-select");
-  if (templateSelect) {
-    templateSelect.addEventListener("change", () => {
-      appState.templateId = templateSelect.value;
-      syncDualAxisPreviewTypesWithTemplate();
-      updateTemplateHelp();
-      resetTemplateEditor();
-      renderDualAxisPreviewControls();
-      renderSpecificFields();
-      updateOutputs();
-    });
-  }
 
   document.addEventListener("click", (event) => {
     const addGaugeBand = event.target.closest("[data-gauge-band-add]");
@@ -4873,6 +2945,28 @@ function wireEvents() {
       return;
     }
 
+    const previewSeriesCountButton = event.target.closest("[data-preview-series-count]");
+    if (previewSeriesCountButton && supportsSeriesCountPreview(appState.chartType)) {
+      appState.previewSeriesCount = Number(previewSeriesCountButton.dataset.previewSeriesCount) || 2;
+      renderDualAxisPreviewControls();
+      updateOutputs();
+      return;
+    }
+
+    const previewDualAxisSeriesCountButton = event.target.closest("[data-preview-dual-axis-series-count][data-preview-dual-axis-series-side]");
+    if (previewDualAxisSeriesCountButton && appState.chartType === "dualAxis") {
+      const side = previewDualAxisSeriesCountButton.dataset.previewDualAxisSeriesSide;
+      const count = Number(previewDualAxisSeriesCountButton.dataset.previewDualAxisSeriesCount) || 2;
+      if (side === "left") {
+        appState.previewDualAxisLeftSeriesCount = count;
+      } else if (side === "right") {
+        appState.previewDualAxisRightSeriesCount = count;
+      }
+      renderDualAxisPreviewControls();
+      updateOutputs();
+      return;
+    }
+
     const previewBarLayoutButton = event.target.closest("[data-preview-bar-layout]");
     if (previewBarLayoutButton && appState.chartType === "bar") {
       appState.previewBarHorizontal = previewBarLayoutButton.dataset.previewBarLayout === "horizontal";
@@ -4904,14 +2998,6 @@ function wireEvents() {
     renderSpecificFields();
     updateOutputs();
   });
-
-  const resetTemplate = $("reset-template");
-  if (resetTemplate) {
-    resetTemplate.addEventListener("click", () => {
-      resetTemplateEditor();
-      updateOutputs();
-    });
-  }
 
   const addCustomPalette = $("add-custom-palette");
   if (addCustomPalette) {
@@ -4945,20 +3031,17 @@ function wireEvents() {
 }
 
 function init() {
+  renderCommonFoundationSections();
   resetCommonFields();
-  renderPalettePresets();
   buildChartCards();
   renderChartSummary();
   syncDualAxisPreviewTypesWithTemplate();
   renderDualAxisPreviewControls();
   renderFoundationVisibility();
   renderSpecificFields();
-  renderTemplateSelect();
-  resetTemplateEditor();
   wireEvents();
   wireCopyButtons();
   wirePreviewControls();
-  wirePreviewExportButtons();
   applyChartBeautyDefaults(appState.chartType);
 }
 

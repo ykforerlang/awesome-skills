@@ -1,0 +1,126 @@
+[
+  {
+    "chartType": "line",
+    "variantId": "series-1",
+    "previewState": {
+      "previewStackMode": false,
+      "previewBarHorizontal": false,
+      "previewPieMode": "donut",
+      "previewSeriesCount": 1
+    },
+    "summary": {
+      "rawSeriesCount": 1,
+      "resolvedSeriesCount": 1,
+      "rawSeriesNames": [
+        "Visits"
+      ],
+      "resolvedSeriesNames": [
+        "Visits"
+      ],
+      "resolvedBarWidths": []
+    },
+    "outputFile": "test/images/line/series-1.png",
+    "rawOptionFile": "test/data/line/series-1.raw-option.json",
+    "resolvedOptionFile": "test/data/line/series-1.resolved-option.json",
+    "summaryFile": "test/data/line/series-1.summary.json"
+  },
+  {
+    "chartType": "line",
+    "variantId": "series-2",
+    "previewState": {
+      "previewStackMode": false,
+      "previewBarHorizontal": false,
+      "previewPieMode": "donut",
+      "previewSeriesCount": 2
+    },
+    "summary": {
+      "rawSeriesCount": 2,
+      "resolvedSeriesCount": 2,
+      "rawSeriesNames": [
+        "Visits",
+        "Orders"
+      ],
+      "resolvedSeriesNames": [
+        "Visits",
+        "Orders"
+      ],
+      "resolvedBarWidths": []
+    },
+    "outputFile": "test/images/line/series-2.png",
+    "rawOptionFile": "test/data/line/series-2.raw-option.json",
+    "resolvedOptionFile": "test/data/line/series-2.resolved-option.json",
+    "summaryFile": "test/data/line/series-2.summary.json"
+  },
+  {
+    "chartType": "line",
+    "variantId": "series-5",
+    "previewState": {
+      "previewStackMode": false,
+      "previewBarHorizontal": false,
+      "previewPieMode": "donut",
+      "previewSeriesCount": 5
+    },
+    "summary": {
+      "rawSeriesCount": 5,
+      "resolvedSeriesCount": 5,
+      "rawSeriesNames": [
+        "Visits",
+        "Orders",
+        "Leads",
+        "Signups",
+        "Revenue"
+      ],
+      "resolvedSeriesNames": [
+        "Visits",
+        "Orders",
+        "Leads",
+        "Signups",
+        "Revenue"
+      ],
+      "resolvedBarWidths": []
+    },
+    "outputFile": "test/images/line/series-5.png",
+    "rawOptionFile": "test/data/line/series-5.raw-option.json",
+    "resolvedOptionFile": "test/data/line/series-5.resolved-option.json",
+    "summaryFile": "test/data/line/series-5.summary.json"
+  },
+  {
+    "chartType": "line",
+    "variantId": "series-8",
+    "previewState": {
+      "previewStackMode": false,
+      "previewBarHorizontal": false,
+      "previewPieMode": "donut",
+      "previewSeriesCount": 8
+    },
+    "summary": {
+      "rawSeriesCount": 8,
+      "resolvedSeriesCount": 8,
+      "rawSeriesNames": [
+        "Visits",
+        "Orders",
+        "Leads",
+        "Signups",
+        "Revenue",
+        "Retention",
+        "Conversion",
+        "Satisfaction"
+      ],
+      "resolvedSeriesNames": [
+        "Visits",
+        "Orders",
+        "Leads",
+        "Signups",
+        "Revenue",
+        "Retention",
+        "Conversion",
+        "Satisfaction"
+      ],
+      "resolvedBarWidths": []
+    },
+    "outputFile": "test/images/line/series-8.png",
+    "rawOptionFile": "test/data/line/series-8.raw-option.json",
+    "resolvedOptionFile": "test/data/line/series-8.resolved-option.json",
+    "summaryFile": "test/data/line/series-8.summary.json"
+  }
+]

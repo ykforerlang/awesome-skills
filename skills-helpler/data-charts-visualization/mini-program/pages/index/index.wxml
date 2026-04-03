@@ -1,23 +1,61 @@
 <view class="page-shell">
-  <view class="title-card">
-    <view class="eyebrow">Skills Helper</view>
-    <view class="title-row">
-      <view>
-        <view class="page-title">Data Charts Visualization</view>
-        <view class="page-subtitle">微信小程序配置面板</view>
-      </view>
-      <view class="title-badge">{{chartLabel}}</view>
-    </view>
-    <view class="page-note">{{chartBlurb}}</view>
-  </view>
-
   <view class="preview-sticky">
     <view class="preview-card">
       <view class="section-head">
-        <view class="section-title">Preview</view>
-        <view class="section-chip">ECharts</view>
+        <view class="section-title">{{chartLabel}}</view>
+        <view class="preview-head-actions">
+          <view class="preview-copy-button" bindtap="handleCopyToAgent">复制到Agent</view>
+        </view>
       </view>
-      <ec-canvas id="preview-chart" canvas-id="preview-chart" ec="{{ec}}" class="preview-canvas"></ec-canvas>
+
+      <view wx:if="{{previewConfig.visible}}" class="preview-config-panel">
+        <view class="preview-config-layout">
+          <view class="preview-config-fixed-label">预览配置（不会导出）：</view>
+          <scroll-view scroll-x class="preview-config-scroll" show-scrollbar="{{false}}">
+            <view class="preview-config-row">
+              <view
+                wx:for="{{previewConfig.groups}}"
+                wx:key="id"
+                class="preview-config-group"
+              >
+                <view class="preview-config-group-label">{{item.title}}</view>
+                <view class="preview-config-buttons">
+                  <view
+                    wx:for="{{item.buttons}}"
+                    wx:for-item="button"
+                    wx:key="label"
+                    class="preview-config-button {{button.active ? 'active' : ''}}"
+                    data-action="{{button.action}}"
+                    data-value="{{button.value}}"
+                    data-side="{{button.side}}"
+                    bindtap="handlePreviewControlTap"
+                  >
+                    {{button.label}}
+                  </view>
+                </view>
+              </view>
+            </view>
+          </scroll-view>
+        </view>
+      </view>
+
+      <view
+        class="preview-stage-shell"
+        style="height: {{previewDisplayHeight}}px;"
+      >
+        <view
+          class="preview-canvas-shell"
+          style="width: {{previewDisplayWidth}}px; height: {{previewDisplayHeight}}px;"
+        >
+          <ec-canvas
+            id="preview-chart"
+            canvas-id="preview-chart"
+            ec="{{ec}}"
+            class="preview-canvas"
+            style="display: block; width: {{previewDisplayWidth}}px; height: {{previewDisplayHeight}}px;"
+          ></ec-canvas>
+        </view>
+      </view>
     </view>
 
     <view class="tabs-card">
@@ -37,98 +75,68 @@
     </view>
   </view>
 
-  <scroll-view scroll-y class="config-scroll" enhanced="{{true}}" show-scrollbar="{{false}}">
-    <view class="config-card">
-      <view class="section-head">
-        <view class="section-title">Foundation</view>
-        <view class="section-chip">Common</view>
-      </view>
-
-      <block wx:for="{{commonSections}}" wx:key="id">
-        <view class="form-section">
-          <view class="form-section-title">{{item.label}}</view>
-          <view class="field-grid">
-            <block wx:for="{{item.fields}}" wx:key="id">
-              <view class="field-card">
-                <view class="field-label">{{item.label}}</view>
-
-                <switch
-                  wx:if="{{item.type === 'checkbox'}}"
-                  checked="{{item.value}}"
-                  color="#bf5f2f"
-                  data-scope="common"
-                  data-field-id="{{item.id}}"
-                  bindchange="handleSwitch"
-                />
-
-                <picker
-                  wx:elif="{{item.type === 'select'}}"
-                  range="{{item.optionLabels}}"
-                  value="{{item.pickerIndex}}"
-                  data-scope="common"
-                  data-field-id="{{item.id}}"
-                  bindchange="handlePicker"
-                >
-                  <view class="picker-value">{{item.optionLabels[item.pickerIndex]}}</view>
-                </picker>
-
-                <textarea
-                  wx:elif="{{item.type === 'textarea'}}"
-                  class="field-textarea"
-                  auto-height="{{true}}"
-                  value="{{item.value}}"
-                  data-scope="common"
-                  data-field-id="{{item.id}}"
-                  bindinput="handleInput"
-                />
-
-                <view wx:else class="field-input-wrap">
-                  <input
-                    class="field-input"
-                    type="{{item.type === 'number' ? 'digit' : 'text'}}"
-                    value="{{item.value}}"
-                    data-scope="common"
-                    data-field-id="{{item.id}}"
-                    bindinput="handleInput"
-                  />
-                  <view wx:if="{{item.type === 'color'}}" class="color-dot" style="background: {{item.value}}"></view>
-                </view>
-              </view>
-            </block>
-          </view>
-        </view>
-      </block>
-    </view>
-
+  <view class="config-shell">
     <view class="config-card config-card-last">
       <view class="section-head">
-        <view class="section-title">Chart Specific</view>
+        <view class="section-title">配置项</view>
         <view class="section-chip">{{chartLabel}}</view>
       </view>
 
-      <block wx:for="{{specificSections}}" wx:key="title">
-        <view class="form-section">
-          <view class="form-section-title">{{item.title}}</view>
-          <view wx:if="{{item.help}}" class="form-section-help">{{item.help}}</view>
+      <view class="section-tabs-shell">
+        <scroll-view
+          scroll-x
+          scroll-left="{{configTabsScrollLeft}}"
+          scroll-with-animation="{{true}}"
+          class="section-tabs-scroll"
+          show-scrollbar="{{false}}"
+        >
+          <view class="section-tabs-row">
+            <view
+              wx:for="{{configTabs}}"
+              wx:key="id"
+              class="section-tab {{item.active ? 'active' : ''}}"
+              data-section-id="{{item.id}}"
+              bindtap="handleConfigSectionSwitch"
+            >
+              {{item.label}}
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+
+      <scroll-view
+        wx:if="{{activeConfigSection}}"
+        scroll-y
+        scroll-top="{{configScrollTop}}"
+        scroll-with-animation="{{true}}"
+        class="config-panel-scroll"
+        enhanced="{{true}}"
+        show-scrollbar="{{false}}"
+        bindscroll="handleConfigScroll"
+      >
+        <view class="form-section tab-panel-section">
+          <view class="form-section-title">{{activeConfigSection.panelTitle}}</view>
+          <view wx:if="{{activeConfigSection.help}}" class="form-section-help">{{activeConfigSection.help}}</view>
           <view class="field-grid">
-            <block wx:for="{{item.fields}}" wx:key="id">
-              <view class="field-card">
+            <block wx:for="{{activeConfigSection.fields}}" wx:key="id">
+              <view class="field-card {{item.isPaletteField ? 'field-card-wide' : ''}}">
                 <view class="field-label">{{item.label}}</view>
 
-                <switch
-                  wx:if="{{item.type === 'checkbox'}}"
-                  checked="{{item.value}}"
-                  color="#bf5f2f"
-                  data-scope="specific"
-                  data-field-id="{{item.id}}"
-                  bindchange="handleSwitch"
-                />
+                <view wx:if="{{item.type === 'checkbox'}}" class="switch-value">
+                  <switch
+                    checked="{{item.value}}"
+                    color="#bf5f2f"
+                    data-scope="{{activeConfigSection.scope}}"
+                    data-field-id="{{item.id}}"
+                    bindchange="handleSwitch"
+                  />
+                </view>
 
                 <picker
                   wx:elif="{{item.type === 'select'}}"
                   range="{{item.optionLabels}}"
                   value="{{item.pickerIndex}}"
-                  data-scope="specific"
+                  data-scope="{{activeConfigSection.scope}}"
                   data-field-id="{{item.id}}"
                   bindchange="handlePicker"
                 >
@@ -136,31 +144,96 @@
                 </picker>
 
                 <textarea
-                  wx:elif="{{item.type === 'textarea'}}"
+                  wx:elif="{{item.type === 'textarea' && !item.isPaletteField}}"
                   class="field-textarea"
                   auto-height="{{true}}"
                   value="{{item.value}}"
-                  data-scope="specific"
+                  data-scope="{{activeConfigSection.scope}}"
                   data-field-id="{{item.id}}"
                   bindinput="handleInput"
                 />
+
+                <view wx:elif="{{item.isPaletteField}}" class="palette-editor">
+                  <view class="palette-editor-head">
+                    <view class="palette-editor-title">自定义配色</view>
+                    <view class="palette-editor-actions">
+                      <view
+                        class="palette-action-button"
+                        data-scope="{{activeConfigSection.scope}}"
+                        data-field-id="{{item.id}}"
+                        bindtap="handleAddPaletteColor"
+                      >
+                        添加颜色
+                      </view>
+                      <view
+                        class="palette-action-button"
+                        data-scope="{{activeConfigSection.scope}}"
+                        data-field-id="{{item.id}}"
+                        bindtap="handleRemovePaletteColor"
+                      >
+                        移除颜色
+                      </view>
+                    </view>
+                  </view>
+                  <view class="palette-swatches-grid">
+                    <view
+                      wx:for="{{item.paletteColors}}"
+                      wx:for-item="swatchColor"
+                      wx:for-index="swatchIndex"
+                      wx:key="index"
+                      class="palette-swatch-button"
+                      style="background: {{swatchColor}}"
+                      data-scope="{{activeConfigSection.scope}}"
+                      data-field-id="{{item.id}}"
+                      data-label="配色板"
+                      data-value="{{swatchColor}}"
+                      data-item-index="{{swatchIndex}}"
+                      bindtap="handleOpenColorPicker"
+                    ></view>
+                  </view>
+                </view>
+
+                <view
+                  wx:elif="{{item.type === 'color'}}"
+                  class="color-picker-button"
+                  style="{{item.colorPreviewStyle}}"
+                  data-scope="{{activeConfigSection.scope}}"
+                  data-field-id="{{item.id}}"
+                  data-label="{{item.label}}"
+                  data-value="{{item.value}}"
+                  bindtap="handleOpenColorPicker"
+                ></view>
 
                 <view wx:else class="field-input-wrap">
                   <input
                     class="field-input"
                     type="{{item.type === 'number' ? 'digit' : 'text'}}"
                     value="{{item.value}}"
-                    data-scope="specific"
+                    data-scope="{{activeConfigSection.scope}}"
                     data-field-id="{{item.id}}"
                     bindinput="handleInput"
                   />
-                  <view wx:if="{{item.type === 'color'}}" class="color-dot" style="background: {{item.value}}"></view>
                 </view>
               </view>
             </block>
           </view>
         </view>
-      </block>
+      </scroll-view>
     </view>
-  </scroll-view>
+  </view>
+
+  <t-color-picker
+    id="global-color-picker"
+    visible="{{colorPickerVisible}}"
+    usePopup="{{true}}"
+    fixed="{{true}}"
+    type="multiple"
+    format="HEX"
+    value="{{colorPickerValue}}"
+    swatchColors="{{colorSwatches}}"
+    bind:change="handleColorPickerChange"
+    bind:close="handleColorPickerClose"
+  >
+    <view slot="header" class="picker-popup-header">{{colorPickerFieldLabel}}</view>
+  </t-color-picker>
 </view>

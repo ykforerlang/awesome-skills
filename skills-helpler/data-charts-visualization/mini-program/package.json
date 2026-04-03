@@ -1,0 +1,9 @@
+{
+  "name": "data-charts-visualization-mini-program",
+  "private": true,
+  "version": "0.0.1",
+  "dependencies": {
+    "echarts": "^5.6.0",
+    "tdesign-miniprogram": "^1.13.1"
+  }
+}

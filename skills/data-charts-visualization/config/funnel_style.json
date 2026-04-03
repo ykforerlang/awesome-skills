@@ -1,50 +1,63 @@
 {
-  "color": [
-    "#5470c6",
-    "#91cc75",
-    "#fac858",
-    "#ee6666",
-    "#73c0de",
-    "#3ba272",
-    "#fc8452",
-    "#9a60b4",
-    "#ea7ccc"
-  ],
-  "backgroundColor": "#ffffff",
-  "title": {
-    "left": "left",
-    "textStyle": {
-      "fontSize": 26,
-      "fontWeight": "bold",
-      "color": "#1f2937"
-    },
-    "subtextStyle": {
-      "fontSize": 11,
-      "color": "#6b7280"
-    }
+  "_meta": {
+    "source": "skills-helpler/data-charts-visualization/web/app.js",
+    "exportedBy": "skills/data-charts-visualization/test/scripts/render_skill_preview_matrix.js",
+    "chartType": "funnel",
+    "exportedAt": "2026-04-02T17:13:18.991Z",
+    "note": "Default helper config exported from current helper schema."
   },
-  "legend": {
-    "show": true,
-    "top": "top",
-    "left": "left",
-    "orient": "horizontal",
-    "textStyle": {
-      "fontSize": 11,
+  "chartType": "funnel",
+  "common": {
+    "title": {
+      "main": {
+        "show": true,
+        "text": "CHARTS-VISUALIZATION",
+        "align": "center",
+        "fontSize": 24,
+        "color": "#1f2937",
+        "bold": true
+      },
+      "subtitle": {
+        "show": true,
+        "text": "由配置助手生成",
+        "fontSize": 14,
+        "color": "#6b7280"
+      }
+    },
+    "canvas": {
+      "backgroundColor": "#ffffff",
+      "palette": [
+        "#2563eb",
+        "#14b8a6",
+        "#f59e0b",
+        "#ef4444",
+        "#8b5cf6"
+      ],
+      "plotArea": {
+        "left": "12%",
+        "right": "12%",
+        "top": "21%",
+        "bottom": "15%"
+      }
+    },
+    "legend": {
+      "show": true,
+      "position": "bottom-center",
+      "orient": "horizontal",
+      "fontSize": 12,
       "color": "#4b5563"
     }
   },
-  "series": [
-    {
-      "type": "funnel",
-      "sort": "descending",
-      "label": {
-        "show": true,
-        "position": "outside"
-      },
-      "itemStyle": {
-        "borderColor": "#ffffff",
-        "borderWidth": 2
-      }
-    }
-  ]
+  "specific": {
+    "sort": "descending",
+    "gap": 2,
+    "minSize": "12%",
+    "maxSize": "88%",
+    "itemOpacity": 0.92,
+    "labelPosition": "inside",
+    "showLabel": true,
+    "labelFormatter": "{b}: {d}%",
+    "labelFontSize": 12,
+    "labelColor": "#334155"
+  }
 }

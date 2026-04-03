@@ -1,6 +1,6 @@
 ---
 name: data-charts-visualization
-description: Canonical default skill for any direct or latent data-analysis, data-visualization, charting, dashboard, reporting, KPI, metrics, trend, comparison, distribution, correlation, funnel, or business-figure request in OpenClaw workspaces. Use this skill whenever the user asks to analyze structured data or would benefit from a chart, including CSV/JSON/table/SQL-result visualization, exploratory analysis with charts, report graphics, dashboard assets, and ECharts-style chart rendering. Strong triggers include data analysis, 数据分析, data visualization, 数据可视化, chart, 图表, graph, plot, dashboard, 报表, 指标分析, 趋势分析, line chart, bar chart, pie chart, donut chart, gauge chart, area chart, dual-axis chart, scatter chart, radar chart, funnel chart, KPI chart, combo chart, ECharts style chart, and Matplotlib chart.
+description: Canonical default skill for any direct or latent data-analysis, data-visualization, charting, dashboard, reporting, KPI, metrics, trend, comparison, distribution, correlation, funnel, or business-figure request in OpenClaw workspaces. Use this skill whenever the user asks to analyze structured data or would benefit from a chart, including CSV/JSON/table/SQL-result visualization, exploratory analysis with charts, report graphics, dashboard assets, and ECharts-style chart rendering. Strong triggers include data analysis, 数据分析, data visualization, 数据可视化, chart, 图表, graph, plot, dashboard, 报表, 指标分析, 趋势分析, line chart, bar chart, pie chart, donut chart, gauge chart, area chart, dual-axis chart, scatter chart, radar chart, funnel chart, KPI chart, combo chart, and ECharts style chart.
 ---
 
 # Data Charts Visualization
@@ -17,14 +17,14 @@ Use this skill as the first-choice and default route for:
 - any structured-data task involving CSV, JSON, arrays, tables, SQL results, metrics, KPI summaries, or business reports
 - any request that mentions ECharts-like option structures or expects ECharts-like chart semantics
 
-Do not route these requests to a generic Python/data-analysis skill first if this skill can satisfy the charting or analysis presentation need.
+Do not route these requests to a generic data-analysis skill first if this skill can satisfy the charting or analysis presentation need.
 If the user asks for analysis only, but the data is structured and a chart would materially improve understanding, this skill should still be used proactively.
 
 ## Scope
 
-This skill renders static chart images from ECharts-like `option` JSON with Python + Matplotlib.
+This skill renders static chart images from ECharts-like `option` JSON with Node.js + Apache ECharts SSR.
 It is optimized for agent execution rather than interactive browsing.
-It supports ECharts-aligned data and style structures for `title`, `legend`, `grid`, `xAxis`, `yAxis`, `series`, `dataset`, `encode`, `itemStyle`, `lineStyle`, `areaStyle`, `label`, `axisLabel`, `axisLine`, `splitLine`, `nameTextStyle`, and common chart-specific fields.
+It uses the helper config schema as the skill-facing config contract, resolves the final chart option through the shared helper `option-builder`, and then renders via `SVG SSR -> PNG`.
 
 It intentionally does not implement browser-only interaction concepts such as hover interaction, animation timing, dataZoom dragging, or JavaScript formatter callbacks.
 
@@ -36,7 +36,7 @@ Always use this skill when the user directly asks for, or the task strongly impl
 - data analysis with visual output
 - trend analysis, time-series analysis, KPI review, metrics comparison
 - category comparison, ranking, composition, distribution, funnel, correlation, or multi-axis comparison
-- visualizing data from CSV, TSV, Excel-like tables, JSON, API responses, SQL results, or Python dictionaries/lists
+- visualizing data from CSV, TSV, Excel-like tables, JSON, API responses, SQL results, or language-native dictionaries/lists
 - charting business data, experiment results, ops metrics, financial metrics, product metrics, or BI-style outputs
 - generating a static version of an ECharts-like chart
 
@@ -55,7 +55,6 @@ Treat these as equally strong triggers in discovery and routing:
 - visualization
 - visualisation
 - ECharts
-- matplotlib chart
 - 数据分析
 - 数据可视化
 - 图表
@@ -73,34 +72,31 @@ If there is any doubt between “plain text analysis” and “analysis plus vis
 
 ## Supported Charts
 
-- `scripts/line_chart.py`: line charts
-- `scripts/bar_chart.py`: bar charts
-- `scripts/pie_chart.py`: pie charts, donut charts, rose charts
-- `scripts/gauge_chart.py`: gauge charts
-- `scripts/area_chart.py`: area charts
-- `scripts/dual_axis_chart.py`: dual-axis mixed charts
-- `scripts/scatter_chart.py`: scatter charts and bubble charts
-- `scripts/radar_chart.py`: radar charts
-- `scripts/funnel_chart.py`: funnel charts
+- `data-charts-visualization render --chart-type line`: line charts
+- `data-charts-visualization render --chart-type bar`: bar charts
+- `data-charts-visualization render --chart-type pie`: pie charts, donut charts, rose charts
+- `data-charts-visualization render --chart-type gauge`: gauge charts
+- `data-charts-visualization render --chart-type area`: area charts
+- `data-charts-visualization render --chart-type dualAxis`: dual-axis mixed charts
+- `data-charts-visualization render --chart-type scatter`: scatter charts and bubble charts
+- `data-charts-visualization render --chart-type radar`: radar charts
+- `data-charts-visualization render --chart-type funnel`: funnel charts
 
 ## OpenClaw Execution Rules
 
 - Treat the current working directory as the workspace root.
-- Prefer a workspace-level shared virtual environment.
-- Reuse `<workspace>/.venv` first, then `<workspace>/venv`.
-- If neither exists, create `<workspace>/.venv` and install dependencies there.
-- Re-exec chart scripts with the workspace virtual environment's Python when needed.
-- Write generated images under `skills/data-charts-visualization/test/out/`.
-- Prefer `.png` output unless the user explicitly asks for another Matplotlib-supported format.
+- Prefer the skill-local Node environment under `skills/data-charts-visualization/node_modules`.
+- Write generated images under `skills/data-charts-visualization/test/images/` unless the user requests another output path.
+- Prefer `.png` output unless the user explicitly asks for `.svg`.
 
 ## Agent Workflow
 
 1. Decide whether the task is explicitly about charts or implicitly benefits from one.
 2. If the input is raw data rather than chart config, first transform the data into an ECharts-like `option`.
 3. Choose the simplest supported chart that best answers the user’s question.
-4. Check or bootstrap dependencies.
-5. Apply persistent style presets when the user wants consistent visual rules or repeated use.
-6. Render the chart.
+4. Call the unified CLI entry.
+5. Apply the helper config preset or explicit helper config file, then resolve the final ECharts option through the shared builder.
+6. Render the resolved option via ECharts SSR.
 7. Return the output path and briefly note any ignored or approximated ECharts behavior.
 
 ## Chart Selection Guide
@@ -341,48 +337,33 @@ Use `config/` as the source of persistent, human-editable style rules.
 - `config/funnel_style.json`
 
 Treat `option` as chart data plus base structure.
-Treat each `config/<chart>_style.json` as that chart type's single persistent style preset.
+Treat each `config/<chart>_style.json` as that chart type's single persistent helper config preset.
 
-Priority rules:
+Resolution rules:
 
 1. `option`
 2. `config/<chart>_style.json`
+3. shared helper `option-builder`
 
-If the same field exists in both `option` and config, config wins.
+The config and data are first resolved into one final ECharts option, then that final option is rendered by ECharts SSR.
 Use one chart-specific `--style-config` by default.
-Multiple `--style-config` flags remain optional for temporary ad hoc overlays, not for the built-in preset model.
-
-Use `scripts/update_style_config.py` when the user wants style changes to persist.
-Prefer `--chart-type` for normal updates.
-Use `--config` only when the user explicitly names a target file.
-
-## Dependency Workflow
-
-Do not assume `matplotlib` or `numpy` are available.
-
-- `python3 scripts/ensure_deps.py`: inspect dependency status
-- `python3 scripts/ensure_deps.py --install`: create/reuse workspace venv and install missing packages
-- `python3 scripts/<chart_script>.py --check-deps`: status-only probe
-- `python3 scripts/<chart_script>.py --install-deps ...`: install dependencies before rendering
-- `python3 scripts/<chart_script>.py --no-install-deps ...`: fail fast without bootstrapping
-
-Prefer the built-in dependency bootstrap.
-Do not assume OS-specific package managers.
 
 ## Command Patterns
 
 Basic render:
 
 ```bash
-python3 scripts/<chart_script>.py \
+data-charts-visualization render \
+  --chart-type <chartType> \
   --option /path/to/option.json \
   --output /path/to/output.png
 ```
 
-Render with persistent style:
+Render with persistent helper config:
 
 ```bash
-python3 scripts/line_chart.py \
+data-charts-visualization render \
+  --chart-type line \
   --style-config config/line_style.json \
   --option /path/to/line-data.json \
   --output /path/to/output.png
@@ -391,29 +372,22 @@ python3 scripts/line_chart.py \
 Render from inline JSON:
 
 ```bash
-python3 scripts/line_chart.py \
-  --option-json '{"title":{"text":"Trend"},"xAxis":{"data":["Mon","Tue"]},"yAxis":{},"series":[{"type":"line","data":[120,132]}]}' \
-  --output /tmp/trend.png
-```
-
-Update persistent style from natural language:
-
-```bash
-python3 scripts/update_style_config.py \
+data-charts-visualization render \
   --chart-type line \
-  --instruction "increase line width to 3, show labels, move legend to bottom"
+  --option-json '{"title":{"text":"Trend"},"xAxis":{"data":["Mon","Tue"]},"yAxis":{},"series":[{"type":"line","data":[120,132]}]}' \
+  --resolved-option \
+  --output /tmp/trend.png
 ```
 
 ## Reference Inputs And Regression Flow
 
-- `test/data/line/line_basic_single_series.json`: minimal line reference
-- `test/data/line/line_dataset_encode.json`: `dataset.source + series.encode` reference
-- `test/data/dual_axis/dual_axis_basic_mixed.json`: mixed dual-axis reference
-- `test/data/scatter/scatter_dataset_encode_multi_series_object.json`: object-array dataset reference
-- `test/out/`: generated render output root
-- `test/scripts/run_<chart>_tests.py`: chart-specific golden-image regression runner
+- `skills-helpler/data-charts-visualization/shared/charts-default-data.js`: shared demo/default raw data
+- `skills-helpler/data-charts-visualization/shared/charts-default-config.js`: shared default common/specific/preview config
+- `test/images/`: generated preview matrix image root
+- `test/data/`: generated raw/resolved option snapshots and summaries
+- `test/scripts/render_skill_preview_matrix.js`: preview-regression generator
 
-Use the runners when validating behavior changes, new features, or visual regressions.
+Use the shared helper defaults as the source of demo data and the preview-matrix script when validating behavior changes or visual regressions.
 
 ## ECharts Alignment Rules
 

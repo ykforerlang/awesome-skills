@@ -1,78 +1,31 @@
-# Chart Style Config
+# Chart Config
 
-This directory contains style-oriented chart configuration presets for this skill.
+This directory stores helper-schema config presets for each chart type.
 
-These files are not demo data files. They are ECharts-aligned style presets that define how each chart type should look:
-- palette
-- background
-- title style
-- legend style
-- grid spacing
-- axis appearance
-- label style
-- series line/bar/area styling
-- pie / donut label and radius styling
-- gauge band / detail styling
-- dual-axis layout styling
-- scatter point styling
-- radar polygon / indicator styling
-- funnel stage styling
+These files are not raw ECharts style fragments. They are helper-facing configs consumed by the shared helper option builder, which then produces the final ECharts option used by both helper preview and skill rendering.
 
 ## Files
 
-- `line_style.json`: line-chart style config
-- `bar_style.json`: bar-chart style config
-- `pie_style.json`: pie / donut style config
-- `gauge_style.json`: gauge style config
-- `area_style.json`: area-chart style config
-- `dual_axis_style.json`: dual-axis style config
-- `scatter_style.json`: scatter-chart style config
-- `radar_style.json`: radar-chart style config
-- `funnel_style.json`: funnel-chart style config
+- `line_style.json`
+- `bar_style.json`
+- `pie_style.json`
+- `gauge_style.json`
+- `area_style.json`
+- `dual_axis_style.json`
+- `scatter_style.json`
+- `radar_style.json`
+- `funnel_style.json`
 
 ## Usage
 
-1. Pick the closest style preset.
-2. Pass that single preset with `--style-config`.
-3. Add real `dataset`, `xAxis.data`, or `series[].data` separately.
-4. Render with the chart script.
-
-Priority rule:
-- input `option` provides chart data and base structure
-- style config provides persistent appearance
-- overlapping fields are overridden by the style config
-
-Recommended default model:
-1. input `option`
-2. chart style such as `line_style.json`
-
-Example:
-
 ```bash
-python3 skills/data-charts-visualization/scripts/line_chart.py \
-  --style-config skills/data-charts-visualization/config/line_style.json \
-  --option skills/data-charts-visualization/test/data/line/line_basic_single_series.json \
-  --output skills/data-charts-visualization/test/out/manual_line_chart_styled.png
-```
-
-Update a chart-specific style config:
-
-```bash
-python3 skills/data-charts-visualization/scripts/update_style_config.py \
+node skills/data-charts-visualization/scripts/cli.js render \
   --chart-type line \
-  --instruction "line width 3, show labels"
+  --style-config skills/data-charts-visualization/config/line_style.json \
+  --option /tmp/line_basic_single_series.json \
+  --output skills/data-charts-visualization/test/manual/manual_line_chart_styled.png
 ```
 
-Update a persistent config with explicit overrides:
+Default demo data should come from:
 
-```bash
-python3 skills/data-charts-visualization/scripts/update_style_config.py \
-  --config skills/data-charts-visualization/config/line_style.json \
-  --set title.textStyle.fontSize=24 \
-  --set legend.top=bottom
-```
-
-The config shape stays close to ECharts, but these files intentionally avoid business/demo data values.
-The renderer still produces one resolved final option internally, but `--style-config` exists so user style can be edited and persisted independently from incoming chart data.
-Use `--chart-type` for normal updates and `--config` when an exact target file must be chosen.
-Each built-in chart type now owns a self-contained preset file, so editing one preset does not change other chart types.
+- `skills-helpler/data-charts-visualization/shared/charts-default-data.js`

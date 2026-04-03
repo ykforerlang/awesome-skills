@@ -1,3 +1,4 @@
-test/out/
+node_modules/
 scripts/__pycache__/
-test/scripts/__pycache__/
+test/images/
+test/data/

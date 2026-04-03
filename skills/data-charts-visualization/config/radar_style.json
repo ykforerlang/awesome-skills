@@ -1,53 +1,74 @@
 {
-  "color": [
-    "#5470c6",
-    "#91cc75",
-    "#fac858",
-    "#ee6666",
-    "#73c0de",
-    "#3ba272",
-    "#fc8452",
-    "#9a60b4",
-    "#ea7ccc"
-  ],
-  "backgroundColor": "#ffffff",
-  "title": {
-    "left": "left",
-    "textStyle": {
-      "fontSize": 26,
-      "fontWeight": "bold",
-      "color": "#1f2937"
-    },
-    "subtextStyle": {
-      "fontSize": 11,
-      "color": "#6b7280"
-    }
+  "_meta": {
+    "source": "skills-helpler/data-charts-visualization/web/app.js",
+    "exportedBy": "skills/data-charts-visualization/test/scripts/render_skill_preview_matrix.js",
+    "chartType": "radar",
+    "exportedAt": "2026-04-02T17:13:18.990Z",
+    "note": "Default helper config exported from current helper schema."
   },
-  "legend": {
-    "show": true,
-    "top": "top",
-    "left": "left",
-    "orient": "horizontal",
-    "textStyle": {
-      "fontSize": 11,
+  "chartType": "radar",
+  "common": {
+    "title": {
+      "main": {
+        "show": true,
+        "text": "CHARTS-VISUALIZATION",
+        "align": "center",
+        "fontSize": 24,
+        "color": "#1f2937",
+        "bold": true
+      },
+      "subtitle": {
+        "show": true,
+        "text": "由配置助手生成",
+        "fontSize": 14,
+        "color": "#6b7280"
+      }
+    },
+    "canvas": {
+      "backgroundColor": "#ffffff",
+      "palette": [
+        "#2563eb",
+        "#14b8a6",
+        "#f59e0b",
+        "#ef4444",
+        "#8b5cf6"
+      ],
+      "plotArea": {
+        "left": "30%",
+        "right": "30%",
+        "top": "30%",
+        "bottom": "15%"
+      }
+    },
+    "legend": {
+      "show": true,
+      "position": "bottom-center",
+      "orient": "horizontal",
+      "fontSize": 12,
       "color": "#4b5563"
     }
   },
-  "radar": {
+  "specific": {
     "shape": "polygon",
-    "splitNumber": 5
-  },
-  "series": [
-    {
-      "type": "radar",
-      "symbol": "circle",
-      "symbolSize": 5,
-      "lineStyle": {
-        "width": 2.4
-      },
-      "areaStyle": {
-        "opacity": 0.22
-      }
-    }
-  ]
+    "splitNumber": 5,
+    "showSymbol": false,
+    "showLabel": false,
+    "labelFormatter": "{b}: {c}",
+    "areaOpacity": 0.2,
+    "splitLineColor": "#d0d7de",
+    "splitLineWidth": 0.5,
+    "splitLineType": "solid",
+    "axisLineColor": "#94a3b8",
+    "axisLineWidth": 0.6,
+    "axisLineType": "solid",
+    "axisNameFontSize": 12,
+    "axisNameColor": "#334155",
+    "axisNameBold": true,
+    "symbol": "circle",
+    "symbolSize": 6,
+    "lineStyleType": "solid",
+    "lineWidth": 3,
+    "labelFontSize": 12,
+    "labelColor": "#334155"
+  }
 }
