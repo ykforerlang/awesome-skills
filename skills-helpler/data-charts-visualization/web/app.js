@@ -3163,6 +3163,29 @@ function hideError() {
   box.textContent = "";
 }
 
+function disablePreviewAnimation(option) {
+  const nextOption = deepClone(option || {});
+  nextOption.animation = false;
+  nextOption.animationDuration = 0;
+  nextOption.animationDurationUpdate = 0;
+  nextOption.animationEasing = "linear";
+  nextOption.animationEasingUpdate = "linear";
+  nextOption.stateAnimation = {
+    duration: 0,
+    easing: "linear",
+  };
+  nextOption.series = (nextOption.series || []).map((series) => ({
+    ...series,
+    animation: false,
+    animationDuration: 0,
+    animationDurationUpdate: 0,
+    animationEasing: "linear",
+    animationEasingUpdate: "linear",
+    universalTransition: false,
+  }));
+  return nextOption;
+}
+
 function disposePreviewInstance(element) {
   if (window.echarts && element) {
     const instance = window.echarts.getInstanceByDom(element);
@@ -3194,7 +3217,7 @@ function renderPreviewInto(containerId, option) {
   chart = chart || window.echarts.init(container, null, {
     renderer: PREVIEW_RENDERER,
   });
-  chart.setOption(option, true);
+  chart.setOption(disablePreviewAnimation(option), true);
   chart.resize();
 }
 
