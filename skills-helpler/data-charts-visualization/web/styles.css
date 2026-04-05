@@ -1098,8 +1098,8 @@ button {
 
 @media (max-width: 760px) {
   .page-shell {
-    width: min(100vw - 20px, 100%);
-    padding-top: 16px;
+    width: 100%;
+    padding: 16px 0 24px;
   }
 
   .desktop-layout {

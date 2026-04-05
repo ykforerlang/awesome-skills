@@ -3085,8 +3085,8 @@ function syncPreviewCanvasDimensions() {
     return;
   }
   if (appState.layoutMode === "mobile") {
-    const pageWidth = Math.max(320, window.innerWidth || FIXED_PREVIEW_VIEWPORT.width);
-    const availableWidth = Math.max(0, pageWidth - 48);
+    const containerWidth = canvas.parentElement?.clientWidth || window.innerWidth || FIXED_PREVIEW_VIEWPORT.width;
+    const availableWidth = Math.max(0, containerWidth);
     const scale = Math.min(1, availableWidth / FIXED_PREVIEW_VIEWPORT.width);
     canvas.style.width = `${Math.round(FIXED_PREVIEW_VIEWPORT.width * scale)}px`;
     canvas.style.minWidth = "0";
