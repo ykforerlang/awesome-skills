@@ -26,6 +26,8 @@ html,
 body {
   margin: 0;
   min-height: 100%;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -50,6 +52,7 @@ button {
   width: min(1440px, calc(100vw - 32px));
   margin: 0 auto;
   padding: 28px 0 40px;
+  overflow-x: hidden;
 }
 
 .desktop-layout,
@@ -124,6 +127,9 @@ button {
 .mobile-layout {
   display: grid;
   gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .mobile-preview-sticky {
@@ -133,6 +139,9 @@ button {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .mobile-card {
@@ -141,6 +150,9 @@ button {
   backdrop-filter: blur(18px);
   box-shadow: 0 18px 48px rgba(70, 47, 23, 0.1);
   border-radius: 24px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .mobile-preview-card {
@@ -216,10 +228,15 @@ button {
   align-items: center;
   gap: 10px;
   min-height: 56px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .mobile-preview-config-fixed-label {
-  flex: none;
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
   padding: 8px 12px;
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.78);
@@ -236,6 +253,9 @@ button {
   overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: none;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .mobile-preview-config-scroll::-webkit-scrollbar,
@@ -346,6 +366,8 @@ button {
 .mobile-preview-stage-shell {
   margin-top: 10px;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   overflow: hidden;
   display: flex;
   justify-content: center;
@@ -360,10 +382,17 @@ button {
 
 .mobile-config-panel-scroll {
   margin-top: 14px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
 }
 
 .mobile-form-section {
   margin-top: 0;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .mobile-form-section-title {
@@ -384,6 +413,9 @@ button {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .mobile-field-card {
@@ -1099,7 +1131,7 @@ button {
 @media (max-width: 760px) {
   .page-shell {
     width: 100%;
-    padding: 16px 0 24px;
+    padding: 0 0 24px;
   }
 
   .desktop-layout {

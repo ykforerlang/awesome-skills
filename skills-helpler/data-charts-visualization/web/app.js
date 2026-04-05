@@ -1811,6 +1811,21 @@ function renderMobileConfigPanel(preferredSectionId = "") {
   });
 }
 
+function resetMobileConfigViewport() {
+  const tabsScroll = $("mobile-config-tabs-scroll");
+  const chartTabsScroll = $("mobile-chart-tabs-scroll");
+  const panelScroll = $("mobile-config-panel-scroll");
+  if (chartTabsScroll) {
+    chartTabsScroll.scrollLeft = 0;
+  }
+  if (tabsScroll) {
+    tabsScroll.scrollLeft = 0;
+  }
+  if (panelScroll) {
+    panelScroll.scrollTop = 0;
+  }
+}
+
 function buildPreviewToggleButtons(buttons, datasetKey) {
   return buttons
     .map((button) => `
@@ -2586,6 +2601,9 @@ function renderLayoutShell(options = {}) {
     renderMobileConfigPanel(preferredSectionId);
     applyCachedValuesToRenderedForm();
     renderFoundationVisibility();
+    if (preferredSectionId) {
+      resetMobileConfigViewport();
+    }
     return;
   }
 
@@ -3084,18 +3102,29 @@ function syncPreviewCanvasDimensions() {
   if (!canvas) {
     return;
   }
+  const stage = canvas.parentElement;
   if (appState.layoutMode === "mobile") {
-    const containerWidth = canvas.parentElement?.clientWidth || window.innerWidth || FIXED_PREVIEW_VIEWPORT.width;
+    const containerWidth = stage?.clientWidth || window.innerWidth || FIXED_PREVIEW_VIEWPORT.width;
     const availableWidth = Math.max(0, containerWidth);
     const scale = Math.min(1, availableWidth / FIXED_PREVIEW_VIEWPORT.width);
-    canvas.style.width = `${Math.round(FIXED_PREVIEW_VIEWPORT.width * scale)}px`;
-    canvas.style.minWidth = "0";
-    canvas.style.height = `${Math.round(FIXED_PREVIEW_VIEWPORT.height * scale)}px`;
+    canvas.style.width = `${FIXED_PREVIEW_VIEWPORT.width}px`;
+    canvas.style.minWidth = `${FIXED_PREVIEW_VIEWPORT.width}px`;
+    canvas.style.height = `${FIXED_PREVIEW_VIEWPORT.height}px`;
+    canvas.style.transform = `scale(${scale})`;
+    canvas.style.transformOrigin = "top center";
+    if (stage) {
+      stage.style.height = `${Math.round(FIXED_PREVIEW_VIEWPORT.height * scale)}px`;
+    }
     return;
   }
   canvas.style.width = `${FIXED_PREVIEW_VIEWPORT.width}px`;
   canvas.style.minWidth = `${FIXED_PREVIEW_VIEWPORT.width}px`;
   canvas.style.height = `${FIXED_PREVIEW_VIEWPORT.height}px`;
+  canvas.style.transform = "";
+  canvas.style.transformOrigin = "";
+  if (stage) {
+    stage.style.height = "";
+  }
 }
 
 function setStatusReady() {

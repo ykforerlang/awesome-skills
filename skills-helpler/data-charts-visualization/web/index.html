@@ -6,6 +6,13 @@
     <title>Data Charts Visualization Helper</title>
     <link rel="icon" type="image/png" href="./favicon.png" />
     <link rel="stylesheet" href="./styles.css" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-B9MX1HK14W"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag() { dataLayer.push(arguments); }
+      gtag("js", new Date());
+      gtag("config", "G-B9MX1HK14W");
+    </script>
   </head>
   <body>
     <div class="page-shell">
@@ -127,7 +134,7 @@
           </section>
 
           <section class="mobile-card mobile-tabs-card">
-            <div class="mobile-tabs-scroll">
+            <div id="mobile-chart-tabs-scroll" class="mobile-tabs-scroll">
               <div id="mobile-chart-tabs" class="mobile-tabs-row"></div>
             </div>
           </section>
@@ -140,12 +147,12 @@
           </div>
 
           <div class="mobile-section-tabs-shell">
-            <div class="mobile-section-tabs-scroll">
+            <div id="mobile-config-tabs-scroll" class="mobile-section-tabs-scroll">
               <div id="mobile-config-tabs" class="mobile-section-tabs-row"></div>
             </div>
           </div>
 
-          <div class="mobile-config-panel-scroll">
+          <div id="mobile-config-panel-scroll" class="mobile-config-panel-scroll">
             <section id="mobile-config-panel" class="mobile-form-section hidden">
               <div id="mobile-config-panel-title" class="mobile-form-section-title"></div>
               <div id="mobile-config-panel-help" class="mobile-form-section-help hidden"></div>
@@ -160,7 +167,50 @@
       <div id="toast" class="toast hidden"></div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js"></script>
+    <script>
+      (function loadECharts() {
+        var MAINLAND_CHINA_CDN = "https://cdn.bootcdn.net/ajax/libs/echarts/5.6.0/echarts.min.js";
+        var GLOBAL_CDN = "https://cdn.jsdelivr.net/npm/echarts@5.6.0/dist/echarts.min.js";
+
+        function isMainlandChinaEnvironment() {
+          var timezone = "";
+          try {
+            timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+          } catch (error) {}
+
+          var languages = [];
+          if (Array.isArray(navigator.languages)) {
+            languages = navigator.languages.slice();
+          }
+          if (navigator.language) {
+            languages.unshift(navigator.language);
+          }
+
+          var normalizedLanguages = languages
+            .filter(Boolean)
+            .map(function (language) {
+              return String(language).toLowerCase();
+            });
+
+          var usesMainlandChineseLocale = normalizedLanguages.some(function (language) {
+            return language === "zh-cn" || language === "zh-hans-cn";
+          });
+
+          return timezone === "Asia/Shanghai" && usesMainlandChineseLocale;
+        }
+
+        var primary = isMainlandChinaEnvironment() ? MAINLAND_CHINA_CDN : GLOBAL_CDN;
+        var fallback = primary === MAINLAND_CHINA_CDN ? GLOBAL_CDN : MAINLAND_CHINA_CDN;
+        var scriptTag =
+          '<script src="' +
+          primary +
+          '" onerror="this.onerror=null;this.remove();document.write(\'<script src=&quot;' +
+          fallback +
+          '&quot;><\\\\/script>\')"><\\/script>';
+
+        document.write(scriptTag);
+      })();
+    </script>
     <script src="../shared/charts-default-config.js"></script>
     <script src="../shared/charts-default-data.js"></script>
     <script src="../shared/chart-runtime-definitions.js"></script>
