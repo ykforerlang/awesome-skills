@@ -1,0 +1,86 @@
+{
+  "title": {
+    "show": true,
+    "text": "CHARTS-VISUALIZATION",
+    "subtext": "由配置助手生成",
+    "left": "center",
+    "textStyle": {
+      "fontSize": 24,
+      "fontWeight": "bold",
+      "color": "#1f2937"
+    },
+    "subtextStyle": {
+      "fontSize": 14,
+      "color": "#6b7280"
+    }
+  },
+  "backgroundColor": "#ffffff",
+  "color": [
+    "#2563eb",
+    "#14b8a6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6"
+  ],
+  "legend": {
+    "show": true,
+    "orient": "horizontal",
+    "left": "center",
+    "top": "bottom",
+    "textStyle": {
+      "fontSize": 12,
+      "color": "#4b5563"
+    }
+  },
+  "grid": {
+    "left": "12%",
+    "right": "12%",
+    "top": "21%",
+    "bottom": "15%"
+  },
+  "series": [
+    {
+      "type": "funnel",
+      "data": [
+        {
+          "name": "Visit",
+          "value": 1000
+        },
+        {
+          "name": "Sign Up",
+          "value": 600
+        },
+        {
+          "name": "Qualified",
+          "value": 320
+        },
+        {
+          "name": "Proposal",
+          "value": 180
+        },
+        {
+          "name": "Won",
+          "value": 96
+        }
+      ],
+      "left": "12%",
+      "top": "21%",
+      "width": "76%",
+      "height": "64%",
+      "sort": "descending",
+      "gap": 2,
+      "minSize": "12%",
+      "maxSize": "88%",
+      "label": {
+        "show": true,
+        "position": "inside",
+        "formatter": "{b}: {d}%",
+        "fontSize": 12,
+        "color": "#334155"
+      },
+      "itemStyle": {
+        "opacity": 0.92
+      }
+    }
+  ]
+}

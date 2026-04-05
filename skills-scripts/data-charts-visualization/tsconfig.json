@@ -17,7 +17,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "build.mjs"
+    "scripts/build.mjs"
   ],
   "exclude": [
     "dist",

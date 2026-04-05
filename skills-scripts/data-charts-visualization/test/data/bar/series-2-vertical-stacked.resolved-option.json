@@ -1,0 +1,150 @@
+{
+  "title": {
+    "show": true,
+    "text": "CHARTS-VISUALIZATION",
+    "subtext": "由配置助手生成",
+    "left": "center",
+    "textStyle": {
+      "fontSize": 24,
+      "fontWeight": "bold",
+      "color": "#1f2937"
+    },
+    "subtextStyle": {
+      "fontSize": 14,
+      "color": "#6b7280"
+    }
+  },
+  "backgroundColor": "#fafafa",
+  "color": [
+    "#2563eb",
+    "#06b6d4",
+    "#f59e0b",
+    "#ef4444",
+    "#84cc16"
+  ],
+  "legend": {
+    "show": true,
+    "orient": "horizontal",
+    "left": "center",
+    "top": "bottom",
+    "textStyle": {
+      "fontSize": 12,
+      "color": "#4b5563"
+    }
+  },
+  "grid": {
+    "left": "12%",
+    "right": "9%",
+    "top": "21%",
+    "bottom": "15%"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": [
+      "Q1",
+      "Q2",
+      "Q3",
+      "Q4"
+    ],
+    "axisLabel": {
+      "rotate": 0,
+      "fontSize": 12,
+      "color": "#4b5563",
+      "formatter": "{value}"
+    },
+    "axisTick": {
+      "show": true
+    },
+    "axisLine": {
+      "show": true,
+      "lineStyle": {
+        "color": "#9ca3af"
+      }
+    },
+    "splitLine": {
+      "show": false,
+      "lineStyle": {
+        "color": "#e5e7eb",
+        "type": "dashed",
+        "width": 0.6
+      }
+    }
+  },
+  "yAxis": {
+    "type": "value",
+    "axisLabel": {
+      "fontSize": 12,
+      "color": "#4b5563",
+      "formatter": "{value}"
+    },
+    "axisTick": {
+      "show": true
+    },
+    "axisLine": {
+      "show": true,
+      "lineStyle": {
+        "color": "#9ca3af"
+      }
+    },
+    "splitLine": {
+      "show": true,
+      "lineStyle": {
+        "color": "#e5e7eb",
+        "type": "dashed",
+        "width": 0.6
+      }
+    }
+  },
+  "series": [
+    {
+      "type": "bar",
+      "name": "Revenue",
+      "data": [
+        320,
+        410,
+        505,
+        620
+      ],
+      "barWidth": "40%",
+      "barGap": "10%",
+      "itemStyle": {
+        "opacity": 0.92,
+        "borderRadius": 0,
+        "borderWidth": 0,
+        "borderColor": "#ffffff"
+      },
+      "label": {
+        "show": true,
+        "position": "top",
+        "fontSize": 12,
+        "color": "#334155"
+      },
+      "stack": "preview-stack"
+    },
+    {
+      "type": "bar",
+      "name": "Cost",
+      "data": [
+        180,
+        240,
+        290,
+        330
+      ],
+      "barWidth": "40%",
+      "barGap": "10%",
+      "itemStyle": {
+        "opacity": 0.92,
+        "borderRadius": 0,
+        "borderWidth": 0,
+        "borderColor": "#ffffff"
+      },
+      "label": {
+        "show": true,
+        "position": "top",
+        "fontSize": 12,
+        "color": "#334155"
+      },
+      "stack": "preview-stack"
+    }
+  ]
+}

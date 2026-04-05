@@ -1,0 +1,96 @@
+{
+  "title": {
+    "show": true,
+    "text": "CHARTS-VISUALIZATION",
+    "subtext": "由配置助手生成",
+    "left": "center",
+    "textStyle": {
+      "fontSize": 24,
+      "fontWeight": "bold",
+      "color": "#1f2937"
+    },
+    "subtextStyle": {
+      "fontSize": 14,
+      "color": "#6b7280"
+    }
+  },
+  "backgroundColor": "#ffffff",
+  "color": [
+    "#2563eb",
+    "#14b8a6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6"
+  ],
+  "legend": {
+    "show": true,
+    "orient": "vertical",
+    "left": "right",
+    "top": "bottom",
+    "textStyle": {
+      "fontSize": 12,
+      "color": "#4b5563"
+    }
+  },
+  "grid": {
+    "left": "30%",
+    "right": "30%",
+    "top": "30%",
+    "bottom": "15%"
+  },
+  "series": [
+    {
+      "type": "pie",
+      "data": [
+        {
+          "name": "Search",
+          "value": 1048
+        },
+        {
+          "name": "Email",
+          "value": 735
+        },
+        {
+          "name": "Direct",
+          "value": 580
+        },
+        {
+          "name": "Ads",
+          "value": 484
+        },
+        {
+          "name": "Video",
+          "value": 300
+        }
+      ],
+      "radius": [
+        "33%",
+        "55%"
+      ],
+      "center": [
+        "50%",
+        "58%"
+      ],
+      "startAngle": 90,
+      "label": {
+        "show": true,
+        "position": "outside",
+        "fontSize": 12,
+        "color": "#334155",
+        "formatter": "{b} {d}%"
+      },
+      "labelLine": {
+        "show": true,
+        "lineStyle": {
+          "color": "#94a3b8",
+          "width": 1
+        }
+      },
+      "itemStyle": {
+        "opacity": 0.96,
+        "borderWidth": 0,
+        "borderColor": "#ffffff"
+      }
+    }
+  ]
+}

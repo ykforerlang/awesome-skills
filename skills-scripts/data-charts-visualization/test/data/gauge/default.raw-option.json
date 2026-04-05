@@ -1,0 +1,33 @@
+{
+  "title": {
+    "show": true,
+    "text": "CHARTS-VISUALIZATION",
+    "subtext": "由配置助手生成",
+    "left": "center"
+  },
+  "backgroundColor": "#ffffff",
+  "color": [
+    "#2563eb",
+    "#14b8a6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6"
+  ],
+  "grid": {
+    "left": "15%",
+    "right": "15%",
+    "top": "15%",
+    "bottom": "15%"
+  },
+  "series": [
+    {
+      "type": "gauge",
+      "data": [
+        {
+          "value": 68,
+          "name": "Completion"
+        }
+      ]
+    }
+  ]
+}

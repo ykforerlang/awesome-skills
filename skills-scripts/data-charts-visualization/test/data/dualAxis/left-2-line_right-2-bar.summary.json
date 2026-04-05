@@ -1,0 +1,17 @@
+{
+  "rawSeriesCount": 4,
+  "resolvedSeriesCount": 4,
+  "rawSeriesNames": [
+    "Sales",
+    "Rate",
+    "Orders",
+    "Conversion"
+  ],
+  "resolvedSeriesNames": [
+    "Sales",
+    "Rate",
+    "Orders",
+    "Conversion"
+  ],
+  "resolvedBarWidths": []
+}

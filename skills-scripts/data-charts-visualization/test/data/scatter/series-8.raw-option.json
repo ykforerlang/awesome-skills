@@ -1,0 +1,214 @@
+{
+  "title": {
+    "show": true,
+    "text": "CHARTS-VISUALIZATION",
+    "subtext": "由配置助手生成",
+    "left": "center"
+  },
+  "backgroundColor": "#fafafa",
+  "color": [
+    "#2563eb",
+    "#14b8a6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6"
+  ],
+  "legend": {
+    "show": true,
+    "orient": "horizontal",
+    "left": "center",
+    "top": "bottom"
+  },
+  "grid": {
+    "left": "12%",
+    "right": "9%",
+    "top": "21%",
+    "bottom": "15%"
+  },
+  "xAxis": {
+    "type": "value",
+    "name": "Spend"
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Revenue"
+  },
+  "series": [
+    {
+      "type": "scatter",
+      "name": "North",
+      "data": [
+        [
+          10,
+          18
+        ],
+        [
+          14,
+          22
+        ],
+        [
+          18,
+          28
+        ],
+        [
+          22,
+          34
+        ]
+      ]
+    },
+    {
+      "type": "scatter",
+      "name": "South",
+      "data": [
+        [
+          9,
+          12
+        ],
+        [
+          13,
+          17
+        ],
+        [
+          20,
+          25
+        ],
+        [
+          26,
+          31
+        ]
+      ]
+    },
+    {
+      "type": "scatter",
+      "name": "East",
+      "data": [
+        [
+          12,
+          16
+        ],
+        [
+          16,
+          24
+        ],
+        [
+          21,
+          29
+        ],
+        [
+          27,
+          35
+        ]
+      ]
+    },
+    {
+      "type": "scatter",
+      "name": "West",
+      "data": [
+        [
+          8,
+          11
+        ],
+        [
+          12,
+          15
+        ],
+        [
+          17,
+          21
+        ],
+        [
+          24,
+          28
+        ]
+      ]
+    },
+    {
+      "type": "scatter",
+      "name": "Retail",
+      "data": [
+        [
+          15,
+          20
+        ],
+        [
+          19,
+          26
+        ],
+        [
+          24,
+          31
+        ],
+        [
+          29,
+          38
+        ]
+      ]
+    },
+    {
+      "type": "scatter",
+      "name": "Online",
+      "data": [
+        [
+          11,
+          19
+        ],
+        [
+          15,
+          25
+        ],
+        [
+          22,
+          33
+        ],
+        [
+          28,
+          40
+        ]
+      ]
+    },
+    {
+      "type": "scatter",
+      "name": "SMB",
+      "data": [
+        [
+          7,
+          10
+        ],
+        [
+          10,
+          14
+        ],
+        [
+          14,
+          19
+        ],
+        [
+          18,
+          24
+        ]
+      ]
+    },
+    {
+      "type": "scatter",
+      "name": "Enterprise",
+      "data": [
+        [
+          20,
+          30
+        ],
+        [
+          24,
+          36
+        ],
+        [
+          29,
+          42
+        ],
+        [
+          34,
+          50
+        ]
+      ]
+    }
+  ]
+}

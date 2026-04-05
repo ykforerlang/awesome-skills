@@ -1,121 +1,124 @@
 # Data Charts Visualization
 
-Render static chart images with Apache ECharts SSR in Node.js, using the same helper-driven option pipeline as the web helper.
+Turn structured data into polished static charts through one lightweight CLI.
 
-[中文说明](./README.zh.md)
-
-This skill is built for agent workflows that need charts fast, with predictable output and production-friendly configuration. It keeps the option model close to ECharts, uses the helper config schema as the public style contract, and renders through `ECharts SSR -> SVG -> PNG`.
+This skill is built for agent workflows that need chart output fast, reliably, and without dragging in a browser stack. It gives you broad chart coverage, an agent-friendly `data / config / variant` contract, and enough styling power to move from "just render it" to "make it production-ready".
 
 ## Why This Skill
 
-- Rich chart coverage: line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, and funnel.
-- ECharts-aligned option model: low learning cost if your data or prompts already target ECharts.
-- Shared helper config model: the same config structure drives helper rendering in both environments.
-- Single-preset configuration model: each chart type owns one persistent helper config file under `config/*.json`.
-- Dataset support: plain arrays, object arrays, `dataset.source`, and `series.encode`.
-- Stable rendering workflow: every chart type is covered by golden-image test cases.
+- Rich chart support: line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, and funnel.
+- Lightweight runtime: render static images without Chromium, Playwright, or browser automation.
+- Powerful configuration: per-chart persistent presets, inline config overrides, and one-off variants for shape decisions.
+- Agent-friendly contract: keep business data in `data`, reusable style rules in `config`, and one-off render choices in `variant`.
+- ECharts-friendly input model: supports familiar structures such as `series`, `xAxis`, `yAxis`, `dataset.source`, and `series.encode`.
+- Predictable output: stable CLI behavior, static assets, and test-generated sample images for every major chart family.
 
-## Supported Charts
+## Showcase
 
 <table>
   <tr>
     <td align="center" width="33%">
       <strong>Line</strong><br/>
-      <img src="./static/line.png" alt="Line chart" width="260"/>
+      <img src="./static/line-series-2.png" alt="Two-series line chart" width="260"/>
     </td>
     <td align="center" width="33%">
       <strong>Bar</strong><br/>
-      <img src="./static/bar.png" alt="Bar chart" width="260"/>
+      <img src="./static/bar-series-2.png" alt="Two-series bar chart" width="260"/>
     </td>
     <td align="center" width="33%">
-      <strong>Pie</strong><br/>
-      <img src="./static/pie-basic.png" alt="Pie chart" width="260"/>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <strong>Donut</strong><br/>
-      <img src="./static/donut.png" alt="Donut chart" width="260"/>
-    </td>
-    <td align="center">
-      <strong>Rose</strong><br/>
-      <img src="./static/rose.png" alt="Rose chart" width="260"/>
-    </td>
-    <td align="center">
-      <strong>Gauge</strong><br/>
-      <img src="./static/gauge.png" alt="Gauge chart" width="260"/>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
       <strong>Area</strong><br/>
-      <img src="./static/area.png" alt="Area chart" width="260"/>
+      <img src="./static/area-series-2.png" alt="Two-series area chart" width="260"/>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <strong>Dual-Axis</strong><br/>
-      <img src="./static/dual-axis.png" alt="Dual-axis chart" width="260"/>
+      <img src="./static/dual-axis-series-2.png" alt="Two-series dual-axis bar-line chart" width="260"/>
+    </td>
+    <td align="center">
+      <strong>Dual-Axis Horizontal Style</strong><br/>
+      <img src="./static/dual-axis-horizontal-style.png" alt="Two-series horizontal-style dual-axis bar-line chart" width="260"/>
     </td>
     <td align="center">
       <strong>Scatter</strong><br/>
-      <img src="./static/scatter-basic.png" alt="Scatter chart" width="260"/>
+      <img src="./static/scatter-series-2.png" alt="Two-series scatter chart" width="260"/>
     </td>
   </tr>
   <tr>
     <td align="center">
-      <strong>Bubble</strong><br/>
-      <img src="./static/bubble.png" alt="Bubble chart" width="260"/>
+      <strong>Pie</strong><br/>
+      <img src="./static/pie-showcase.png" alt="Pie chart" width="260"/>
+    </td>
+    <td align="center">
+      <strong>Donut</strong><br/>
+      <img src="./static/donut-showcase.png" alt="Donut chart" width="260"/>
+    </td>
+    <td align="center">
+      <strong>Rose</strong><br/>
+      <img src="./static/rose-showcase.png" alt="Rose chart" width="260"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Gauge</strong><br/>
+      <img src="./static/gauge-showcase.png" alt="Gauge chart" width="260"/>
     </td>
     <td align="center">
       <strong>Radar</strong><br/>
-      <img src="./static/radar.png" alt="Radar chart" width="260"/>
+      <img src="./static/radar-showcase.png" alt="Radar chart" width="260"/>
     </td>
     <td align="center">
       <strong>Funnel</strong><br/>
-      <img src="./static/funnel.png" alt="Funnel chart" width="260"/>
+      <img src="./static/funnel-showcase.png" alt="Funnel chart" width="260"/>
     </td>
   </tr>
 </table>
 
-## Core Capabilities
+## Built For Agents
 
-This skill is not just a thin chart wrapper. It already covers the chart behaviors that show up most often in ECharts usage:
+This skill is aimed at OpenClaw-like agents and other automation flows that need deterministic chart rendering instead of interactive BI sessions.
 
-- Multi-series charts, mixed chart compositions, grouped bars, stacked bars, and stacked areas.
-- Dataset-driven charts with `dataset.source` and `series.encode`, including table-header style 2D arrays.
-- Common interaction-independent styling such as legend placement, palette control, labels, axis formatting, grid layout, and background color.
-- Line and area behaviors such as `smooth`, `step`, `showSymbol`, `null` gaps, and `connectNulls`.
-- Pie-family variants such as pie, donut, rose charts, label positions, selected offsets, start angles, and palette overrides.
-- Gauge capabilities such as segmented axis lines, progress arcs, custom angles, custom ranges, pointer styles, and detail formatting.
-- Dual-axis combinations with independent axis mapping, mixed bar/line rendering, horizontal layout, negative values, and area-on-secondary-axis support.
-- Scatter, bubble, radar, and funnel support for their common business-reporting scenarios, including bubble sizes, split areas, item styling, sorting, and size/gap control.
+- One CLI for all supported chart families: `areslabs-data-charts`
+- Static image output by default, ideal for reports, dashboards, tickets, and generated assets
+- No browser dependency, which keeps environments simpler and cheaper to run
+- A small, explicit contract that makes chart generation easier to reason about than passing arbitrary raw styling blocks
 
-## Configuration Model
+## Configuration Power
 
-The configuration path is intentionally simple:
+This is where the skill separates itself from a thin chart wrapper.
 
-1. Put chart data and structure in `data`.
-2. Keep reusable helper-style visual rules in the corresponding `config/<chart>_style.json`.
-3. Resolve one final ECharts option through the shared helper option builder, then render it through SSR.
+- Persistent chart presets: each chart type owns its default config under `config/<chart>_style.json`
+- Temporary style overrides: merge one-off changes and pass them inline with `--config`
+- Render variants: use `--variant` for choices such as horizontal bar, stacked bar, donut, rose, or dual-axis series typing
+- Structured style schema: the config model is built for chart styling, not as a dump of raw browser-only options
+- Visual tuning path: when you want hands-on style exploration, use the config page and then bring the generated config back into the render flow
 
-`config` is now treated as a complete helper config payload, not as a partial patch. In practice, prefer `--config-file` pointing at an exported config JSON under `config/`.
+Config page addresses:
 
-The skill does not independently approximate chart styling anymore. It resolves the same final ECharts option structure that the helper uses, then feeds that option into ECharts SSR.
+- 中文地址：`https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.zh.html`
+- 英文地址：`https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html`
 
-Available presets:
+## What You Can Feed Into It
 
-- `config/line_style.json`
-- `config/bar_style.json`
-- `config/pie_style.json`
-- `config/gauge_style.json`
-- `config/area_style.json`
-- `config/dual_axis_style.json`
-- `config/scatter_style.json`
-- `config/radar_style.json`
-- `config/funnel_style.json`
+The skill works well with the data shapes agents already produce:
 
-Each chart preset is self-contained, so editing one chart type no longer changes the defaults of other chart types.
+- raw `series` plus `xAxis` / `yAxis`
+- `dataset.source` plus `series.encode`
+- table-like data transformed into chart-ready payloads
+- pie, funnel, radar, and gauge specific raw data structures
+- one-off business-chart requests such as donut charts, horizontal stacked bars, or dual-axis bar-line combinations
 
 ## Quick Start
+
+Published package:
+
+```bash
+npx -y @areslabs/data-charts-visualization \
+  --chart-type line \
+  --config-file skills/data-charts-visualization/config/line_style.json \
+  --data-file /tmp/line_basic_two_series.json \
+  --out /tmp
+```
 
 Primary CLI:
 
@@ -123,69 +126,37 @@ Primary CLI:
 areslabs-data-charts \
   --chart-type line \
   --config-file skills/data-charts-visualization/config/line_style.json \
-  --data-file /tmp/line_basic_single_series.json \
+  --data-file /tmp/line_basic_two_series.json \
   --out /tmp
 ```
 
-Repo-local `npx` invocation without install/link:
+Inline data:
 
 ```bash
-npx --yes --package ./skills-scripts/data-charts-visualization areslabs-data-charts \
-  --chart-type line \
-  --config-file skills/data-charts-visualization/config/line_style.json \
-  --data-file /tmp/line_basic_single_series.json \
+areslabs-data-charts \
+  --chart-type bar \
+  --config-file skills/data-charts-visualization/config/bar_style.json \
+  --data '{"xAxis":{"data":["Q1","Q2","Q3","Q4"]},"yAxis":{},"series":[{"type":"bar","name":"Plan","data":[120,140,150,170]},{"type":"bar","name":"Actual","data":[128,135,162,181]}]}' \
   --out /tmp
 ```
 
-Inside this repo, the same entry can be called directly through the script:
+One-off variant:
 
 ```bash
-node skills-scripts/data-charts-visualization/dist/cli.js \
-  --chart-type line \
-  --config-file skills/data-charts-visualization/config/line_style.json \
-  --data-file /tmp/line_basic_single_series.json \
-  --out skills/data-charts-visualization/test/manual
+areslabs-data-charts \
+  --chart-type dualAxis \
+  --config-file skills/data-charts-visualization/config/dual_axis_style.json \
+  --data-file /tmp/dual_axis_two_series.json \
+  --variant '{"leftSeriesType":"bar","rightSeriesType":"line","splitLineFollowAxis":"left"}' \
+  --out /tmp
 ```
-
-The recommended way to prepare that data file is to start from the shared default data source:
-
-- `skills-helpler/data-charts-visualization/shared/charts-default-data.js`
-
-Render the same chart with inline config:
-
-```bash
-node skills-scripts/data-charts-visualization/dist/cli.js \
-  --chart-type line \
-  --data '{"xAxis":{"data":["Mon","Tue"]},"yAxis":{},"series":[{"type":"line","data":[120,132]}]}' \
-  --config "$(cat skills/data-charts-visualization/config/line_style.json)" \
-  --out skills/data-charts-visualization/test/manual
-```
-
-Use `--variant` for one-off rendering strategy chosen by the agent, for example:
-
-- `{"layout":"horizontal","stack":true}`
-- `{"pieMode":"donut"}`
-- `{"leftSeriesType":"bar","rightSeriesType":"line"}`
-
-## Reliability
-
-The maintained validation flow is centered around the preview matrix generator under `test/scripts/`. Shared demo/default inputs live in `skills-helpler/data-charts-visualization/shared/charts-default-data.js`, and shared default config lives in `skills-helpler/data-charts-visualization/shared/charts-default-config.js`.
-
-Typical coverage includes:
-
-- basic rendering
-- dataset + encode
-- style config overrides
-- legend and palette variations
-- axis and label formatting
-- null handling and line continuity where applicable
-- chart-specific advanced behaviors such as rose pie, segmented gauge, horizontal dual-axis, radar split area, and funnel ordering
 
 ## Best Fit
 
-Use this skill when you need one of these outcomes:
+Use this skill when you want to:
 
-- render a chart directly from structured option JSON
-- keep chart syntax close to ECharts while producing static images locally
-- maintain consistent report styling across many chart renders
-- keep helper config and skill rendering on one shared contract
+- render production-friendly static charts from agent-generated data
+- keep chart syntax close to ECharts without depending on a browser runtime
+- standardize report visuals through persistent chart presets
+- support both quick default rendering and deep style customization
+- cover most business chart requests with one consistent toolchain

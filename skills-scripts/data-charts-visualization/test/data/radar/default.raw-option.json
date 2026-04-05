@@ -1,0 +1,79 @@
+{
+  "title": {
+    "show": true,
+    "text": "CHARTS-VISUALIZATION",
+    "subtext": "由配置助手生成",
+    "left": "center"
+  },
+  "backgroundColor": "#ffffff",
+  "color": [
+    "#2563eb",
+    "#14b8a6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6"
+  ],
+  "legend": {
+    "show": true,
+    "orient": "horizontal",
+    "left": "center",
+    "top": "bottom"
+  },
+  "grid": {
+    "left": "30%",
+    "right": "30%",
+    "top": "30%",
+    "bottom": "15%"
+  },
+  "radar": {
+    "indicator": [
+      {
+        "name": "Quality",
+        "max": 100
+      },
+      {
+        "name": "Speed",
+        "max": 100
+      },
+      {
+        "name": "Cost",
+        "max": 100
+      },
+      {
+        "name": "Scale",
+        "max": 100
+      },
+      {
+        "name": "Satisfaction",
+        "max": 100
+      }
+    ]
+  },
+  "series": [
+    {
+      "type": "radar",
+      "data": [
+        {
+          "name": "Team A",
+          "value": [
+            90,
+            82,
+            70,
+            88,
+            91
+          ]
+        },
+        {
+          "name": "Team B",
+          "value": [
+            76,
+            90,
+            82,
+            72,
+            84
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "title": {
+    "show": true,
+    "text": "CHARTS-VISUALIZATION",
+    "subtext": "由配置助手生成",
+    "left": "center"
+  },
+  "backgroundColor": "#fafafa",
+  "color": [
+    "#2563eb",
+    "#14b8a6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6"
+  ],
+  "legend": {
+    "show": true,
+    "orient": "horizontal",
+    "left": "center",
+    "top": "bottom"
+  },
+  "grid": {
+    "left": "12%",
+    "right": "9%",
+    "top": "21%",
+    "bottom": "15%"
+  },
+  "xAxis": {
+    "type": "value",
+    "name": "Spend"
+  },
+  "yAxis": {
+    "type": "value",
+    "name": "Revenue"
+  },
+  "series": [
+    {
+      "type": "scatter",
+      "name": "North",
+      "data": [
+        [
+          10,
+          18
+        ],
+        [
+          14,
+          22
+        ],
+        [
+          18,
+          28
+        ],
+        [
+          22,
+          34
+        ]
+      ]
+    },
+    {
+      "type": "scatter",
+      "name": "South",
+      "data": [
+        [
+          9,
+          12
+        ],
+        [
+          13,
+          17
+        ],
+        [
+          20,
+          25
+        ],
+        [
+          26,
+          31
+        ]
+      ]
+    }
+  ]
+}

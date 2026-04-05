@@ -130,6 +130,12 @@
 
   function parseColorListText(rawValue, fallback) {
     const fallbackList = Array.isArray(fallback) && fallback.length ? fallback : ["#e2e8f0"];
+    if (Array.isArray(rawValue)) {
+      const parsedArray = rawValue
+        .map((segment) => normalizeColorValue(segment))
+        .filter(Boolean);
+      return parsedArray.length ? parsedArray : fallbackList;
+    }
     const source = String(rawValue || "").trim();
     if (!source) {
       return fallbackList;
@@ -141,74 +147,124 @@
     return parsed.length ? parsed : fallbackList;
   }
 
-  function supportsPreviewSeriesCount(chartType) {
-    return chartType === "line"
-      || chartType === "bar"
-      || chartType === "area"
-      || chartType === "dualAxis"
-      || chartType === "scatter";
-  }
-
-  function trimSeriesListForPreview(seriesList, targetCount) {
-    const sourceSeries = Array.isArray(seriesList) ? seriesList.filter(Boolean) : [];
-    if (!sourceSeries.length || !Number.isFinite(targetCount) || targetCount <= 0) {
-      return sourceSeries;
+  function coerceNumeric(value) {
+    if (typeof value === "string" && /^-?\d+(\.\d+)?$/.test(value.trim())) {
+      return Number(value);
     }
-    return deepClone(sourceSeries.slice(0, targetCount));
+    return value;
   }
 
-  function resolveDualAxisPreviewSeriesCounts(previewState) {
-    const fallbackCount = numberOr(previewState && previewState.previewSeriesCount, 0);
-    const leftCount = numberOr(previewState && previewState.previewDualAxisLeftSeriesCount, 0);
-    const rightCount = numberOr(previewState && previewState.previewDualAxisRightSeriesCount, 0);
+  function applyCommonHelperConfig(commonState, helperCommon) {
+    const nextState = deepClone(commonState);
+    const titleMain = helperCommon && helperCommon.title && helperCommon.title.main || {};
+    const titleSubtitle = helperCommon && helperCommon.title && helperCommon.title.subtitle || {};
+    const canvas = helperCommon && helperCommon.canvas || {};
+    const plotArea = canvas.plotArea || {};
+    const legend = helperCommon && helperCommon.legend || {};
+    const xAxis = helperCommon && helperCommon.axes && helperCommon.axes.x || {};
+    const yAxis = helperCommon && helperCommon.axes && helperCommon.axes.y || {};
+    const horizontalSplit = helperCommon && helperCommon.splitLines && helperCommon.splitLines.horizontal || {};
+    const verticalSplit = helperCommon && helperCommon.splitLines && helperCommon.splitLines.vertical || {};
+
+    if ("show" in titleMain) nextState.titleShow = Boolean(titleMain.show);
+    if ("text" in titleMain) nextState.titleText = titleMain.text;
+    if ("align" in titleMain) nextState.titleAlign = titleMain.align;
+    if ("fontSize" in titleMain) nextState.titleFontSize = coerceNumeric(titleMain.fontSize);
+    if ("color" in titleMain) nextState.titleColor = titleMain.color;
+    if ("bold" in titleMain) nextState.titleBold = Boolean(titleMain.bold);
+
+    if ("show" in titleSubtitle) nextState.subtitleShow = Boolean(titleSubtitle.show);
+    if ("text" in titleSubtitle) nextState.subtitleText = titleSubtitle.text;
+    if ("fontSize" in titleSubtitle) nextState.subtitleFontSize = coerceNumeric(titleSubtitle.fontSize);
+    if ("color" in titleSubtitle) nextState.subtitleColor = titleSubtitle.color;
+
+    if ("backgroundColor" in canvas) nextState.backgroundColor = canvas.backgroundColor;
+    if ("palette" in canvas) nextState.palette = deepClone(canvas.palette);
+    if ("left" in plotArea) nextState.gridLeft = plotArea.left;
+    if ("right" in plotArea) nextState.gridRight = plotArea.right;
+    if ("top" in plotArea) nextState.gridTop = plotArea.top;
+    if ("bottom" in plotArea) nextState.gridBottom = plotArea.bottom;
+
+    if ("show" in legend) nextState.legendShow = Boolean(legend.show);
+    if ("position" in legend) nextState.legendPosition = legend.position;
+    if ("orient" in legend) nextState.legendOrient = legend.orient;
+    if ("fontSize" in legend) nextState.legendFontSize = coerceNumeric(legend.fontSize);
+    if ("color" in legend) nextState.legendColor = legend.color;
+
+    if ("lineShow" in xAxis) nextState.xAxisLineShow = Boolean(xAxis.lineShow);
+    if ("tickShow" in xAxis) nextState.xAxisTickShow = Boolean(xAxis.tickShow);
+    if ("rotate" in xAxis) nextState.xRotate = coerceNumeric(xAxis.rotate);
+    if ("labelFontSize" in xAxis) nextState.xAxisLabelFontSize = coerceNumeric(xAxis.labelFontSize);
+    if ("labelColor" in xAxis) nextState.xAxisLabelColor = xAxis.labelColor;
+    if ("lineColor" in xAxis) nextState.xAxisLineColor = xAxis.lineColor;
+    if ("formatter" in xAxis) nextState.xFormatter = xAxis.formatter;
+
+    if ("lineShow" in yAxis) nextState.yAxisLineShow = Boolean(yAxis.lineShow);
+    if ("tickShow" in yAxis) nextState.yAxisTickShow = Boolean(yAxis.tickShow);
+    if ("labelFontSize" in yAxis) nextState.yAxisLabelFontSize = coerceNumeric(yAxis.labelFontSize);
+    if ("labelColor" in yAxis) nextState.yAxisLabelColor = yAxis.labelColor;
+    if ("lineColor" in yAxis) nextState.yAxisLineColor = yAxis.lineColor;
+    if ("formatter" in yAxis) nextState.yFormatter = yAxis.formatter;
+
+    if ("show" in horizontalSplit) nextState.splitLineShow = Boolean(horizontalSplit.show);
+    if ("color" in horizontalSplit) nextState.splitLineColor = horizontalSplit.color;
+    if ("type" in horizontalSplit) nextState.splitLineType = horizontalSplit.type;
+    if ("width" in horizontalSplit) nextState.splitLineWidth = coerceNumeric(horizontalSplit.width);
+
+    if ("show" in verticalSplit) nextState.xSplitLineShow = Boolean(verticalSplit.show);
+    if ("color" in verticalSplit) nextState.xSplitLineColor = verticalSplit.color;
+    if ("type" in verticalSplit) nextState.xSplitLineType = verticalSplit.type;
+    if ("width" in verticalSplit) nextState.xSplitLineWidth = coerceNumeric(verticalSplit.width);
+
+    return nextState;
+  }
+
+  function buildBuilderConfigFromHelperConfig(chartType, helperConfig) {
+    if (!helperConfig || !isObject(helperConfig)) {
+      throw new Error("Helper config must be a JSON object.");
+    }
+    if (helperConfig.chartType && helperConfig.chartType !== chartType) {
+      throw new Error(`Helper config chartType mismatch: expected ${chartType}, got ${helperConfig.chartType}`);
+    }
+    if (!isObject(helperConfig.common) || !isObject(helperConfig.specific)) {
+      throw new Error("Helper config must include both common and specific objects.");
+    }
+
+    const commonState = applyCommonHelperConfig({}, helperConfig.common);
+    const helperSpecific = helperConfig.specific;
+    let dualAxisTypes;
+
+    if (
+      chartType !== "line"
+      && chartType !== "bar"
+      && chartType !== "area"
+      && chartType !== "dualAxis"
+      && chartType !== "scatter"
+      && chartType !== "pie"
+      && chartType !== "gauge"
+      && chartType !== "radar"
+      && chartType !== "funnel"
+    ) {
+      throw new Error(`Unsupported chart type: ${chartType}`);
+    }
+
+    if (chartType === "dualAxis") {
+      const layout = helperSpecific.layout || {};
+      dualAxisTypes = {
+        leftType: layout.leftSeriesType || "bar",
+        rightType: layout.rightSeriesType || "line"
+      };
+    }
+
     return {
-      leftCount: leftCount || fallbackCount,
-      rightCount: rightCount || fallbackCount,
-      hasSideCounts: leftCount > 0 || rightCount > 0
+      common: commonState,
+      specific: deepClone(helperSpecific),
+      dualAxisTypes
     };
   }
 
-  function trimDualAxisSeriesListForPreview(rawData, previewState) {
-    const sourceSeries = Array.isArray(rawData && rawData.series) ? rawData.series.filter(Boolean) : [];
-    if (!sourceSeries.length) {
-      return sourceSeries;
-    }
-    const previewCounts = resolveDualAxisPreviewSeriesCounts(previewState);
-    if (!previewCounts.hasSideCounts) {
-      return trimSeriesListForPreview(sourceSeries, numberOr(previewState && previewState.previewSeriesCount, 0));
-    }
-
-    const xAxes = Array.isArray(rawData && rawData.xAxis) ? rawData.xAxis : [rawData && rawData.xAxis ? rawData.xAxis : {}];
-    const yAxes = Array.isArray(rawData && rawData.yAxis) ? rawData.yAxis : [rawData && rawData.yAxis ? rawData.yAxis : {}];
-    const horizontal = (xAxes[0] && xAxes[0].type === "value" || xAxes[1] && xAxes[1].type === "value") && yAxes[0] && yAxes[0].type === "category";
-    const counters = { left: 0, right: 0 };
-
-    return deepClone(sourceSeries.filter((series, index) => {
-      const side = resolveDualAxisSeriesSide(series, { horizontal }, index);
-      const limit = side === "left" ? previewCounts.leftCount : previewCounts.rightCount;
-      if (limit > 0 && counters[side] >= limit) {
-        return false;
-      }
-      counters[side] += 1;
-      return true;
-    }));
-  }
-
-  function applyPreviewSeriesCount(chartType, rawData, previewState) {
-    if (!supportsPreviewSeriesCount(chartType)) {
-      return deepClone(rawData);
-    }
-    const nextRawData = deepClone(rawData || {});
-    if (chartType === "dualAxis") {
-      nextRawData.series = trimDualAxisSeriesListForPreview(nextRawData, previewState);
-      return nextRawData;
-    }
-    const targetCount = numberOr(previewState && previewState.previewSeriesCount, 0);
-    if (!targetCount) {
-      return nextRawData;
-    }
-    nextRawData.series = trimSeriesListForPreview(nextRawData.series, targetCount);
-    return nextRawData;
+  function countSeriesList(seriesList) {
+    return Array.isArray(seriesList) ? seriesList.filter(Boolean).length : 0;
   }
 
   function applyStyleConfig(optionValue, styleValue, path) {
@@ -443,7 +499,73 @@
     return compactObject(base);
   }
 
-  function buildStructurePatch(chartType, specificState) {
+  function getLineSpecificConfig(specificConfig) {
+    const line = isObject(specificConfig && specificConfig.line) ? specificConfig.line : {};
+    const dataLabels = isObject(specificConfig && specificConfig.dataLabels) ? specificConfig.dataLabels : {};
+    return { line, dataLabels };
+  }
+
+  function getBarSpecificConfig(specificConfig) {
+    const bar = isObject(specificConfig && specificConfig.bar) ? specificConfig.bar : {};
+    const dataLabels = isObject(specificConfig && specificConfig.dataLabels) ? specificConfig.dataLabels : {};
+    return { bar, dataLabels };
+  }
+
+  function getAreaSpecificConfig(specificConfig) {
+    const area = isObject(specificConfig && specificConfig.area) ? specificConfig.area : {};
+    const dataLabels = isObject(specificConfig && specificConfig.dataLabels) ? specificConfig.dataLabels : {};
+    return { area, dataLabels };
+  }
+
+  function getScatterSpecificConfig(specificConfig) {
+    const point = isObject(specificConfig && specificConfig.point) ? specificConfig.point : {};
+    const dataLabels = isObject(specificConfig && specificConfig.dataLabels) ? specificConfig.dataLabels : {};
+    return { point, dataLabels };
+  }
+
+  function getDualAxisLayoutConfig(specificConfig) {
+    return isObject(specificConfig && specificConfig.layout) ? specificConfig.layout : {};
+  }
+
+  function isDualAxisHorizontal(specificConfig) {
+    const layout = getDualAxisLayoutConfig(specificConfig);
+    return "horizontal" in layout ? Boolean(layout.horizontal) : false;
+  }
+
+  function getDualAxisAxisConfig(specificConfig, side) {
+    return isObject(specificConfig && specificConfig[`${side}Axis`]) ? specificConfig[`${side}Axis`] : {};
+  }
+
+  function getDualAxisBarConfig(specificConfig, side) {
+    return isObject(specificConfig && specificConfig[`${side}Bar`]) ? specificConfig[`${side}Bar`] : {};
+  }
+
+  function getDualAxisLineConfig(specificConfig, side) {
+    return isObject(specificConfig && specificConfig[`${side}Line`]) ? specificConfig[`${side}Line`] : {};
+  }
+
+  function readOptionalBoolean(config, fieldName) {
+    if (!isObject(config) || !(fieldName in config)) {
+      return undefined;
+    }
+    return Boolean(config[fieldName]);
+  }
+
+  function readOptionalNumber(config, fieldName) {
+    if (!isObject(config) || !(fieldName in config)) {
+      return undefined;
+    }
+    return coerceNumeric(config[fieldName]);
+  }
+
+  function readOptionalValue(config, fieldName) {
+    if (!isObject(config) || !(fieldName in config)) {
+      return undefined;
+    }
+    return config[fieldName];
+  }
+
+  function buildStructurePatch(chartType, specificConfig) {
     switch (chartType) {
       case "line":
       case "area":
@@ -457,7 +579,7 @@
           yAxis: { type: "value" }
         };
       case "dualAxis":
-        return specificState.horizontal
+        return isDualAxisHorizontal(specificConfig)
           ? {
               xAxis: [{ type: "value" }, { type: "value" }],
               yAxis: { type: "category" }
@@ -577,8 +699,8 @@
     return modeMap[pieMode] || modeMap.donut;
   }
 
-  function resolveGaugeBands(specificState) {
-    const colors = parseGaugeBandColorsText(specificState.bandStops);
+  function resolveGaugeBands(specificConfig) {
+    const colors = parseGaugeBandColorsText(readOptionalValue(specificConfig, "bandStops"));
     const bandCount = Math.max(colors.length, 1);
     return colors.map((color, index) => [Number(((index + 1) / bandCount).toFixed(4)), color]);
   }
@@ -609,15 +731,16 @@
     return color;
   }
 
-  function resolveAreaFill(specificState, commonState, seriesIndex) {
+  function resolveAreaFill(specificConfig, commonState, seriesIndex) {
     const nextSeriesIndex = seriesIndex || 0;
+    const area = getAreaSpecificConfig(specificConfig).area;
     const palette = Array.isArray(commonState && commonState.palette) && commonState.palette.length
       ? commonState.palette
       : ["#5470c6"];
     const baseColor = palette[nextSeriesIndex % palette.length] || palette[0];
-    const topAlpha = Math.max(0, Math.min(1, numberOr(specificState.areaOpacity, 0.24)));
+    const topAlpha = Math.max(0, Math.min(1, numberOr(readOptionalNumber(area, "areaOpacity"), 0.24)));
     const bottomAlpha = Math.min(topAlpha, Math.max(0.02, Number((topAlpha * 0.18).toFixed(3))));
-    if (specificState.areaFillMode === "gradient") {
+    if (readOptionalValue(area, "areaFillMode") === "gradient") {
       return {
         color: {
           type: "linear",
@@ -634,7 +757,7 @@
     }
     return {
       color: baseColor,
-      opacity: specificState.areaOpacity
+      opacity: readOptionalNumber(area, "areaOpacity")
     };
   }
 
@@ -672,16 +795,17 @@
     };
   }
 
-  function buildDualAxisValueAxisConfig(commonState, specificState, side) {
-    const isLeft = side === "left";
-    const formatter = isLeft ? specificState.leftAxisFormatter : specificState.rightAxisFormatter;
-    const labelFontSize = isLeft ? specificState.leftAxisLabelFontSize : specificState.rightAxisLabelFontSize;
-    const labelColor = isLeft ? specificState.leftAxisLabelColor : specificState.rightAxisLabelColor;
-    const axisLineShow = isLeft ? specificState.leftAxisLineShow : specificState.rightAxisLineShow;
-    const axisLineColor = isLeft ? specificState.leftAxisLineColor : specificState.rightAxisLineColor;
-    const axisTickShow = isLeft ? specificState.leftAxisTickShow : specificState.rightAxisTickShow;
-    const followAxis = specificState.splitLineFollowAxis || "left";
-    const horizontal = Boolean(specificState.horizontal);
+  function buildDualAxisValueAxisConfig(commonState, specificConfig, side) {
+    const axisConfig = getDualAxisAxisConfig(specificConfig, side);
+    const layout = getDualAxisLayoutConfig(specificConfig);
+    const formatter = readOptionalValue(axisConfig, "formatter");
+    const labelFontSize = readOptionalNumber(axisConfig, "labelFontSize");
+    const labelColor = readOptionalValue(axisConfig, "labelColor");
+    const axisLineShow = readOptionalBoolean(axisConfig, "lineShow");
+    const axisLineColor = readOptionalValue(axisConfig, "lineColor");
+    const axisTickShow = readOptionalBoolean(axisConfig, "tickShow");
+    const followAxis = layout.splitLineFollowAxis || "left";
+    const horizontal = isDualAxisHorizontal(specificConfig);
     const sharedSplitLineShow = horizontal ? commonState.xSplitLineShow : commonState.splitLineShow;
     const sharedSplitLineColor = horizontal ? commonState.xSplitLineColor : commonState.splitLineColor;
     const sharedSplitLineType = normalizeStrokeType(horizontal ? commonState.xSplitLineType : commonState.splitLineType);
@@ -715,14 +839,14 @@
     });
   }
 
-  function buildDualAxisSeriesAxisRef(specificState, side) {
+  function buildDualAxisSeriesAxisRef(specificConfig, side) {
     const axisIndex = side === "left" ? 0 : 1;
-    return specificState.horizontal ? { xAxisIndex: axisIndex, yAxisIndex: 0 } : { yAxisIndex: axisIndex };
+    return isDualAxisHorizontal(specificConfig) ? { xAxisIndex: axisIndex, yAxisIndex: 0 } : { yAxisIndex: axisIndex };
   }
 
-  function resolveDualAxisSeriesSide(series, specificState, index) {
+  function resolveDualAxisSeriesSide(series, specificConfig, index) {
     const nextIndex = index || 0;
-    const horizontal = Boolean(specificState.horizontal);
+    const horizontal = isDualAxisHorizontal(specificConfig);
     const axisIndex = horizontal
       ? (series && (series.xAxisIndex !== undefined ? series.xAxisIndex : series.yAxisIndex))
       : (series && (series.yAxisIndex !== undefined ? series.yAxisIndex : series.xAxisIndex));
@@ -735,25 +859,25 @@
     return nextIndex === 1 ? "right" : "left";
   }
 
-  function buildDualAxisSeriesStructure(specificState, side, dualAxisTypes) {
+  function buildDualAxisSeriesStructure(specificConfig, side, dualAxisTypes) {
     const isLeft = side === "left";
     return compactObject({
       type: isLeft ? dualAxisTypes.leftType : dualAxisTypes.rightType,
-      ...buildDualAxisSeriesAxisRef(specificState, side)
+      ...buildDualAxisSeriesAxisRef(specificConfig, side)
     });
   }
 
-  function normalizeDualAxisSeriesStructure(sourceSeries, specificState, dualAxisTypes) {
+  function normalizeDualAxisSeriesStructure(sourceSeries, specificConfig, dualAxisTypes) {
     const seriesList = Array.isArray(sourceSeries) ? sourceSeries : [];
     if (!seriesList.length) {
       return [
-        buildDualAxisSeriesStructure(specificState, "left", dualAxisTypes),
-        buildDualAxisSeriesStructure(specificState, "right", dualAxisTypes)
+        buildDualAxisSeriesStructure(specificConfig, "left", dualAxisTypes),
+        buildDualAxisSeriesStructure(specificConfig, "right", dualAxisTypes)
       ];
     }
     return seriesList.map((series, index) => {
-      const side = resolveDualAxisSeriesSide(series, specificState, index);
-      return compactObject(deepMerge(series, buildDualAxisSeriesStructure(specificState, side, dualAxisTypes)));
+      const side = resolveDualAxisSeriesSide(series, specificConfig, index);
+      return compactObject(deepMerge(series, buildDualAxisSeriesStructure(specificConfig, side, dualAxisTypes)));
     });
   }
 
@@ -790,52 +914,62 @@
     return normalized;
   }
 
-  function buildDualAxisSeriesConfig(specificState, side, dualAxisTypes, previewState) {
+  function countDualAxisSeriesBySide(seriesList, specificConfig) {
+    const counts = { left: 0, right: 0 };
+    (Array.isArray(seriesList) ? seriesList : []).forEach((series, index) => {
+      const side = resolveDualAxisSeriesSide(series, specificConfig, index);
+      counts[side] += 1;
+    });
+    return counts;
+  }
+
+  function buildDualAxisSeriesConfig(specificConfig, side, dualAxisTypes, previewState, sideSeriesCount) {
     const isLeft = side === "left";
+    const barConfig = getDualAxisBarConfig(specificConfig, side);
+    const lineConfig = getDualAxisLineConfig(specificConfig, side);
     const seriesType = isLeft ? dualAxisTypes.leftType : dualAxisTypes.rightType;
-    const axisRef = buildDualAxisSeriesAxisRef(specificState, side);
+    const axisRef = buildDualAxisSeriesAxisRef(specificConfig, side);
     if (seriesType === "bar") {
-      const previewCounts = resolveDualAxisPreviewSeriesCounts(previewState);
-      const isSingleBarVisual = (isLeft ? previewCounts.leftCount : previewCounts.rightCount) === 1
+      const isSingleBarVisual = Number(sideSeriesCount) === 1
         || Boolean(previewState && previewState.previewStackMode);
       const previewBarWidth = isSingleBarVisual ? "40%" : undefined;
       return compactObject({
         type: "bar",
         ...axisRef,
         barWidth: previewBarWidth,
-        barGap: isLeft ? specificState.leftBarGap : specificState.rightBarGap,
+        barGap: readOptionalValue(barConfig, "barGap"),
         itemStyle: {
-          opacity: isLeft ? specificState.leftBarOpacity : specificState.rightBarOpacity,
-          borderRadius: isLeft ? specificState.leftBarBorderRadius : specificState.rightBarBorderRadius,
-          borderWidth: isLeft ? specificState.leftBarBorderWidth : specificState.rightBarBorderWidth,
-          borderColor: isLeft ? specificState.leftBarBorderColor : specificState.rightBarBorderColor
+          opacity: readOptionalNumber(barConfig, "opacity"),
+          borderRadius: readOptionalNumber(barConfig, "borderRadius"),
+          borderWidth: readOptionalNumber(barConfig, "borderWidth"),
+          borderColor: readOptionalValue(barConfig, "borderColor")
         },
         label: {
-          show: isLeft ? specificState.leftBarShowLabel : specificState.rightBarShowLabel,
-          position: isLeft ? specificState.leftBarLabelPosition : specificState.rightBarLabelPosition,
-          fontSize: isLeft ? specificState.leftBarLabelFontSize : specificState.rightBarLabelFontSize,
-          color: isLeft ? specificState.leftBarLabelColor : specificState.rightBarLabelColor
+          show: readOptionalBoolean(barConfig, "showLabel"),
+          position: readOptionalValue(barConfig, "labelPosition"),
+          fontSize: readOptionalNumber(barConfig, "labelFontSize"),
+          color: readOptionalValue(barConfig, "labelColor")
         }
       });
     }
     return compactObject({
       type: "line",
       ...axisRef,
-      smooth: isLeft ? specificState.leftLineSmooth : specificState.rightLineSmooth,
-      showSymbol: isLeft ? specificState.leftLineShowSymbol : specificState.rightLineShowSymbol,
-      connectNulls: isLeft ? specificState.leftLineConnectNulls : specificState.rightLineConnectNulls,
+      smooth: readOptionalBoolean(lineConfig, "smooth"),
+      showSymbol: readOptionalBoolean(lineConfig, "showSymbol"),
+      connectNulls: readOptionalBoolean(lineConfig, "connectNulls"),
       lineStyle: {
-        width: isLeft ? specificState.leftLineWidth : specificState.rightLineWidth,
-        type: isLeft ? specificState.leftLineStyleType : specificState.rightLineStyleType
+        width: readOptionalNumber(lineConfig, "lineWidth"),
+        type: readOptionalValue(lineConfig, "lineStyleType")
       },
-      symbol: isLeft ? specificState.leftLineSymbol : specificState.rightLineSymbol,
-      symbolSize: isLeft ? specificState.leftLineSymbolSize : specificState.rightLineSymbolSize,
+      symbol: readOptionalValue(lineConfig, "symbol"),
+      symbolSize: readOptionalNumber(lineConfig, "symbolSize"),
       label: {
-        show: isLeft ? specificState.leftLineShowLabel : specificState.rightLineShowLabel,
-        fontSize: isLeft ? specificState.leftLineLabelFontSize : specificState.rightLineLabelFontSize,
-        color: isLeft ? specificState.leftLineLabelColor : specificState.rightLineLabelColor
+        show: readOptionalBoolean(lineConfig, "showLabel"),
+        fontSize: readOptionalNumber(lineConfig, "labelFontSize"),
+        color: readOptionalValue(lineConfig, "labelColor")
       },
-      areaStyle: (isLeft ? specificState.leftLineArea : specificState.rightLineArea)
+      areaStyle: readOptionalBoolean(lineConfig, "area")
         ? {
             opacity: 0.22
           }
@@ -847,24 +981,27 @@
     return DUAL_AXIS_COLOR_LIST_FALLBACKS[fieldId] || ["#5470c6", "#91cc75", "#fac858"];
   }
 
-  function resolveDualAxisSeriesPalette(specificState, side, seriesType) {
+  function resolveDualAxisSeriesPalette(specificConfig, side, seriesType) {
     const fieldId = `${side}${seriesType === "bar" ? "Bar" : "Line"}Colors`;
-    return parseColorListText(specificState[fieldId], getDualAxisColorListFallback(fieldId));
+    const sideConfig = seriesType === "bar"
+      ? getDualAxisBarConfig(specificConfig, side)
+      : getDualAxisLineConfig(specificConfig, side);
+    return parseColorListText(readOptionalValue(sideConfig, "colors"), getDualAxisColorListFallback(fieldId));
   }
 
-  function resolveDualAxisSeriesColor(specificState, side, seriesType, sideIndex) {
+  function resolveDualAxisSeriesColor(specificConfig, side, seriesType, sideIndex) {
     const nextSideIndex = sideIndex || 0;
-    const palette = resolveDualAxisSeriesPalette(specificState, side, seriesType);
+    const palette = resolveDualAxisSeriesPalette(specificConfig, side, seriesType);
     return palette[nextSideIndex % palette.length] || palette[0];
   }
 
-  function buildDualAxisSeriesConfigForSeries(specificState, series, index, sideIndex, dualAxisTypes, previewState) {
+  function buildDualAxisSeriesConfigForSeries(specificConfig, series, index, sideIndex, dualAxisTypes, previewState, sideSeriesCount) {
     const nextIndex = index || 0;
     const nextSideIndex = sideIndex || 0;
-    const side = resolveDualAxisSeriesSide(series, specificState, nextIndex);
+    const side = resolveDualAxisSeriesSide(series, specificConfig, nextIndex);
     const seriesType = side === "left" ? dualAxisTypes.leftType : dualAxisTypes.rightType;
-    const sideColor = resolveDualAxisSeriesColor(specificState, side, seriesType, nextSideIndex);
-    const baseConfig = buildDualAxisSeriesConfig(specificState, side, dualAxisTypes, previewState);
+    const sideColor = resolveDualAxisSeriesColor(specificConfig, side, seriesType, nextSideIndex);
+    const baseConfig = buildDualAxisSeriesConfig(specificConfig, side, dualAxisTypes, previewState, sideSeriesCount);
     if (seriesType === "bar") {
       return compactObject(deepMerge(baseConfig, {
         itemStyle: { color: sideColor }
@@ -1007,42 +1144,46 @@
     return previewOption;
   }
 
-  function buildChartStyleConfig(chartType, specificState, commonState, rawOption, options) {
+  function buildChartStyleConfig(chartType, specificConfig, commonState, rawOption, options) {
     const cfg = options || {};
     const previewState = cfg.previewState || {};
     const dualAxisTypes = cfg.dualAxisTypes || { leftType: "bar", rightType: "line" };
-    const previewViewportSize = cfg.previewViewportSize || { width: 960, height: 520 };
+    const previewViewportSize = cfg.previewViewportSize || { width: 650, height: 360 };
     const layoutBox = buildLayoutBox(commonState);
 
     switch (chartType) {
       case "line":
-        return compactObject({
+        {
+          const { line, dataLabels } = getLineSpecificConfig(specificConfig);
+          return compactObject({
           xAxis: { type: "category" },
           yAxis: { type: "value" },
           series: [
             {
               type: "line",
-              symbol: specificState.symbol,
-              symbolSize: resolveLinePreviewSymbolSize(specificState.symbolSize, specificState.showSymbol),
-              smooth: specificState.smooth,
-              showSymbol: resolveLinePreviewSymbolVisibility(specificState.showSymbol, specificState.showLabel),
-              connectNulls: specificState.connectNulls,
+              symbol: readOptionalValue(line, "symbol"),
+              symbolSize: resolveLinePreviewSymbolSize(readOptionalNumber(line, "symbolSize"), readOptionalBoolean(line, "showSymbol")),
+              smooth: readOptionalBoolean(line, "smooth"),
+              showSymbol: resolveLinePreviewSymbolVisibility(readOptionalBoolean(line, "showSymbol"), readOptionalBoolean(dataLabels, "show")),
+              connectNulls: readOptionalBoolean(line, "connectNulls"),
               lineStyle: {
-                width: specificState.lineWidth,
-                type: specificState.lineStyleType
+                width: readOptionalNumber(line, "lineWidth"),
+                type: readOptionalValue(line, "lineStyleType")
               },
               label: {
-                show: specificState.showLabel,
-                fontSize: specificState.labelFontSize,
-                color: specificState.labelColor
+                show: readOptionalBoolean(dataLabels, "show"),
+                fontSize: readOptionalNumber(dataLabels, "fontSize"),
+                color: readOptionalValue(dataLabels, "color")
               }
             }
           ]
         });
+        }
       case "bar":
         {
-          const previewSeriesCount = numberOr(previewState.previewSeriesCount, 0);
-          const isSingleBarVisual = previewSeriesCount === 1 || Boolean(previewState.previewStackMode);
+          const { bar, dataLabels } = getBarSpecificConfig(specificConfig);
+          const sourceSeriesCount = countSeriesList(rawOption && rawOption.series);
+          const isSingleBarVisual = sourceSeriesCount === 1 || Boolean(previewState.previewStackMode);
           const previewBarWidth = isSingleBarVisual ? "40%" : undefined;
           return compactObject({
             xAxis: { type: "category" },
@@ -1051,18 +1192,18 @@
               {
                 type: "bar",
                 barWidth: previewBarWidth,
-                barGap: specificState.barGap,
+                barGap: readOptionalValue(bar, "barGap"),
                 itemStyle: {
-                  opacity: specificState.itemOpacity,
-                  borderRadius: specificState.borderRadius,
-                  borderWidth: specificState.borderWidth,
-                  borderColor: specificState.borderColor
+                  opacity: readOptionalNumber(bar, "itemOpacity"),
+                  borderRadius: readOptionalNumber(bar, "borderRadius"),
+                  borderWidth: readOptionalNumber(bar, "borderWidth"),
+                  borderColor: readOptionalValue(bar, "borderColor")
                 },
                 label: {
-                  show: specificState.showLabel,
-                  position: specificState.labelPosition,
-                  fontSize: specificState.labelFontSize,
-                  color: specificState.labelColor
+                  show: readOptionalBoolean(dataLabels, "show"),
+                  position: readOptionalValue(dataLabels, "position"),
+                  fontSize: readOptionalNumber(dataLabels, "fontSize"),
+                  color: readOptionalValue(dataLabels, "color")
                 }
               }
             ]
@@ -1077,25 +1218,25 @@
               radius: resolvedPieConfig.radius,
               roseType: resolvedPieConfig.roseType,
               center: resolveLayoutCenter(layoutBox, "auto", "auto"),
-              startAngle: specificState.startAngle,
+              startAngle: readOptionalNumber(specificConfig, "startAngle"),
               label: {
-                show: specificState.showLabel,
-                position: specificState.labelPosition,
-                fontSize: specificState.labelFontSize,
-                color: specificState.labelColor,
-                formatter: specificState.labelFormatter
+                show: readOptionalBoolean(specificConfig, "showLabel"),
+                position: readOptionalValue(specificConfig, "labelPosition"),
+                fontSize: readOptionalNumber(specificConfig, "labelFontSize"),
+                color: readOptionalValue(specificConfig, "labelColor"),
+                formatter: readOptionalValue(specificConfig, "labelFormatter")
               },
               labelLine: {
-                show: specificState.labelLineShow,
+                show: readOptionalBoolean(specificConfig, "labelLineShow"),
                 lineStyle: {
-                  color: specificState.labelLineColor,
-                  width: specificState.labelLineWidth
+                  color: readOptionalValue(specificConfig, "labelLineColor"),
+                  width: readOptionalNumber(specificConfig, "labelLineWidth")
                 }
               },
               itemStyle: {
-                opacity: specificState.itemOpacity,
-                borderWidth: specificState.borderWidth,
-                borderColor: specificState.borderColor
+                opacity: readOptionalNumber(specificConfig, "itemOpacity"),
+                borderWidth: readOptionalNumber(specificConfig, "borderWidth"),
+                borderColor: readOptionalValue(specificConfig, "borderColor")
               }
             }
           ]
@@ -1106,63 +1247,63 @@
           series: [
             {
               type: "gauge",
-              startAngle: specificState.startAngle,
-              endAngle: specificState.endAngle,
+              startAngle: readOptionalNumber(specificConfig, "startAngle"),
+              endAngle: readOptionalNumber(specificConfig, "endAngle"),
               center: resolveGaugeLayoutCenter(layoutBox, "auto", "auto"),
               radius: resolveGaugeRadius(layoutBox, previewViewportSize),
               progress: {
-                show: specificState.progressShow,
-                width: specificState.progressWidth,
-                itemStyle: { color: specificState.progressColor }
+                show: readOptionalBoolean(specificConfig, "progressShow"),
+                width: readOptionalNumber(specificConfig, "progressWidth"),
+                itemStyle: { color: readOptionalValue(specificConfig, "progressColor") }
               },
               title: {
-                show: specificState.titleShow,
-                fontSize: specificState.titleFontSize,
-                color: specificState.titleColor
+                show: readOptionalBoolean(specificConfig, "titleShow"),
+                fontSize: readOptionalNumber(specificConfig, "titleFontSize"),
+                color: readOptionalValue(specificConfig, "titleColor")
               },
               detail: {
-                show: specificState.detailShow,
-                fontSize: specificState.detailFontSize,
+                show: readOptionalBoolean(specificConfig, "detailShow"),
+                fontSize: readOptionalNumber(specificConfig, "detailFontSize"),
                 fontWeight: "bold",
-                color: specificState.detailColor,
-                formatter: normalizeGaugeFormatter(specificState.detailFormatter)
+                color: readOptionalValue(specificConfig, "detailColor"),
+                formatter: normalizeGaugeFormatter(readOptionalValue(specificConfig, "detailFormatter"))
               },
               axisLabel: {
-                show: specificState.axisLabelShow,
-                distance: specificState.axisLabelDistance,
-                fontSize: specificState.axisLabelFontSize,
-                color: specificState.axisLabelColor
+                show: readOptionalBoolean(specificConfig, "axisLabelShow"),
+                distance: readOptionalNumber(specificConfig, "axisLabelDistance"),
+                fontSize: readOptionalNumber(specificConfig, "axisLabelFontSize"),
+                color: readOptionalValue(specificConfig, "axisLabelColor")
               },
               splitLine: {
-                show: specificState.splitLineShow,
-                length: specificState.splitLineLength,
+                show: readOptionalBoolean(specificConfig, "splitLineShow"),
+                length: readOptionalNumber(specificConfig, "splitLineLength"),
                 lineStyle: {
-                  width: specificState.splitLineWidth,
-                  color: specificState.splitLineColor
+                  width: readOptionalNumber(specificConfig, "splitLineWidth"),
+                  color: readOptionalValue(specificConfig, "splitLineColor")
                 }
               },
               axisTick: {
-                show: specificState.axisTickShow,
-                length: specificState.axisTickLength,
+                show: readOptionalBoolean(specificConfig, "axisTickShow"),
+                length: readOptionalNumber(specificConfig, "axisTickLength"),
                 lineStyle: {
-                  width: specificState.axisTickWidth,
-                  color: specificState.axisTickColor
+                  width: readOptionalNumber(specificConfig, "axisTickWidth"),
+                  color: readOptionalValue(specificConfig, "axisTickColor")
                 }
               },
               pointer: {
-                show: specificState.pointerShow,
-                width: numberOr(specificState.pointerWidth, 4),
-                itemStyle: { color: specificState.pointerColor }
+                show: readOptionalBoolean(specificConfig, "pointerShow"),
+                width: numberOr(readOptionalNumber(specificConfig, "pointerWidth"), 4),
+                itemStyle: { color: readOptionalValue(specificConfig, "pointerColor") }
               },
               anchor: {
-                show: specificState.anchorShow,
-                size: numberOr(specificState.anchorSize, 18),
-                itemStyle: { color: specificState.anchorColor }
+                show: readOptionalBoolean(specificConfig, "anchorShow"),
+                size: numberOr(readOptionalNumber(specificConfig, "anchorSize"), 18),
+                itemStyle: { color: readOptionalValue(specificConfig, "anchorColor") }
               },
               axisLine: {
                 lineStyle: {
-                  width: specificState.axisWidth,
-                  color: resolveGaugeBands(specificState)
+                  width: readOptionalNumber(specificConfig, "axisWidth"),
+                  color: resolveGaugeBands(specificConfig)
                 }
               }
             }
@@ -1170,24 +1311,25 @@
         });
       case "area":
         {
+          const { area, dataLabels } = getAreaSpecificConfig(specificConfig);
           const sourceSeries = Array.isArray(rawOption && rawOption.series) ? rawOption.series : [];
           const styleSeries = (sourceSeries.length ? sourceSeries : [{}]).map((series, index) => compactObject({
             type: "line",
-            smooth: specificState.smooth,
-            showSymbol: resolveLinePreviewSymbolVisibility(specificState.showSymbol, specificState.showLabel),
-            symbol: specificState.symbol,
-            symbolSize: resolveLinePreviewSymbolSize(specificState.symbolSize, specificState.showSymbol),
-            connectNulls: specificState.connectNulls,
+            smooth: readOptionalBoolean(area, "smooth"),
+            showSymbol: resolveLinePreviewSymbolVisibility(readOptionalBoolean(area, "showSymbol"), readOptionalBoolean(dataLabels, "show")),
+            symbol: readOptionalValue(area, "symbol"),
+            symbolSize: resolveLinePreviewSymbolSize(readOptionalNumber(area, "symbolSize"), readOptionalBoolean(area, "showSymbol")),
+            connectNulls: readOptionalBoolean(area, "connectNulls"),
             lineStyle: {
-              width: specificState.lineWidth,
-              type: specificState.lineStyleType
+              width: readOptionalNumber(area, "lineWidth"),
+              type: readOptionalValue(area, "lineStyleType")
             },
             label: {
-              show: specificState.showLabel,
-              fontSize: specificState.labelFontSize,
-              color: specificState.labelColor
+              show: readOptionalBoolean(dataLabels, "show"),
+              fontSize: readOptionalNumber(dataLabels, "fontSize"),
+              color: readOptionalValue(dataLabels, "color")
             },
-            areaStyle: resolveAreaFill(specificState, commonState, index)
+            areaStyle: resolveAreaFill(specificConfig, commonState, index)
           }));
           return compactObject({
             xAxis: { type: "category" },
@@ -1197,75 +1339,87 @@
         }
       case "dualAxis": {
         const sourceSeries = Array.isArray(rawOption && rawOption.series) ? rawOption.series : [];
+        const sideSeriesCounts = countDualAxisSeriesBySide(sourceSeries, specificConfig);
         const sideCounters = { left: 0, right: 0 };
         const styleSeries = (sourceSeries.length ? sourceSeries : [{}, {}]).map((series, index) => {
-          const side = resolveDualAxisSeriesSide(series, specificState, index);
+          const side = resolveDualAxisSeriesSide(series, specificConfig, index);
           const sideIndex = sideCounters[side];
           sideCounters[side] += 1;
-          return buildDualAxisSeriesConfigForSeries(specificState, series, index, sideIndex, dualAxisTypes, previewState);
+          return buildDualAxisSeriesConfigForSeries(
+            specificConfig,
+            series,
+            index,
+            sideIndex,
+            dualAxisTypes,
+            previewState,
+            sideSeriesCounts[side]
+          );
         });
         return compactObject({
-          xAxis: specificState.horizontal
+          xAxis: isDualAxisHorizontal(specificConfig)
             ? [
-                buildDualAxisValueAxisConfig(commonState, specificState, "left"),
-                buildDualAxisValueAxisConfig(commonState, specificState, "right")
+                buildDualAxisValueAxisConfig(commonState, specificConfig, "left"),
+                buildDualAxisValueAxisConfig(commonState, specificConfig, "right")
               ]
             : buildDualAxisCategoryAxisConfig(commonState, false),
-          yAxis: specificState.horizontal
+          yAxis: isDualAxisHorizontal(specificConfig)
             ? buildDualAxisCategoryAxisConfig(commonState, true)
             : [
-                buildDualAxisValueAxisConfig(commonState, specificState, "left"),
-                buildDualAxisValueAxisConfig(commonState, specificState, "right")
+                buildDualAxisValueAxisConfig(commonState, specificConfig, "left"),
+                buildDualAxisValueAxisConfig(commonState, specificConfig, "right")
               ],
           series: styleSeries
         });
       }
       case "scatter":
-        return compactObject({
-          xAxis: { type: "value" },
-          yAxis: { type: "value" },
-          series: [
-            {
-              type: "scatter",
-              symbol: specificState.symbol,
-              symbolSize: numberOr(specificState.symbolSize, 64),
-              itemStyle: {
-                opacity: specificState.itemOpacity,
-                borderWidth: specificState.borderWidth,
-                borderColor: specificState.borderColor
-              },
-              label: {
-                show: specificState.showLabel,
-                fontSize: specificState.labelFontSize,
-                color: specificState.labelColor
+        {
+          const { point, dataLabels } = getScatterSpecificConfig(specificConfig);
+          return compactObject({
+            xAxis: { type: "value" },
+            yAxis: { type: "value" },
+            series: [
+              {
+                type: "scatter",
+                symbol: readOptionalValue(point, "symbol"),
+                symbolSize: numberOr(readOptionalNumber(point, "symbolSize"), 64),
+                itemStyle: {
+                  opacity: readOptionalNumber(point, "itemOpacity"),
+                  borderWidth: readOptionalNumber(point, "borderWidth"),
+                  borderColor: readOptionalValue(point, "borderColor")
+                },
+                label: {
+                  show: readOptionalBoolean(dataLabels, "show"),
+                  fontSize: readOptionalNumber(dataLabels, "fontSize"),
+                  color: readOptionalValue(dataLabels, "color")
+                }
               }
-            }
-          ]
-        });
+            ]
+          });
+        }
       case "radar":
         return compactObject({
           radar: {
-            shape: specificState.shape,
-            splitNumber: specificState.splitNumber,
+            shape: readOptionalValue(specificConfig, "shape"),
+            splitNumber: readOptionalNumber(specificConfig, "splitNumber"),
             center: resolveLayoutCenter(layoutBox, "auto", "auto"),
             radius: resolveRadarRadius(layoutBox, previewViewportSize),
             axisName: {
-              fontSize: specificState.axisNameFontSize,
-              color: specificState.axisNameColor,
-              fontWeight: specificState.axisNameBold ? "bold" : "normal"
+              fontSize: readOptionalNumber(specificConfig, "axisNameFontSize"),
+              color: readOptionalValue(specificConfig, "axisNameColor"),
+              fontWeight: readOptionalBoolean(specificConfig, "axisNameBold") ? "bold" : "normal"
             },
             splitLine: {
               lineStyle: {
-                color: specificState.splitLineColor,
-                width: specificState.splitLineWidth,
-                type: normalizeStrokeType(specificState.splitLineType)
+                color: readOptionalValue(specificConfig, "splitLineColor"),
+                width: readOptionalNumber(specificConfig, "splitLineWidth"),
+                type: normalizeStrokeType(readOptionalValue(specificConfig, "splitLineType"))
               }
             },
             axisLine: {
               lineStyle: {
-                color: specificState.axisLineColor,
-                width: specificState.axisLineWidth,
-                type: specificState.axisLineType
+                color: readOptionalValue(specificConfig, "axisLineColor"),
+                width: readOptionalNumber(specificConfig, "axisLineWidth"),
+                type: readOptionalValue(specificConfig, "axisLineType")
               }
             },
             splitArea: {
@@ -1275,20 +1429,20 @@
           series: [
             {
               type: "radar",
-              symbol: specificState.symbol,
-              showSymbol: specificState.showSymbol,
-              symbolSize: specificState.symbolSize,
+              symbol: readOptionalValue(specificConfig, "symbol"),
+              showSymbol: readOptionalBoolean(specificConfig, "showSymbol"),
+              symbolSize: readOptionalNumber(specificConfig, "symbolSize"),
               label: {
-                show: specificState.showLabel,
-                formatter: specificState.labelFormatter,
-                fontSize: specificState.labelFontSize,
-                color: specificState.labelColor
+                show: readOptionalBoolean(specificConfig, "showLabel"),
+                formatter: readOptionalValue(specificConfig, "labelFormatter"),
+                fontSize: readOptionalNumber(specificConfig, "labelFontSize"),
+                color: readOptionalValue(specificConfig, "labelColor")
               },
               lineStyle: {
-                width: specificState.lineWidth,
-                type: specificState.lineStyleType
+                width: readOptionalNumber(specificConfig, "lineWidth"),
+                type: readOptionalValue(specificConfig, "lineStyleType")
               },
-              areaStyle: { opacity: specificState.areaOpacity }
+              areaStyle: { opacity: readOptionalNumber(specificConfig, "areaOpacity") }
             }
           ]
         });
@@ -1301,21 +1455,21 @@
               top: `${Math.round(layoutBox.top)}%`,
               width: `${Math.round(layoutBox.width)}%`,
               height: `${Math.round(layoutBox.height)}%`,
-              sort: specificState.sort,
-              gap: specificState.gap,
-              minSize: specificState.minSize,
-              maxSize: specificState.maxSize,
+              sort: readOptionalValue(specificConfig, "sort"),
+              gap: readOptionalNumber(specificConfig, "gap"),
+              minSize: readOptionalValue(specificConfig, "minSize"),
+              maxSize: readOptionalValue(specificConfig, "maxSize"),
               label: {
-                show: specificState.showLabel,
-                position: specificState.labelPosition,
-                formatter: specificState.labelFormatter,
-                fontSize: specificState.labelFontSize,
-                color: specificState.labelColor
+                show: readOptionalBoolean(specificConfig, "showLabel"),
+                position: readOptionalValue(specificConfig, "labelPosition"),
+                formatter: readOptionalValue(specificConfig, "labelFormatter"),
+                fontSize: readOptionalNumber(specificConfig, "labelFontSize"),
+                color: readOptionalValue(specificConfig, "labelColor")
               },
               itemStyle: {
-                opacity: specificState.itemOpacity,
-                borderColor: specificState.borderColor,
-                borderWidth: specificState.borderWidth
+                opacity: readOptionalNumber(specificConfig, "itemOpacity"),
+                borderColor: readOptionalValue(specificConfig, "borderColor"),
+                borderWidth: readOptionalNumber(specificConfig, "borderWidth")
               }
             }
           ]
@@ -1325,34 +1479,32 @@
     }
   }
 
-  function buildChartArtifacts(params) {
+  function buildChartArtifactsFromBuilderConfig(params) {
     const chartType = params.chartType;
     const runtimeDefinition = getChartRuntimeDefinition(chartType);
-    const commonState = params.commonState;
-    const specificState = params.specificState;
+    const builderConfig = isObject(params.builderConfig) ? params.builderConfig : {};
+    const commonState = isObject(builderConfig.common) ? builderConfig.common : {};
+    const specificConfig = isObject(builderConfig.specific) ? builderConfig.specific : {};
     const sourceRawData = deepClone(params.rawData || {});
     const previewState = {
       previewStackMode: false,
       previewBarHorizontal: false,
       previewPieMode: chartType === "pie" ? "donut" : "donut",
-      previewSeriesCount: 0,
-      previewDualAxisLeftSeriesCount: 0,
-      previewDualAxisRightSeriesCount: 0,
       ...(params.previewState || {})
     };
-    const rawData = applyPreviewSeriesCount(chartType, sourceRawData, previewState);
+    const rawData = sourceRawData;
     const dualAxisTypes = params.dualAxisTypes || deriveDualAxisTypesFromRawData(rawData, previewState);
-    const previewViewportSize = params.previewViewportSize || { width: 960, height: 520 };
+    const previewViewportSize = params.previewViewportSize || { width: 650, height: 360 };
 
     const baseOption = buildCommonOption(commonState, runtimeDefinition);
-    const structurePatch = buildStructurePatch(chartType, specificState);
+    const structurePatch = buildStructurePatch(chartType, specificConfig);
     let rawOption;
 
     if (chartType === "dualAxis") {
       const baseWithData = compactObject(deepMerge(baseOption, rawData));
       rawOption = compactObject(deepMerge(baseWithData, structurePatch));
-      rawOption.series = compactObject(normalizeDualAxisSeriesStructure(baseWithData.series, specificState, dualAxisTypes));
-      if (specificState.horizontal) {
+      rawOption.series = compactObject(normalizeDualAxisSeriesStructure(baseWithData.series, specificConfig, dualAxisTypes));
+      if (isDualAxisHorizontal(specificConfig)) {
         rawOption = compactObject(normalizeDualAxisHorizontalOption(rawOption, baseWithData));
       }
     } else {
@@ -1365,7 +1517,7 @@
         `config/${runtimeDefinition.styleFile}`
       ],
       baseStyleConfig: buildBaseStyleConfig(commonState, runtimeDefinition),
-      chartStyleConfig: buildChartStyleConfig(chartType, specificState, commonState, rawOption, {
+      chartStyleConfig: buildChartStyleConfig(chartType, specificConfig, commonState, rawOption, {
         previewState,
         dualAxisTypes,
         previewViewportSize
@@ -1385,8 +1537,21 @@
     };
   }
 
+  function buildChartArtifactsFromHelperConfig(params) {
+    const chartType = params.chartType;
+    const builderConfig = buildBuilderConfigFromHelperConfig(chartType, params.helperConfig);
+    return buildChartArtifactsFromBuilderConfig({
+      chartType: chartType,
+      builderConfig,
+      rawData: params.rawData,
+      previewState: params.previewState,
+      previewViewportSize: params.previewViewportSize,
+      dualAxisTypes: params.dualAxisTypes || builderConfig.dualAxisTypes
+    });
+  }
+
   return {
-    buildChartArtifacts,
+    buildChartArtifactsFromHelperConfig,
     deriveDualAxisTypesFromRawData
   };
 });

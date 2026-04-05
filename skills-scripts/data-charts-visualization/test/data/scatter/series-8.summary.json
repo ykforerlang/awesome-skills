@@ -1,0 +1,25 @@
+{
+  "rawSeriesCount": 8,
+  "resolvedSeriesCount": 8,
+  "rawSeriesNames": [
+    "North",
+    "South",
+    "East",
+    "West",
+    "Retail",
+    "Online",
+    "SMB",
+    "Enterprise"
+  ],
+  "resolvedSeriesNames": [
+    "North",
+    "South",
+    "East",
+    "West",
+    "Retail",
+    "Online",
+    "SMB",
+    "Enterprise"
+  ],
+  "resolvedBarWidths": []
+}

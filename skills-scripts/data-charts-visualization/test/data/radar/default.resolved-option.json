@@ -1,0 +1,137 @@
+{
+  "title": {
+    "show": true,
+    "text": "CHARTS-VISUALIZATION",
+    "subtext": "由配置助手生成",
+    "left": "center",
+    "textStyle": {
+      "fontSize": 24,
+      "fontWeight": "bold",
+      "color": "#1f2937"
+    },
+    "subtextStyle": {
+      "fontSize": 14,
+      "color": "#6b7280"
+    }
+  },
+  "backgroundColor": "#ffffff",
+  "color": [
+    "#2563eb",
+    "#14b8a6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6"
+  ],
+  "legend": {
+    "show": true,
+    "orient": "horizontal",
+    "left": "center",
+    "top": "bottom",
+    "textStyle": {
+      "fontSize": 12,
+      "color": "#4b5563"
+    }
+  },
+  "grid": {
+    "left": "30%",
+    "right": "30%",
+    "top": "30%",
+    "bottom": "15%"
+  },
+  "radar": {
+    "indicator": [
+      {
+        "name": "Quality",
+        "max": 100
+      },
+      {
+        "name": "Speed",
+        "max": 100
+      },
+      {
+        "name": "Cost",
+        "max": 100
+      },
+      {
+        "name": "Scale",
+        "max": 100
+      },
+      {
+        "name": "Satisfaction",
+        "max": 100
+      }
+    ],
+    "shape": "polygon",
+    "splitNumber": 5,
+    "center": [
+      "50%",
+      "58%"
+    ],
+    "radius": "55%",
+    "axisName": {
+      "fontSize": 12,
+      "color": "#334155",
+      "fontWeight": "bold"
+    },
+    "splitLine": {
+      "lineStyle": {
+        "color": "#d0d7de",
+        "width": 0.5,
+        "type": "solid"
+      }
+    },
+    "axisLine": {
+      "lineStyle": {
+        "color": "#94a3b8",
+        "width": 0.6,
+        "type": "solid"
+      }
+    },
+    "splitArea": {
+      "show": false
+    }
+  },
+  "series": [
+    {
+      "type": "radar",
+      "data": [
+        {
+          "name": "Team A",
+          "value": [
+            90,
+            82,
+            70,
+            88,
+            91
+          ]
+        },
+        {
+          "name": "Team B",
+          "value": [
+            76,
+            90,
+            82,
+            72,
+            84
+          ]
+        }
+      ],
+      "symbol": "circle",
+      "showSymbol": false,
+      "symbolSize": 6,
+      "label": {
+        "show": false,
+        "formatter": "{b}: {c}",
+        "fontSize": 12,
+        "color": "#334155"
+      },
+      "lineStyle": {
+        "width": 3,
+        "type": "solid"
+      },
+      "areaStyle": {
+        "opacity": 0.2
+      }
+    }
+  ]
+}

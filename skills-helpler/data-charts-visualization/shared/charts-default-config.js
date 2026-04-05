@@ -36,6 +36,16 @@
     return deepClone(patch);
   }
 
+  function normalizePaletteValue(value) {
+    if (Array.isArray(value)) {
+      return deepClone(value);
+    }
+    return String(value || "")
+      .split(/[\n,]+/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+
   const COMMON_DEFAULTS_BY_LOCALE = {
     en: {
       titleText: "CHARTS-VISUALIZATION",
@@ -557,22 +567,19 @@
   };
 
   const DEFAULT_PREVIEW_BY_CHART = {
-    line: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut", previewSeriesCount: 2 },
-    bar: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut", previewSeriesCount: 2 },
-    area: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut", previewSeriesCount: 2 },
+    line: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut" },
+    bar: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut" },
+    area: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut" },
     dualAxis: {
       previewStackMode: false,
       previewBarHorizontal: false,
-      previewPieMode: "donut",
-      previewSeriesCount: 2,
-      previewDualAxisLeftSeriesCount: 2,
-      previewDualAxisRightSeriesCount: 2
+      previewPieMode: "donut"
     },
-    scatter: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut", previewSeriesCount: 2 },
-    pie: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut", previewSeriesCount: 1 },
-    gauge: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut", previewSeriesCount: 1 },
-    radar: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut", previewSeriesCount: 2 },
-    funnel: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut", previewSeriesCount: 1 },
+    scatter: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut" },
+    pie: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut" },
+    gauge: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut" },
+    radar: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut" },
+    funnel: { previewStackMode: false, previewBarHorizontal: false, previewPieMode: "donut" },
   };
 
   function getCommonDefaults(locale) {
@@ -596,6 +603,255 @@
     return deepMerge(getCommonDefaults(locale), beautyDefaults.common || {});
   }
 
+  function buildHelperConfig(chartType, commonState, specificState, options) {
+    const cfg = options || {};
+    return {
+      chartType,
+      common: buildHelperCommonState(commonState),
+      specific: buildHelperSpecificState(chartType, specificState, cfg.dualAxisTypes),
+    };
+  }
+
+  function buildHelperCommonState(commonState) {
+    const source = deepClone(commonState || {});
+    return {
+      title: {
+        main: {
+          show: source.titleShow,
+          text: source.titleText,
+          align: source.titleAlign,
+          fontSize: source.titleFontSize,
+          color: source.titleColor,
+          bold: source.titleBold,
+        },
+        subtitle: {
+          show: source.subtitleShow,
+          text: source.subtitleText,
+          fontSize: source.subtitleFontSize,
+          color: source.subtitleColor,
+        },
+      },
+      canvas: {
+        backgroundColor: source.backgroundColor,
+        palette: normalizePaletteValue(source.palette),
+        plotArea: {
+          left: source.gridLeft,
+          right: source.gridRight,
+          top: source.gridTop,
+          bottom: source.gridBottom,
+        },
+      },
+      legend: {
+        show: source.legendShow,
+        position: source.legendPosition,
+        orient: source.legendOrient,
+        fontSize: source.legendFontSize,
+        color: source.legendColor,
+      },
+      axes: {
+        x: {
+          lineShow: source.xAxisLineShow,
+          tickShow: source.xAxisTickShow,
+          rotate: source.xRotate,
+          labelFontSize: source.xAxisLabelFontSize,
+          labelColor: source.xAxisLabelColor,
+          lineColor: source.xAxisLineColor,
+          formatter: source.xFormatter,
+        },
+        y: {
+          lineShow: source.yAxisLineShow,
+          tickShow: source.yAxisTickShow,
+          labelFontSize: source.yAxisLabelFontSize,
+          labelColor: source.yAxisLabelColor,
+          lineColor: source.yAxisLineColor,
+          formatter: source.yFormatter,
+        },
+      },
+      splitLines: {
+        horizontal: {
+          show: source.splitLineShow,
+          color: source.splitLineColor,
+          type: source.splitLineType,
+          width: source.splitLineWidth,
+        },
+        vertical: {
+          show: source.xSplitLineShow,
+          color: source.xSplitLineColor,
+          type: source.xSplitLineType,
+          width: source.xSplitLineWidth,
+        },
+      },
+    };
+  }
+
+  function buildHelperSpecificState(chartType, specificState, dualAxisTypes) {
+    const source = deepClone(specificState || {});
+    switch (chartType) {
+      case "line":
+        return {
+          line: {
+            smooth: source.smooth,
+            showSymbol: source.showSymbol,
+            connectNulls: source.connectNulls,
+            symbol: source.symbol,
+            symbolSize: source.symbolSize,
+            lineStyleType: source.lineStyleType,
+            lineWidth: source.lineWidth,
+          },
+          dataLabels: {
+            show: source.showLabel,
+            fontSize: source.labelFontSize,
+            color: source.labelColor,
+          },
+        };
+      case "bar":
+        return {
+          bar: {
+            barGap: source.barGap,
+            itemOpacity: source.itemOpacity,
+            borderRadius: source.borderRadius,
+            borderWidth: source.borderWidth,
+            borderColor: source.borderColor,
+          },
+          dataLabels: {
+            show: source.showLabel,
+            position: source.labelPosition,
+            fontSize: source.labelFontSize,
+            color: source.labelColor,
+          },
+        };
+      case "area":
+        return {
+          area: {
+            smooth: source.smooth,
+            showSymbol: source.showSymbol,
+            symbol: source.symbol,
+            symbolSize: source.symbolSize,
+            connectNulls: source.connectNulls,
+            areaOpacity: source.areaOpacity,
+            areaFillMode: source.areaFillMode,
+            lineStyleType: source.lineStyleType,
+            lineWidth: source.lineWidth,
+          },
+          dataLabels: {
+            show: source.showLabel,
+            fontSize: source.labelFontSize,
+            color: source.labelColor,
+          },
+        };
+      case "dualAxis":
+        return {
+          layout: {
+            horizontal: source.horizontal,
+            splitLineFollowAxis: source.splitLineFollowAxis,
+            leftSeriesType: dualAxisTypes && (dualAxisTypes.leftType || dualAxisTypes.leftSeriesType) ? (dualAxisTypes.leftType || dualAxisTypes.leftSeriesType) : "bar",
+            rightSeriesType: dualAxisTypes && (dualAxisTypes.rightType || dualAxisTypes.rightSeriesType) ? (dualAxisTypes.rightType || dualAxisTypes.rightSeriesType) : "line",
+          },
+          leftAxis: {
+            labelFontSize: source.leftAxisLabelFontSize,
+            labelColor: source.leftAxisLabelColor,
+            lineShow: source.leftAxisLineShow,
+            lineColor: source.leftAxisLineColor,
+            tickShow: source.leftAxisTickShow,
+            formatter: source.leftAxisFormatter,
+          },
+          rightAxis: {
+            labelFontSize: source.rightAxisLabelFontSize,
+            labelColor: source.rightAxisLabelColor,
+            lineShow: source.rightAxisLineShow,
+            lineColor: source.rightAxisLineColor,
+            tickShow: source.rightAxisTickShow,
+            formatter: source.rightAxisFormatter,
+          },
+          leftBar: {
+            showLabel: source.leftBarShowLabel,
+            labelPosition: source.leftBarLabelPosition,
+            labelFontSize: source.leftBarLabelFontSize,
+            labelColor: source.leftBarLabelColor,
+            opacity: source.leftBarOpacity,
+            barGap: source.leftBarGap,
+            borderRadius: source.leftBarBorderRadius,
+            borderWidth: source.leftBarBorderWidth,
+            borderColor: source.leftBarBorderColor,
+            colors: normalizePaletteValue(source.leftBarColors),
+          },
+          rightBar: {
+            showLabel: source.rightBarShowLabel,
+            labelPosition: source.rightBarLabelPosition,
+            labelFontSize: source.rightBarLabelFontSize,
+            labelColor: source.rightBarLabelColor,
+            opacity: source.rightBarOpacity,
+            barGap: source.rightBarGap,
+            borderRadius: source.rightBarBorderRadius,
+            borderWidth: source.rightBarBorderWidth,
+            borderColor: source.rightBarBorderColor,
+            colors: normalizePaletteValue(source.rightBarColors),
+          },
+          leftLine: {
+            smooth: source.leftLineSmooth,
+            area: source.leftLineArea,
+            showSymbol: source.leftLineShowSymbol,
+            connectNulls: source.leftLineConnectNulls,
+            showLabel: source.leftLineShowLabel,
+            colors: normalizePaletteValue(source.leftLineColors),
+            lineStyleType: source.leftLineStyleType,
+            lineWidth: source.leftLineWidth,
+            symbol: source.leftLineSymbol,
+            symbolSize: source.leftLineSymbolSize,
+            labelFontSize: source.leftLineLabelFontSize,
+            labelColor: source.leftLineLabelColor,
+          },
+          rightLine: {
+            smooth: source.rightLineSmooth,
+            area: source.rightLineArea,
+            showSymbol: source.rightLineShowSymbol,
+            connectNulls: source.rightLineConnectNulls,
+            showLabel: source.rightLineShowLabel,
+            colors: normalizePaletteValue(source.rightLineColors),
+            lineStyleType: source.rightLineStyleType,
+            lineWidth: source.rightLineWidth,
+            symbol: source.rightLineSymbol,
+            symbolSize: source.rightLineSymbolSize,
+            labelFontSize: source.rightLineLabelFontSize,
+            labelColor: source.rightLineLabelColor,
+          },
+        };
+      case "scatter":
+        return {
+          point: {
+            symbol: source.symbol,
+            symbolSize: source.symbolSize,
+            itemOpacity: source.itemOpacity,
+            borderWidth: source.borderWidth,
+            borderColor: source.borderColor,
+          },
+          dataLabels: {
+            show: source.showLabel,
+            fontSize: source.labelFontSize,
+            color: source.labelColor,
+          },
+        };
+      case "pie":
+        return deepClone(source);
+      case "gauge":
+      case "radar":
+      case "funnel":
+        return deepClone(source);
+      default:
+        return deepClone(source);
+    }
+  }
+
+  function getDefaultHelperConfig(chartType, locale, options) {
+    const cfg = options || {};
+    return buildHelperConfig(
+      chartType,
+      getDefaultCommonState(chartType, locale),
+      getDefaultSpecificState(chartType),
+      { dualAxisTypes: cfg.dualAxisTypes }
+    );
+  }
+
   return {
     COMMON_DEFAULTS_BY_LOCALE,
     BEAUTY_DEFAULTS_BY_CHART,
@@ -606,5 +862,7 @@
     getDefaultCommonState,
     getDefaultSpecificState,
     getDefaultPreviewState,
+    buildHelperConfig,
+    getDefaultHelperConfig,
   };
 });

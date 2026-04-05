@@ -1,0 +1,56 @@
+{
+  "title": {
+    "show": true,
+    "text": "CHARTS-VISUALIZATION",
+    "subtext": "由配置助手生成",
+    "left": "center"
+  },
+  "backgroundColor": "#fafafa",
+  "color": [
+    "#2563eb",
+    "#14b8a6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6"
+  ],
+  "legend": {
+    "show": true,
+    "orient": "horizontal",
+    "left": "center",
+    "top": "bottom"
+  },
+  "grid": {
+    "left": "12%",
+    "right": "9%",
+    "top": "21%",
+    "bottom": "15%"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun"
+    ]
+  },
+  "yAxis": {
+    "type": "value"
+  },
+  "series": [
+    {
+      "type": "line",
+      "name": "Signups",
+      "data": [
+        120,
+        182,
+        191,
+        234,
+        290,
+        330
+      ]
+    }
+  ]
+}

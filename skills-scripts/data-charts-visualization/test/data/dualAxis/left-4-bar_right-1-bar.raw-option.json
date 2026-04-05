@@ -1,0 +1,114 @@
+{
+  "title": {
+    "show": true,
+    "text": "CHARTS-VISUALIZATION",
+    "subtext": "由配置助手生成",
+    "left": "center"
+  },
+  "backgroundColor": "#fafafa",
+  "color": [
+    "#2563eb",
+    "#ef4444",
+    "#14b8a6",
+    "#f59e0b",
+    "#8b5cf6"
+  ],
+  "legend": {
+    "show": true,
+    "orient": "horizontal",
+    "left": "center",
+    "top": "bottom"
+  },
+  "grid": {
+    "left": "12%",
+    "right": "12%",
+    "top": "21%",
+    "bottom": "15%"
+  },
+  "xAxis": {
+    "data": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat"
+    ],
+    "type": "category"
+  },
+  "yAxis": [
+    {
+      "type": "value"
+    },
+    {
+      "type": "value"
+    }
+  ],
+  "series": [
+    {
+      "type": "bar",
+      "name": "Sales",
+      "yAxisIndex": 0,
+      "data": [
+        320,
+        332,
+        301,
+        334,
+        390,
+        330
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Rate",
+      "yAxisIndex": 1,
+      "data": [
+        10,
+        12,
+        9,
+        14,
+        18,
+        16
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Orders",
+      "yAxisIndex": 0,
+      "data": [
+        210,
+        226,
+        198,
+        245,
+        278,
+        256
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Visits",
+      "yAxisIndex": 0,
+      "data": [
+        420,
+        448,
+        430,
+        476,
+        512,
+        498
+      ]
+    },
+    {
+      "type": "bar",
+      "name": "Leads",
+      "yAxisIndex": 0,
+      "data": [
+        132,
+        144,
+        138,
+        152,
+        168,
+        174
+      ]
+    }
+  ]
+}

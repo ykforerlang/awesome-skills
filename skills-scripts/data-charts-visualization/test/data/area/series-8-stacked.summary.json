@@ -1,0 +1,25 @@
+{
+  "rawSeriesCount": 8,
+  "resolvedSeriesCount": 8,
+  "rawSeriesNames": [
+    "Signups",
+    "Active",
+    "Returning",
+    "New Users",
+    "Engaged",
+    "Subscribers",
+    "Referrals",
+    "Churn Recovery"
+  ],
+  "resolvedSeriesNames": [
+    "Signups",
+    "Active",
+    "Returning",
+    "New Users",
+    "Engaged",
+    "Subscribers",
+    "Referrals",
+    "Churn Recovery"
+  ],
+  "resolvedBarWidths": []
+}

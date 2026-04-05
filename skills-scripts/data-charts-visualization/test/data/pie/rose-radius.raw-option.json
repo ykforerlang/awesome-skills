@@ -1,0 +1,55 @@
+{
+  "title": {
+    "show": true,
+    "text": "CHARTS-VISUALIZATION",
+    "subtext": "由配置助手生成",
+    "left": "center"
+  },
+  "backgroundColor": "#ffffff",
+  "color": [
+    "#2563eb",
+    "#14b8a6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6"
+  ],
+  "legend": {
+    "show": true,
+    "orient": "vertical",
+    "left": "right",
+    "top": "bottom"
+  },
+  "grid": {
+    "left": "30%",
+    "right": "30%",
+    "top": "30%",
+    "bottom": "15%"
+  },
+  "series": [
+    {
+      "type": "pie",
+      "data": [
+        {
+          "name": "Search",
+          "value": 1048
+        },
+        {
+          "name": "Email",
+          "value": 735
+        },
+        {
+          "name": "Direct",
+          "value": 580
+        },
+        {
+          "name": "Ads",
+          "value": 484
+        },
+        {
+          "name": "Video",
+          "value": 300
+        }
+      ]
+    }
+  ]
+}

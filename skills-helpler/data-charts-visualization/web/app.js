@@ -1118,6 +1118,14 @@ function getChartBeautyDefaults(chartType) {
   return deepClone(CHART_BEAUTY_DEFAULTS[chartType] || null);
 }
 
+function buildHelperConfigPayload(chartType, commonState, specificState, options = {}) {
+  const sharedConfig = getSharedDefaultConfigModule();
+  if (!sharedConfig || typeof sharedConfig.buildHelperConfig !== "function") {
+    throw new Error("Shared default config builder failed to load.");
+  }
+  return sharedConfig.buildHelperConfig(chartType, commonState, specificState, options);
+}
+
 function getDefaultRawDataForChart(chartType) {
   const sharedData = getSharedDefaultDataModule();
   if (sharedData && typeof sharedData.getDefaultRawData === "function") {
@@ -1126,6 +1134,48 @@ function getDefaultRawDataForChart(chartType) {
   const definition = getCurrentDefinition();
   const template = definition.templates.find((item) => item.id === appState.templateId) || definition.templates[0];
   return deepClone(template?.data || {});
+}
+
+function trimPreviewSeriesList(seriesList, count) {
+  if (!Array.isArray(seriesList) || !Number.isFinite(count) || count <= 0) {
+    return Array.isArray(seriesList) ? deepClone(seriesList) : [];
+  }
+  return deepClone(seriesList.slice(0, count));
+}
+
+function resolvePreviewDualAxisSide(series, index) {
+  if (series && typeof series.yAxisIndex === "number") {
+    return series.yAxisIndex === 1 ? "right" : "left";
+  }
+  return index % 2 === 0 ? "left" : "right";
+}
+
+function applyPreviewDataSelection(chartType, rawData) {
+  const nextRawData = deepClone(rawData || {});
+
+  if (supportsSeriesCountPreview(chartType) && chartType !== "dualAxis") {
+    nextRawData.series = trimPreviewSeriesList(nextRawData.series, Number(appState.previewSeriesCount) || 0);
+    return nextRawData;
+  }
+
+  if (chartType === "dualAxis" && Array.isArray(nextRawData.series)) {
+    const leftLimit = Number(appState.previewDualAxisLeftSeriesCount) || 0;
+    const rightLimit = Number(appState.previewDualAxisRightSeriesCount) || 0;
+    if (leftLimit > 0 || rightLimit > 0) {
+      const counters = { left: 0, right: 0 };
+      nextRawData.series = deepClone(nextRawData.series.filter((series, index) => {
+        const side = resolvePreviewDualAxisSide(series, index);
+        const limit = side === "left" ? leftLimit : rightLimit;
+        if (limit > 0 && counters[side] >= limit) {
+          return false;
+        }
+        counters[side] += 1;
+        return true;
+      }));
+    }
+  }
+
+  return nextRawData;
 }
 
 function getDefinitionLocaleConfig(chartType) {
@@ -3241,7 +3291,7 @@ function updateOutputs() {
   renderPreviewControls();
   try {
     const sharedOptionBuilder = globalThis.DataChartsOptionBuilder;
-    if (!sharedOptionBuilder || typeof sharedOptionBuilder.buildChartArtifacts !== "function") {
+    if (!sharedOptionBuilder || typeof sharedOptionBuilder.buildChartArtifactsFromHelperConfig !== "function") {
       throw new Error("Shared option builder failed to load.");
     }
 
@@ -3249,11 +3299,21 @@ function updateOutputs() {
     const specificState = getSpecificState();
     appState.commonValuesCache = commonState;
     appState.specificValuesCache = specificState;
-    const rawData = getDefaultRawDataForChart(appState.chartType);
-    const { stylePayload, resolvedOption: resolved } = sharedOptionBuilder.buildChartArtifacts({
+    const rawData = applyPreviewDataSelection(
+      appState.chartType,
+      getDefaultRawDataForChart(appState.chartType)
+    );
+    const helperConfig = buildHelperConfigPayload(appState.chartType, commonState, specificState, {
+      dualAxisTypes: appState.chartType === "dualAxis"
+        ? {
+            leftType: appState.dualAxisPreviewLeftType,
+            rightType: appState.dualAxisPreviewRightType,
+          }
+        : undefined,
+    });
+    const { stylePayload, resolvedOption: resolved } = sharedOptionBuilder.buildChartArtifactsFromHelperConfig({
       chartType: appState.chartType,
-      commonState,
-      specificState,
+      helperConfig,
       rawData,
       previewState: {
         previewStackMode: appState.previewStackMode,

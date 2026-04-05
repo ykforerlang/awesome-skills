@@ -1,0 +1,131 @@
+{
+  "title": {
+    "show": true,
+    "text": "CHARTS-VISUALIZATION",
+    "subtext": "由配置助手生成",
+    "left": "center",
+    "textStyle": {
+      "fontSize": 24,
+      "fontWeight": "bold",
+      "color": "#1f2937"
+    },
+    "subtextStyle": {
+      "fontSize": 14,
+      "color": "#6b7280"
+    }
+  },
+  "backgroundColor": "#ffffff",
+  "color": [
+    "#2563eb",
+    "#14b8a6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6"
+  ],
+  "grid": {
+    "left": "15%",
+    "right": "15%",
+    "top": "15%",
+    "bottom": "15%"
+  },
+  "series": [
+    {
+      "type": "gauge",
+      "data": [
+        {
+          "value": 68,
+          "name": "Completion"
+        }
+      ],
+      "startAngle": 225,
+      "endAngle": -45,
+      "center": [
+        "50%",
+        "56%"
+      ],
+      "radius": "70%",
+      "progress": {
+        "show": true,
+        "width": 11,
+        "itemStyle": {
+          "color": "#5470c6"
+        }
+      },
+      "title": {
+        "show": true,
+        "fontSize": 14,
+        "color": "#6e7079"
+      },
+      "detail": {
+        "show": true,
+        "fontSize": 24,
+        "fontWeight": "bold",
+        "color": "#464646",
+        "formatter": "{value}%"
+      },
+      "axisLabel": {
+        "show": true,
+        "distance": 14,
+        "fontSize": 12,
+        "color": "#6e7079"
+      },
+      "splitLine": {
+        "show": true,
+        "length": 7,
+        "lineStyle": {
+          "width": 1.1,
+          "color": "#6e7079"
+        }
+      },
+      "axisTick": {
+        "show": true,
+        "length": 3,
+        "lineStyle": {
+          "width": 0.6,
+          "color": "#999999"
+        }
+      },
+      "pointer": {
+        "show": true,
+        "width": 2,
+        "itemStyle": {
+          "color": "#2f4554"
+        }
+      },
+      "anchor": {
+        "show": true,
+        "size": 12,
+        "itemStyle": {
+          "color": "#2f4554"
+        }
+      },
+      "axisLine": {
+        "lineStyle": {
+          "width": 11,
+          "color": [
+            [
+              0.2,
+              "#22c55e"
+            ],
+            [
+              0.4,
+              "#84cc16"
+            ],
+            [
+              0.6,
+              "#facc15"
+            ],
+            [
+              0.8,
+              "#f97316"
+            ],
+            [
+              1,
+              "#ef4444"
+            ]
+          ]
+        }
+      }
+    }
+  ]
+}

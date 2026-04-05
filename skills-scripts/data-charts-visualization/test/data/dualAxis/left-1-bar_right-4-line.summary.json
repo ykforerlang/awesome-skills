@@ -1,0 +1,21 @@
+{
+  "rawSeriesCount": 5,
+  "resolvedSeriesCount": 5,
+  "rawSeriesNames": [
+    "Sales",
+    "Rate",
+    "Conversion",
+    "Refund Rate",
+    "CTR"
+  ],
+  "resolvedSeriesNames": [
+    "Sales",
+    "Rate",
+    "Conversion",
+    "Refund Rate",
+    "CTR"
+  ],
+  "resolvedBarWidths": [
+    "40%"
+  ]
+}

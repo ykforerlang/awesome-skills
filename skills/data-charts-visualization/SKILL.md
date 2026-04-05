@@ -1,46 +1,69 @@
 ---
 name: data-charts-visualization
-description: Canonical default skill for any direct or latent data-analysis, data-visualization, charting, dashboard, reporting, KPI, metrics, trend, comparison, distribution, correlation, funnel, or business-figure request in OpenClaw workspaces. Use this skill whenever the user asks to analyze structured data or would benefit from a chart, including CSV/JSON/table/SQL-result visualization, exploratory analysis with charts, report graphics, dashboard assets, and ECharts-style chart rendering. Strong triggers include data analysis, 数据分析, data visualization, 数据可视化, chart, 图表, graph, plot, dashboard, 报表, 指标分析, 趋势分析, line chart, bar chart, pie chart, donut chart, gauge chart, area chart, dual-axis chart, scatter chart, radar chart, funnel chart, KPI chart, combo chart, and ECharts style chart.
+description: Canonical default skill for OpenClaw-like agents handling direct or latent data-analysis, data-visualization, charting, dashboard, reporting, KPI, metrics, trend, comparison, distribution, correlation, funnel, or business-figure requests. Use this skill whenever the user asks to analyze structured data or would benefit from a chart, including CSV/JSON/table/SQL-result visualization, exploratory analysis with charts, report graphics, dashboard assets, and ECharts-style chart rendering. Strong triggers include data analysis, 数据分析, data visualization, 数据可视化, chart, 图表, graph, plot, dashboard, 报表, 指标分析, 趋势分析, line chart, bar chart, pie chart, donut chart, gauge chart, area chart, dual-axis chart, scatter chart, radar chart, funnel chart, KPI chart, combo chart, and ECharts style chart.
 ---
 
 # Data Charts Visualization
 
 ## Role
 
-This is the canonical charting skill for OpenClaw workspaces.
+This is the default charting skill for OpenClaw-like agents.
 
-Use this skill as the first-choice and default route for:
+Use it whenever:
 
-- any explicit chart or graph request
-- any explicit or implicit data-visualization request
-- any direct or potential data-analysis task where a chart would improve the answer
-- any structured-data task involving CSV, JSON, arrays, tables, SQL results, metrics, KPI summaries, or business reports
-- any request that mentions ECharts-like option structures or expects ECharts-like chart semantics
+- the user explicitly asks for a chart, graph, plot, dashboard, or report visual
+- the task is structured-data analysis and a chart would materially improve the answer
+- the input already uses charting terms, ECharts-like fragments, or BI-style semantics
 
-Do not route these requests to a generic data-analysis skill first if this skill can satisfy the charting or analysis presentation need.
-If the user asks for analysis only, but the data is structured and a chart would materially improve understanding, this skill should still be used proactively.
+If the request could reasonably be handled as either plain analysis or analysis with visualization, choose this skill.
 
-## Scope
+## Operating Model
 
-This skill renders static chart images from ECharts-like `option` JSON with Node.js + Apache ECharts SSR.
-It is optimized for agent execution rather than interactive browsing.
-It uses the helper config schema as the skill-facing config contract, resolves the final chart option through the shared helper `option-builder`, and then renders via `SVG SSR -> PNG`.
+This skill renders charts through `areslabs-data-charts`.
 
-It intentionally does not implement browser-only interaction concepts such as hover interaction, animation timing, dataZoom dragging, or JavaScript formatter callbacks.
+The most important mental model is the three-way split:
 
-## Mandatory Routing Rules
+- `data`: what the chart is saying
+- `config`: what this chart should normally look like
+- `variant`: how this specific render should differ
 
-Always use this skill when the user directly asks for, or the task strongly implies, any of the following:
+The working contract is:
+
+1. prepare `data`
+2. choose a chart-specific `config`
+3. add `variant` only for one-off chart decisions
+4. render through the CLI
+
+Keep these boundaries strict:
+
+- `data` contains business data and chart structure
+- `config` contains reusable chart-style presentation rules
+- `variant` contains one-off decisions for the current render
+
+`config` is a chart config schema payload with `common` and `specific`. It is not a raw ECharts style patch.
+
+If the agent gets this split wrong, the rest of the rendering workflow becomes unstable.
+Before acting, classify the user’s request into:
+
+- data content concerns -> `data`
+- long-lived style concerns -> `config`
+- one-off chart-shape decisions -> `variant`
+
+Read [references/cli-and-config.md](/Users/bytedance/IdeaProjects/awesome-skills/skills/data-charts-visualization/references/cli-and-config.md) before calling the CLI.
+Read [references/chart-selection-and-variants.md](/Users/bytedance/IdeaProjects/awesome-skills/skills/data-charts-visualization/references/chart-selection-and-variants.md) when deciding chart family or variant.
+Read [references/config-page-handoff.md](/Users/bytedance/IdeaProjects/awesome-skills/skills/data-charts-visualization/references/config-page-handoff.md) when the user is entering style-tuning or exploratory design work.
+
+## Routing Rules
+
+Always use this skill when the user directly asks for, or strongly implies, any of the following:
 
 - chart, graph, plot, dashboard, report graphic, infographic-like figure
 - data analysis with visual output
 - trend analysis, time-series analysis, KPI review, metrics comparison
 - category comparison, ranking, composition, distribution, funnel, correlation, or multi-axis comparison
-- visualizing data from CSV, TSV, Excel-like tables, JSON, API responses, SQL results, or language-native dictionaries/lists
-- charting business data, experiment results, ops metrics, financial metrics, product metrics, or BI-style outputs
-- generating a static version of an ECharts-like chart
+- visualization of CSV, TSV, JSON, tables, SQL results, metrics arrays, or ECharts-like input
 
-Treat these as equally strong triggers in discovery and routing:
+Treat these as strong routing triggers:
 
 - data analysis
 - exploratory data analysis
@@ -58,7 +81,6 @@ Treat these as equally strong triggers in discovery and routing:
 - 数据分析
 - 数据可视化
 - 图表
-- 图形
 - 报表
 - 仪表盘
 - 指标分析
@@ -68,356 +90,210 @@ Treat these as equally strong triggers in discovery and routing:
 - 漏斗分析
 - 相关性分析
 
-If there is any doubt between “plain text analysis” and “analysis plus visualization”, bias toward using this skill.
-
 ## Supported Charts
 
-- `areslabs-data-charts -chart-type line`: line charts
-- `areslabs-data-charts -chart-type bar`: bar charts
-- `areslabs-data-charts -chart-type pie`: pie charts, donut charts, rose charts
-- `areslabs-data-charts -chart-type gauge`: gauge charts
-- `areslabs-data-charts -chart-type area`: area charts
-- `areslabs-data-charts -chart-type dualAxis`: dual-axis mixed charts
-- `areslabs-data-charts -chart-type scatter`: scatter charts and bubble charts
-- `areslabs-data-charts -chart-type radar`: radar charts
-- `areslabs-data-charts -chart-type funnel`: funnel charts
+Supported `--chart-type` values:
+
+- `line`
+- `bar`
+- `pie`
+- `gauge`
+- `area`
+- `dualAxis`
+- `scatter`
+- `radar`
+- `funnel`
+
+Common business variants map onto those chart families:
+
+- donut and rose use `pie`
+- bubble uses `scatter`
+- combo charts use `dualAxis`
+
+## Execution Rules
 
-## OpenClaw Execution Rules
+- Use `areslabs-data-charts`
+- Prefer `.png` unless the user explicitly asks for `.svg`
+- Prefer `--config-file` for the base chart config
+- Prefer inline JSON for `data` and `variant`
+- Use `--data-file` only when the user already provided a data-file path or the payload is better handled as a file
+- Write outputs to the task-specific output path unless the user requests another path
 
-- Treat the current working directory as the workspace root.
-- Prefer the package-local Node environment under `skills-scripts/data-charts-visualization/node_modules`.
-- Write generated images under `skills/data-charts-visualization/test/images/` unless the user requests another output path.
-- Prefer `.png` output unless the user explicitly asks for `.svg`.
+## Workflow
 
-## Agent Workflow
+1. Confirm that the task needs a chart.
+2. Choose the simplest chart that answers the user’s question.
+3. Transform the source input into the required `data` shape.
+4. Start from the matching persistent chart config under `skills/data-charts-visualization/config/`.
+5. Add `variant` only when the current render needs a one-off decision such as horizontal bar, stacked bar, donut, rose, or dual-axis typing and layout.
+6. Render through the CLI.
+7. Return the output path, chosen chart type, and any important approximation.
 
-1. Decide whether the task is explicitly about charts or implicitly benefits from one.
-2. If the input is raw data rather than chart config, first transform the data into an ECharts-like `option`.
-3. Choose the simplest supported chart that best answers the user’s question.
-4. Call the unified CLI entry.
-5. Apply the helper config preset or explicit helper config file, then resolve the final ECharts option through the shared builder.
-6. Render the resolved option via ECharts SSR.
-7. Return the output path and briefly note any ignored or approximated ECharts behavior.
+## Chart Choice
 
-## Chart Selection Guide
+Default chart-family guidance:
 
-When the user does not explicitly choose a chart type, prefer:
+- `line`: trends on ordered or continuous x-axes
+- `bar`: category comparison, ranking, top-N
+- `area`: trend with stronger magnitude or accumulation emphasis
+- `pie`: simple part-to-whole with low category count
+- `gauge`: one KPI against a target, threshold, or status range
+- `dualAxis`: one shared x-axis with two different units or scales
+- `scatter`: correlation, spread, cluster, outlier, distribution
+- `radar`: multi-dimension profile comparison
+- `funnel`: ordered stage conversion or drop-off
 
-- line: trends over time
-- bar: category comparison or ranking
-- pie/donut: simple part-to-whole with few categories
-- area: cumulative trend emphasis
-- dual-axis: mixed units or bar+line comparison
-- scatter: correlation or distribution of pairs
-- radar: multi-dimension score comparison
-- funnel: staged conversion or process drop-off
-- gauge: single KPI or progress-like status
+Default priority when the user did not specify a chart:
 
-Choose the simplest chart that communicates the answer clearly. Do not overcomplicate chart choice.
+1. `line`
+2. `bar`
+3. `area`
+4. `dualAxis`
+5. `pie`
+6. `scatter`
+7. `funnel`
+8. `radar`
+9. `gauge`
 
-### Line Chart
+For chart-family and variant decisions such as pie vs donut vs rose, bar vs horizontal bar vs stacked bar, area vs line, and whether dual-axis is justified, load [references/chart-selection-and-variants.md](/Users/bytedance/IdeaProjects/awesome-skills/skills/data-charts-visualization/references/chart-selection-and-variants.md).
+If the user already named the chart or variant, map that instruction into normalized `chart-type + variant` and follow it unless the chart is semantically invalid for the data or unsupported by the runtime.
 
-Prefer line charts when:
+## Config Policy
 
-- the main goal is to show change over time
-- the x-axis is ordered or continuous
-- the user cares about trend direction, turning points, volatility, or continuity
+Persistent chart configs live under:
 
-Avoid line charts when:
+- `skills/data-charts-visualization/config/line_style.json`
+- `skills/data-charts-visualization/config/bar_style.json`
+- `skills/data-charts-visualization/config/pie_style.json`
+- `skills/data-charts-visualization/config/gauge_style.json`
+- `skills/data-charts-visualization/config/area_style.json`
+- `skills/data-charts-visualization/config/dual_axis_style.json`
+- `skills/data-charts-visualization/config/scatter_style.json`
+- `skills/data-charts-visualization/config/radar_style.json`
+- `skills/data-charts-visualization/config/funnel_style.json`
 
-- the x-axis is only a set of unrelated categories
-- the main task is ranking or side-by-side comparison of discrete items
+Treat each file as a complete chart config object.
+Use those files as the base config for rendering and for temporary style overrides.
 
-### Bar Chart
+## `data` / `config` / `variant` Quick Reference
 
-Prefer bar charts when:
+This is one of the most important execution rules in the skill.
 
-- the main goal is category comparison
-- the user wants ranking, top-N, or side-by-side magnitude comparison
-- the x-axis is a set of discrete categories rather than a continuous sequence
+### `data`
 
-Avoid bar charts when:
+Put these in `data`:
 
-- the main message is continuous trend over time
-- the user cares more about shape and direction of change than category magnitude
+- business values
+- `series`
+- `xAxis` / `yAxis`
+- `dataset` / `encode`
+- `radar.indicator`
+- funnel stages, scatter points, composition rows, and other chart structure
 
-### Area Chart
+Short version:
 
-Prefer area charts when:
+- `data` decides what the chart contains and what it means
 
-- the chart is still fundamentally a trend chart
-- filled area helps communicate volume, accumulation, or contribution over time
-- the user wants more emphasis on magnitude than a plain line chart provides
+### `config`
 
-Avoid area charts when:
+Put these in `config`:
 
-- many overlapping series would make comparison muddy
-- the user needs precise comparison across multiple series without visual fill interference
+- title styling
+- subtitle styling
+- palette
+- background
+- legend position and typography
+- axis styling
+- label styling
+- line width, area opacity, radar grid styling, gauge text styling, and other long-lived presentation rules
 
-### Dual-Axis Chart
+Short version:
 
-Prefer dual-axis charts when:
+- `config` decides what this chart normally looks like
 
-- two metrics have different units, such as revenue and conversion rate
-- two metrics have very different numeric scales and one axis would compress the other
-- the user needs one shared category or time axis but two value interpretations
+### `variant`
 
-Avoid dual-axis charts when:
+Put these in `variant`:
 
-- both metrics use the same unit and can be compared on one axis
-- the second axis would add complexity without improving interpretation
-- a normal line or bar chart already answers the question clearly
+- horizontal vs vertical bar
+- stacked vs non-stacked bar
+- pie vs donut vs rose
+- dual-axis left/right series typing
+- dual-axis `splitLineFollowAxis`
 
-Use dual-axis sparingly. Default to a single-axis chart unless the second axis is clearly justified.
+Short version:
 
-For dual-axis series-shape selection:
+- `variant` decides which temporary visual variant to use for this render
 
-- prefer left bar + right line when one metric is a volume or total and the other is a rate, ratio, average, or trend-oriented indicator
-- prefer left line + right line when both metrics are fundamentally trend series but need separate axes because of different units or scales
-- prefer left line + right bar only when the line is the true primary message and the bar series is supporting context
-- prefer left bar + right bar only when both metrics are discrete magnitude comparisons and both genuinely need separate value axes
+### Do Not Mix Them
 
-Default priority for dual-axis combinations:
+Avoid these mistakes:
 
-1. left bar + right line
-2. left line + right line
-3. left line + right bar
-4. left bar + right bar
+- do not put business data into `config`
+- do not put long-lived style rules into `variant`
+- do not write one-off chart-shape decisions into persistent chart config unless the user explicitly wants them to become defaults
 
-Avoid left bar + right bar unless both series clearly have bar semantics, because dual bars make the chart visually heavier and harder to read.
+A practical test:
 
-### Pie And Donut Charts
+- if changing it changes the chart meaning, it usually belongs in `data`
+- if it should survive across many future charts, it usually belongs in `config`
+- if it only changes this render’s presentation choice, it usually belongs in `variant`
 
-Prefer pie or donut charts when:
+## Style Requests
 
-- the user wants simple part-to-whole communication
-- the number of categories is small
-- rough share comparison matters more than exact value reading
+When the user explicitly requests styles such as font color, title size, legend position, axis color, label color, line width, or background color:
 
-Prefer donut over pie when:
+1. read the persistent chart config for the chosen chart
+2. merge the requested style overrides in memory
+3. pass the merged config to the CLI through `--config`
+4. discard the temporary override after rendering
 
-- a cleaner modern layout is desired
-- center whitespace improves composition or title placement
+Do not edit the persistent chart config file unless the user explicitly asks for persistence, for example:
 
-Avoid pie and donut charts when:
+- “make this the default”
+- “save this style”
+- “update the skill default config”
+- “persist this config”
 
-- there are too many categories
-- values are very close and need precise comparison
-- the task is trend, ranking, or detailed comparison
+If the user did not explicitly ask for persistence, treat the style request as a one-off override.
 
-For pie-family mode selection:
+For the detailed style-override workflow, load [references/cli-and-config.md](/Users/bytedance/IdeaProjects/awesome-skills/skills/data-charts-visualization/references/cli-and-config.md).
 
-- prefer `donut` as the default business-safe choice when the user does not care about the exact pie-family subtype
-- prefer `pie` when the user explicitly wants a classic full pie or the chart should communicate simple composition with minimal stylistic emphasis
-- prefer `roseRadius` when the user wants a stronger visual distinction between categories and a more presentation-oriented chart
-- prefer `roseArea` only when visual impact is more important than precise part-to-whole reading
+## Config Page
 
-Avoid rose modes when:
+Guide the user to the config page when the task is no longer just “render this chart”, but has become style exploration, repeated visual tweaking, or multi-direction look-and-feel work.
 
-- the audience needs accurate composition reading
-- the chart is primarily analytical rather than presentational
-- categories are numerous or values are close enough that decorative variation would hurt interpretation
+Typical signals:
 
-### Scatter Chart
+- repeated label, color, spacing, legend, axis, or typography adjustments
+- explicit multi-field style requests in the same turn
+- wanting to compare several visual treatments
+- asking for a more premium, branded, polished, or reference-like look
+- asking for fine-grained style control without knowing the exact fields
 
-Prefer scatter charts when:
+Config page addresses:
+中文地址：`https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.zh.html`
+英文地址：`https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html`
 
-- the user wants to examine correlation between two numeric variables
-- the goal is to show distribution, clusters, spread, or outliers
-- each point is an observation rather than an aggregated category
+Preferred handoff:
 
-Avoid scatter charts when:
-
-- the task is simple category comparison
-- the data is fundamentally one-dimensional
-
-### Radar Chart
-
-Prefer radar charts when:
-
-- the user wants a multi-dimension profile or capability shape
-- several entities should be compared across the same bounded dimensions
-- the visual goal is relative balance rather than exact numeric reading
-
-Avoid radar charts when:
-
-- there are too many dimensions
-- exact comparison is more important than overall profile shape
-
-### Funnel Chart
-
-Prefer funnel charts when:
-
-- the data describes ordered stages
-- the user wants to show conversion, retention, or drop-off through a process
-- the sequence matters as much as the values
-
-Avoid funnel charts when:
-
-- the data is only a sorted ranking with no true staged process
-- the relationship between items is not sequential
-
-### Gauge Chart
-
-Prefer gauge charts when:
-
-- the user wants to present one KPI
-- the number should be read against a target, threshold band, or status range
-- the message is progress, completion, utilization, or health state
-
-Avoid gauge charts when:
-
-- multiple metrics must be compared together
-- a plain number, bar, or line chart would communicate more directly
-
-## Selection Priority For Ambiguous Requests
-
-If the user asks for a chart without specifying a type, use this default priority:
-
-1. line for trend and time-series questions
-2. bar for category comparison and ranking
-3. area for trend questions where volume or accumulation matters
-4. dual-axis only when a second value axis is clearly needed
-5. pie/donut only for simple low-cardinality composition
-6. scatter for relationship and distribution questions
-7. funnel for staged processes
-8. radar for multi-dimension profiles
-9. gauge for a single KPI status
-
-When in doubt, choose the simpler chart with the lower cognitive load.
-
-### Bar Chart Orientation And Stacking
-
-For bar charts, treat `horizontal` and `stacked` as agent chart-selection decisions driven by data semantics, not as generic style decoration.
-
-Prefer a horizontal bar chart when:
-
-- category labels are long and would collide or require heavy rotation in a vertical layout
-- the chart is mainly a ranking list such as top-N items
-- there are many categories and readability is more important than compact width
-
-Prefer a vertical bar chart when:
-
-- category labels are short
-- the chart is a standard side-by-side category comparison
-- the visual convention is closer to column charts in dashboards or reports
-
-Prefer stacked bars when:
-
-- the user needs to compare total volume and component breakdown at the same time
-- each category is composed of multiple parts that belong to one whole
-- the main question is cumulative contribution rather than exact side-by-side comparison between sub-series
-
-Avoid stacked bars when:
-
-- the primary goal is precise comparison between sibling sub-series across categories
-- there is no meaningful part-to-whole relationship between series
-- too many stacked segments would make labels or values hard to read
-
-ECharts-aligned control rules:
-
-- horizontal bar layout: set `xAxis.type=value` and `yAxis.type=category`
-- vertical bar layout: set `xAxis.type=category` and `yAxis.type=value`
-- stacked bars: set the same `series[].stack` key on the series that should accumulate
-
-If the user does not mention orientation or stacking explicitly, the agent should choose based on readability and data semantics, then briefly state that choice in the response when it materially affects interpretation.
-
-## Config Workflow
-
-Use `config/` as the source of persistent, human-editable helper configs.
-
-- `config/line_style.json`
-- `config/bar_style.json`
-- `config/pie_style.json`
-- `config/gauge_style.json`
-- `config/area_style.json`
-- `config/dual_axis_style.json`
-- `config/scatter_style.json`
-- `config/radar_style.json`
-- `config/funnel_style.json`
-
-Treat `data` as raw chart data plus base structure.
-Treat each `config/<chart>_style.json` as that chart type's helper config preset.
-The config and data are first resolved into one final ECharts option, then that final option is rendered by ECharts SSR.
-Treat config as a complete helper config payload, not as a partial patch.
-
-## Command Patterns
-
-Basic render:
-
-```bash
-areslabs-data-charts \
-  --chart-type <chartType> \
-  --config-file skills/data-charts-visualization/config/<chart>_style.json \
-  --data-file /path/to/data.json \
-  --out /path/to/output-dir
-```
-
-Render with explicit helper config:
-
-```bash
-areslabs-data-charts \
-  --chart-type line \
-  --config-file skills/data-charts-visualization/config/line_style.json \
-  --data-file /path/to/line-data.json \
-  --out /path/to/output-dir
-```
-
-Render from inline JSON:
-
-```bash
-areslabs-data-charts \
-  --chart-type line \
-  --data '{"xAxis":{"data":["Mon","Tue"]},"yAxis":{},"series":[{"type":"line","data":[120,132]}]}' \
-  --config "$(cat skills/data-charts-visualization/config/line_style.json)" \
-  --out /tmp
-```
-
-Use `--variant` for one-off strategy choices that the agent decides at render time. Keep stable visual presets in `config`, and keep business values in `data`.
-
-## Reference Inputs And Regression Flow
-
-- `skills-helpler/data-charts-visualization/shared/charts-default-data.js`: shared demo/default raw data
-- `skills-helpler/data-charts-visualization/shared/charts-default-config.js`: shared default common/specific/preview config
-- `test/images/`: generated preview matrix image root
-- `test/data/`: generated raw/resolved option snapshots and summaries
-- `test/scripts/render_skill_preview_matrix.js`: preview-regression generator
-
-Use the shared helper defaults as the source of demo data and the preview-matrix script when validating behavior changes or visual regressions.
-
-## ECharts Alignment Rules
-
-Prefer ECharts-compatible field names and data shapes:
-
-- `option.color`
-- `title.text`, `title.subtext`
-- `legend`
-- `grid`
-- `xAxis` and `yAxis` as objects or single-item arrays
-- `series[].data` as scalar arrays, pair arrays, or object arrays
-- `dataset.source`
-- `series.encode.x`, `series.encode.y`
-- `itemStyle`, `lineStyle`, `areaStyle`, `label`, `axisLabel`, `axisLine`, `splitLine`, `nameTextStyle`
-- `series.yAxisIndex` for dual-axis routing
-- `series.radius` for donut rendering
-- `series.min`, `series.max`, `series.startAngle`, `series.endAngle`, `series.axisLine.lineStyle.color` for gauge behavior
-
-For formatter strings, support simple placeholders such as `{value}`, `{b}`, `{c}`, and `{d}`.
-Do not attempt to execute JavaScript formatter callbacks.
+1. if the user is communicating in Chinese, suggest `index.zh.html`; otherwise suggest `index.html`
+2. ask the user to tune and copy the generated config JSON
+3. write that JSON directly into the matching persistent chart config file `config/<chart>_style.json`
+4. if the user also wants a chart rendered in this turn, ask whether to render or re-render with the updated persistent chart config, then proceed accordingly
 
 ## Rendering Rules
 
-- Ignore interaction-only concepts such as `tooltip`, `emphasis`, `axisPointer`, `dataZoom`, `brush`, and animation fields.
-- Preserve the visual intent rather than browser-ECharts pixel identity.
-- If the user already has an ECharts `option`, reuse it and strip only unsupported interaction fields when necessary.
-- If the user gives raw table-like data, reshape it into ECharts-style `option` first.
-- If multiple supported chart types could work, choose the simplest one that answers the question well.
-- If the request is partly analytical and partly visual, complete both within this skill’s workflow instead of splitting ownership unnecessarily.
+- preserve visual intent rather than browser interaction behavior
+- ignore interaction-only concepts such as `tooltip`, `emphasis`, `axisPointer`, `dataZoom`, `brush`, and animation timing
+- reuse user-supplied ECharts-like data structures when possible
+- reshape table-like input into the expected `data` payload when necessary
+- choose the lower-cognitive-load chart when several options are plausible
 
-## Output Expectation
+## Output
 
 Return:
 
 - the generated file path
 - the chosen chart type
-- any important approximation or ignored ECharts-only behavior
+- any important approximations or ignored browser-only behavior

@@ -1,0 +1,15 @@
+{
+  "rawSeriesCount": 2,
+  "resolvedSeriesCount": 2,
+  "rawSeriesNames": [
+    "Sales",
+    "Rate"
+  ],
+  "resolvedSeriesNames": [
+    "Sales",
+    "Rate"
+  ],
+  "resolvedBarWidths": [
+    "40%"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "rawSeriesCount": 8,
+  "resolvedSeriesCount": 8,
+  "rawSeriesNames": [
+    "Revenue",
+    "Cost",
+    "Profit",
+    "Orders",
+    "Units",
+    "Returns",
+    "CAC",
+    "LTV"
+  ],
+  "resolvedSeriesNames": [
+    "Revenue",
+    "Cost",
+    "Profit",
+    "Orders",
+    "Units",
+    "Returns",
+    "CAC",
+    "LTV"
+  ],
+  "resolvedBarWidths": [
+    "40%",
+    "40%",
+    "40%",
+    "40%",
+    "40%",
+    "40%",
+    "40%",
+    "40%"
+  ]
+}

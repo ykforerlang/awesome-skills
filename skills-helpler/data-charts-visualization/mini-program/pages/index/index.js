@@ -5,7 +5,7 @@ const {
   CHART_DEFINITIONS
 } = require("../../lib/schema");
 const { CHART_RUNTIME_DEFINITIONS } = require("../../lib/chart-runtime-definitions");
-const { buildChartArtifacts } = require("../../lib/option-builder");
+const { buildChartArtifactsFromHelperConfig } = require("../../lib/option-builder");
 const DEFAULT_DATA_MODULE = require("../../lib/charts-default-data");
 const DEFAULT_CONFIG_MODULE = require("../../lib/charts-default-config");
 const PREVIEW_VIEWPORT_SIZE = { width: 650, height: 360 };
@@ -594,6 +594,14 @@ function getDefaultPreviewState(chartType) {
   };
 }
 
+function supportsSeriesCountPreview(chartType) {
+  return chartType === "line"
+    || chartType === "bar"
+    || chartType === "area"
+    || chartType === "dualAxis"
+    || chartType === "scatter";
+}
+
 function getTemplateDualAxisSeriesTypes() {
   const rawData = DEFAULT_DATA_MODULE.getDefaultRawData("dualAxis");
   const seriesList = Array.isArray(rawData && rawData.series) ? rawData.series : [];
@@ -635,6 +643,55 @@ function normalizePreviewState(chartType, previewState) {
     nextState.dualAxisPreviewRightType = null;
   }
   return nextState;
+}
+
+function buildHelperConfigPayload(chartType, commonValues, specificValues, options = {}) {
+  if (!DEFAULT_CONFIG_MODULE || typeof DEFAULT_CONFIG_MODULE.buildHelperConfig !== "function") {
+    throw new Error("Default config builder is unavailable.");
+  }
+  return DEFAULT_CONFIG_MODULE.buildHelperConfig(chartType, commonValues, specificValues, options);
+}
+
+function trimPreviewSeriesList(seriesList, count) {
+  if (!Array.isArray(seriesList) || !Number.isFinite(count) || count <= 0) {
+    return Array.isArray(seriesList) ? deepClone(seriesList) : [];
+  }
+  return deepClone(seriesList.slice(0, count));
+}
+
+function resolvePreviewDualAxisSide(series, index) {
+  if (series && typeof series.yAxisIndex === "number") {
+    return series.yAxisIndex === 1 ? "right" : "left";
+  }
+  return index % 2 === 0 ? "left" : "right";
+}
+
+function applyPreviewDataSelection(chartType, rawData, previewState) {
+  const nextRawData = deepClone(rawData || {});
+
+  if (supportsSeriesCountPreview(chartType) && chartType !== "dualAxis") {
+    nextRawData.series = trimPreviewSeriesList(nextRawData.series, Number(previewState && previewState.previewSeriesCount) || 0);
+    return nextRawData;
+  }
+
+  if (chartType === "dualAxis" && Array.isArray(nextRawData.series)) {
+    const leftLimit = Number(previewState && previewState.previewDualAxisLeftSeriesCount) || 0;
+    const rightLimit = Number(previewState && previewState.previewDualAxisRightSeriesCount) || 0;
+    if (leftLimit > 0 || rightLimit > 0) {
+      const counters = { left: 0, right: 0 };
+      nextRawData.series = deepClone(nextRawData.series.filter((series, index) => {
+        const side = resolvePreviewDualAxisSide(series, index);
+        const limit = side === "left" ? leftLimit : rightLimit;
+        if (limit > 0 && counters[side] >= limit) {
+          return false;
+        }
+        counters[side] += 1;
+        return true;
+      }));
+    }
+  }
+
+  return nextRawData;
 }
 
 function buildPreviewConfig(chartType, previewState) {
@@ -975,11 +1032,28 @@ Page({
     if (!this.chart) {
       return;
     }
-    const artifacts = buildChartArtifacts({
+    const rawData = applyPreviewDataSelection(
+      this.data.chartType,
+      DEFAULT_DATA_MODULE.getDefaultRawData(this.data.chartType),
+      this.data.previewState
+    );
+    const helperConfig = buildHelperConfigPayload(
+      this.data.chartType,
+      this.data.commonValues,
+      this.data.specificValues,
+      {
+        dualAxisTypes: this.data.chartType === "dualAxis"
+          ? {
+              leftType: this.data.previewState.dualAxisPreviewLeftType,
+              rightType: this.data.previewState.dualAxisPreviewRightType
+            }
+          : undefined
+      }
+    );
+    const artifacts = buildChartArtifactsFromHelperConfig({
       chartType: this.data.chartType,
-      commonState: this.data.commonValues,
-      specificState: this.data.specificValues,
-      rawData: DEFAULT_DATA_MODULE.getDefaultRawData(this.data.chartType),
+      helperConfig,
+      rawData,
       previewState: this.data.previewState,
       previewViewportSize: this.previewViewportSize || PREVIEW_VIEWPORT_SIZE
     });

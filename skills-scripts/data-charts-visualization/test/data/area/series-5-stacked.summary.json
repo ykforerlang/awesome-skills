@@ -1,0 +1,19 @@
+{
+  "rawSeriesCount": 5,
+  "resolvedSeriesCount": 5,
+  "rawSeriesNames": [
+    "Signups",
+    "Active",
+    "Returning",
+    "New Users",
+    "Engaged"
+  ],
+  "resolvedSeriesNames": [
+    "Signups",
+    "Active",
+    "Returning",
+    "New Users",
+    "Engaged"
+  ],
+  "resolvedBarWidths": []
+}

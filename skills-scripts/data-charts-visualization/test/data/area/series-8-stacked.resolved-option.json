@@ -1,0 +1,470 @@
+{
+  "title": {
+    "show": true,
+    "text": "CHARTS-VISUALIZATION",
+    "subtext": "由配置助手生成",
+    "left": "center",
+    "textStyle": {
+      "fontSize": 24,
+      "fontWeight": "bold",
+      "color": "#1f2937"
+    },
+    "subtextStyle": {
+      "fontSize": 14,
+      "color": "#6b7280"
+    }
+  },
+  "backgroundColor": "#fafafa",
+  "color": [
+    "#2563eb",
+    "#14b8a6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6"
+  ],
+  "legend": {
+    "show": true,
+    "orient": "horizontal",
+    "left": "center",
+    "top": "bottom",
+    "textStyle": {
+      "fontSize": 12,
+      "color": "#4b5563"
+    }
+  },
+  "grid": {
+    "left": "12%",
+    "right": "9%",
+    "top": "21%",
+    "bottom": "15%"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun"
+    ],
+    "axisLabel": {
+      "rotate": 0,
+      "fontSize": 12,
+      "color": "#4b5563",
+      "formatter": "{value}"
+    },
+    "axisTick": {
+      "show": true
+    },
+    "axisLine": {
+      "show": true,
+      "lineStyle": {
+        "color": "#9ca3af"
+      }
+    },
+    "splitLine": {
+      "show": false,
+      "lineStyle": {
+        "color": "#e5e7eb",
+        "type": "dashed",
+        "width": 0.6
+      }
+    }
+  },
+  "yAxis": {
+    "type": "value",
+    "axisLabel": {
+      "fontSize": 12,
+      "color": "#4b5563",
+      "formatter": "{value}"
+    },
+    "axisTick": {
+      "show": true
+    },
+    "axisLine": {
+      "show": true,
+      "lineStyle": {
+        "color": "#9ca3af"
+      }
+    },
+    "splitLine": {
+      "show": true,
+      "lineStyle": {
+        "color": "#e5e7eb",
+        "type": "dashed",
+        "width": 0.6
+      }
+    }
+  },
+  "series": [
+    {
+      "type": "line",
+      "name": "Signups",
+      "data": [
+        120,
+        182,
+        191,
+        234,
+        290,
+        330
+      ],
+      "smooth": true,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 6,
+      "connectNulls": false,
+      "lineStyle": {
+        "width": 3,
+        "type": "solid"
+      },
+      "label": {
+        "show": true,
+        "fontSize": 12,
+        "color": "#334155"
+      },
+      "areaStyle": {
+        "color": {
+          "type": "linear",
+          "x": 0,
+          "y": 0,
+          "x2": 0,
+          "y2": 1,
+          "colorStops": [
+            {
+              "offset": 0,
+              "color": "rgba(37, 99, 235, 0.24)"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(37, 99, 235, 0.043)"
+            }
+          ]
+        }
+      },
+      "stack": "preview-stack"
+    },
+    {
+      "type": "line",
+      "name": "Active",
+      "data": [
+        80,
+        132,
+        151,
+        174,
+        220,
+        260
+      ],
+      "smooth": true,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 6,
+      "connectNulls": false,
+      "lineStyle": {
+        "width": 3,
+        "type": "solid"
+      },
+      "label": {
+        "show": true,
+        "fontSize": 12,
+        "color": "#334155"
+      },
+      "areaStyle": {
+        "color": {
+          "type": "linear",
+          "x": 0,
+          "y": 0,
+          "x2": 0,
+          "y2": 1,
+          "colorStops": [
+            {
+              "offset": 0,
+              "color": "rgba(20, 184, 166, 0.24)"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(20, 184, 166, 0.043)"
+            }
+          ]
+        }
+      },
+      "stack": "preview-stack"
+    },
+    {
+      "type": "line",
+      "name": "Returning",
+      "data": [
+        58,
+        76,
+        88,
+        95,
+        108,
+        126
+      ],
+      "smooth": true,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 6,
+      "connectNulls": false,
+      "lineStyle": {
+        "width": 3,
+        "type": "solid"
+      },
+      "label": {
+        "show": true,
+        "fontSize": 12,
+        "color": "#334155"
+      },
+      "areaStyle": {
+        "color": {
+          "type": "linear",
+          "x": 0,
+          "y": 0,
+          "x2": 0,
+          "y2": 1,
+          "colorStops": [
+            {
+              "offset": 0,
+              "color": "rgba(245, 158, 11, 0.24)"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(245, 158, 11, 0.043)"
+            }
+          ]
+        }
+      },
+      "stack": "preview-stack"
+    },
+    {
+      "type": "line",
+      "name": "New Users",
+      "data": [
+        64,
+        92,
+        101,
+        126,
+        152,
+        178
+      ],
+      "smooth": true,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 6,
+      "connectNulls": false,
+      "lineStyle": {
+        "width": 3,
+        "type": "solid"
+      },
+      "label": {
+        "show": true,
+        "fontSize": 12,
+        "color": "#334155"
+      },
+      "areaStyle": {
+        "color": {
+          "type": "linear",
+          "x": 0,
+          "y": 0,
+          "x2": 0,
+          "y2": 1,
+          "colorStops": [
+            {
+              "offset": 0,
+              "color": "rgba(239, 68, 68, 0.24)"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(239, 68, 68, 0.043)"
+            }
+          ]
+        }
+      },
+      "stack": "preview-stack"
+    },
+    {
+      "type": "line",
+      "name": "Engaged",
+      "data": [
+        44,
+        61,
+        74,
+        83,
+        95,
+        108
+      ],
+      "smooth": true,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 6,
+      "connectNulls": false,
+      "lineStyle": {
+        "width": 3,
+        "type": "solid"
+      },
+      "label": {
+        "show": true,
+        "fontSize": 12,
+        "color": "#334155"
+      },
+      "areaStyle": {
+        "color": {
+          "type": "linear",
+          "x": 0,
+          "y": 0,
+          "x2": 0,
+          "y2": 1,
+          "colorStops": [
+            {
+              "offset": 0,
+              "color": "rgba(139, 92, 246, 0.24)"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(139, 92, 246, 0.043)"
+            }
+          ]
+        }
+      },
+      "stack": "preview-stack"
+    },
+    {
+      "type": "line",
+      "name": "Subscribers",
+      "data": [
+        30,
+        44,
+        55,
+        70,
+        86,
+        98
+      ],
+      "smooth": true,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 6,
+      "connectNulls": false,
+      "lineStyle": {
+        "width": 3,
+        "type": "solid"
+      },
+      "label": {
+        "show": true,
+        "fontSize": 12,
+        "color": "#334155"
+      },
+      "areaStyle": {
+        "color": {
+          "type": "linear",
+          "x": 0,
+          "y": 0,
+          "x2": 0,
+          "y2": 1,
+          "colorStops": [
+            {
+              "offset": 0,
+              "color": "rgba(37, 99, 235, 0.24)"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(37, 99, 235, 0.043)"
+            }
+          ]
+        }
+      },
+      "stack": "preview-stack"
+    },
+    {
+      "type": "line",
+      "name": "Referrals",
+      "data": [
+        22,
+        31,
+        36,
+        42,
+        48,
+        56
+      ],
+      "smooth": true,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 6,
+      "connectNulls": false,
+      "lineStyle": {
+        "width": 3,
+        "type": "solid"
+      },
+      "label": {
+        "show": true,
+        "fontSize": 12,
+        "color": "#334155"
+      },
+      "areaStyle": {
+        "color": {
+          "type": "linear",
+          "x": 0,
+          "y": 0,
+          "x2": 0,
+          "y2": 1,
+          "colorStops": [
+            {
+              "offset": 0,
+              "color": "rgba(20, 184, 166, 0.24)"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(20, 184, 166, 0.043)"
+            }
+          ]
+        }
+      },
+      "stack": "preview-stack"
+    },
+    {
+      "type": "line",
+      "name": "Churn Recovery",
+      "data": [
+        14,
+        19,
+        24,
+        28,
+        34,
+        39
+      ],
+      "smooth": true,
+      "showSymbol": true,
+      "symbol": "circle",
+      "symbolSize": 6,
+      "connectNulls": false,
+      "lineStyle": {
+        "width": 3,
+        "type": "solid"
+      },
+      "label": {
+        "show": true,
+        "fontSize": 12,
+        "color": "#334155"
+      },
+      "areaStyle": {
+        "color": {
+          "type": "linear",
+          "x": 0,
+          "y": 0,
+          "x2": 0,
+          "y2": 1,
+          "colorStops": [
+            {
+              "offset": 0,
+              "color": "rgba(245, 158, 11, 0.24)"
+            },
+            {
+              "offset": 1,
+              "color": "rgba(245, 158, 11, 0.043)"
+            }
+          ]
+        }
+      },
+      "stack": "preview-stack"
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 {
   "_meta": {
     "source": "skills-helpler/data-charts-visualization/web/app.js",
-    "exportedBy": "skills/data-charts-visualization/test/scripts/render_skill_preview_matrix.js",
+    "exportedBy": "skills-scripts/data-charts-visualization/scripts/render_cli_preview_matrix.js",
     "chartType": "pie",
     "exportedAt": "2026-04-02T17:13:18.983Z",
     "note": "Default pie helper config exported from current helper schema."
