@@ -21,3 +21,7 @@ Manual render inputs should come from the shared helper defaults:
 
 - `skills-helpler/data-charts-visualization/shared/charts-default-data.js`
 - `skills-helpler/data-charts-visualization/shared/charts-default-config.js`
+
+Manual CLI rendering now always requires an explicit helper config, either through `--config` or `--config-file`.
+Use `--data` for inline JSON and `--data-file` for file input.
+One-off render strategy should go through CLI `--variant`, not through config files.

@@ -3,11 +3,10 @@
     "pages/index/index"
   ],
   "window": {
-    "navigationBarTitleText": "图表配置助手",
+    "navigationBarTitleText": "AI图表助手",
     "navigationBarBackgroundColor": "#f4f1ea",
     "navigationBarTextStyle": "black",
     "backgroundColor": "#f4f1ea",
     "backgroundTextStyle": "dark"
-  },
-  "sitemapLocation": "sitemap.json"
+  }
 }

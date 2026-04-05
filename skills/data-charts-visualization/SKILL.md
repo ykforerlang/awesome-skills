@@ -72,20 +72,20 @@ If there is any doubt between “plain text analysis” and “analysis plus vis
 
 ## Supported Charts
 
-- `data-charts-visualization render --chart-type line`: line charts
-- `data-charts-visualization render --chart-type bar`: bar charts
-- `data-charts-visualization render --chart-type pie`: pie charts, donut charts, rose charts
-- `data-charts-visualization render --chart-type gauge`: gauge charts
-- `data-charts-visualization render --chart-type area`: area charts
-- `data-charts-visualization render --chart-type dualAxis`: dual-axis mixed charts
-- `data-charts-visualization render --chart-type scatter`: scatter charts and bubble charts
-- `data-charts-visualization render --chart-type radar`: radar charts
-- `data-charts-visualization render --chart-type funnel`: funnel charts
+- `areslabs-data-charts -chart-type line`: line charts
+- `areslabs-data-charts -chart-type bar`: bar charts
+- `areslabs-data-charts -chart-type pie`: pie charts, donut charts, rose charts
+- `areslabs-data-charts -chart-type gauge`: gauge charts
+- `areslabs-data-charts -chart-type area`: area charts
+- `areslabs-data-charts -chart-type dualAxis`: dual-axis mixed charts
+- `areslabs-data-charts -chart-type scatter`: scatter charts and bubble charts
+- `areslabs-data-charts -chart-type radar`: radar charts
+- `areslabs-data-charts -chart-type funnel`: funnel charts
 
 ## OpenClaw Execution Rules
 
 - Treat the current working directory as the workspace root.
-- Prefer the skill-local Node environment under `skills/data-charts-visualization/node_modules`.
+- Prefer the package-local Node environment under `skills-scripts/data-charts-visualization/node_modules`.
 - Write generated images under `skills/data-charts-visualization/test/images/` unless the user requests another output path.
 - Prefer `.png` output unless the user explicitly asks for `.svg`.
 
@@ -324,7 +324,7 @@ If the user does not mention orientation or stacking explicitly, the agent shoul
 
 ## Config Workflow
 
-Use `config/` as the source of persistent, human-editable style rules.
+Use `config/` as the source of persistent, human-editable helper configs.
 
 - `config/line_style.json`
 - `config/bar_style.json`
@@ -336,48 +336,44 @@ Use `config/` as the source of persistent, human-editable style rules.
 - `config/radar_style.json`
 - `config/funnel_style.json`
 
-Treat `option` as chart data plus base structure.
-Treat each `config/<chart>_style.json` as that chart type's single persistent helper config preset.
-
-Resolution rules:
-
-1. `option`
-2. `config/<chart>_style.json`
-3. shared helper `option-builder`
-
+Treat `data` as raw chart data plus base structure.
+Treat each `config/<chart>_style.json` as that chart type's helper config preset.
 The config and data are first resolved into one final ECharts option, then that final option is rendered by ECharts SSR.
-Use one chart-specific `--style-config` by default.
+Treat config as a complete helper config payload, not as a partial patch.
 
 ## Command Patterns
 
 Basic render:
 
 ```bash
-data-charts-visualization render \
+areslabs-data-charts \
   --chart-type <chartType> \
-  --option /path/to/option.json \
-  --output /path/to/output.png
+  --config-file skills/data-charts-visualization/config/<chart>_style.json \
+  --data-file /path/to/data.json \
+  --out /path/to/output-dir
 ```
 
-Render with persistent helper config:
+Render with explicit helper config:
 
 ```bash
-data-charts-visualization render \
+areslabs-data-charts \
   --chart-type line \
-  --style-config config/line_style.json \
-  --option /path/to/line-data.json \
-  --output /path/to/output.png
+  --config-file skills/data-charts-visualization/config/line_style.json \
+  --data-file /path/to/line-data.json \
+  --out /path/to/output-dir
 ```
 
 Render from inline JSON:
 
 ```bash
-data-charts-visualization render \
+areslabs-data-charts \
   --chart-type line \
-  --option-json '{"title":{"text":"Trend"},"xAxis":{"data":["Mon","Tue"]},"yAxis":{},"series":[{"type":"line","data":[120,132]}]}' \
-  --resolved-option \
-  --output /tmp/trend.png
+  --data '{"xAxis":{"data":["Mon","Tue"]},"yAxis":{},"series":[{"type":"line","data":[120,132]}]}' \
+  --config "$(cat skills/data-charts-visualization/config/line_style.json)" \
+  --out /tmp
 ```
+
+Use `--variant` for one-off strategy choices that the agent decides at render time. Keep stable visual presets in `config`, and keep business values in `data`.
 
 ## Reference Inputs And Regression Flow
 

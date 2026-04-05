@@ -579,12 +579,9 @@ const LOCALIZED_DEFINITION_TEXT = {
 const CHART_DEFINITIONS = {
   line: {
     label: "Line",
-    styleFile: "line_style.json",
     asset: `${SKILL_STATIC_ROOT}/line.png`,
     blurb: "Best for trends over time, multiple series comparison, and continuity-focused metrics.",
     tags: ["smooth", "symbols", "connectNulls", "dataset + encode"],
-    usesGrid: true,
-    usesCartesian: true,
     fields: [
       { id: "smooth", label: "Smooth", type: "checkbox", default: true },
       { id: "showSymbol", label: "Show Symbols", type: "checkbox", default: true },
@@ -660,12 +657,9 @@ const CHART_DEFINITIONS = {
   },
   bar: {
     label: "Bar",
-    styleFile: "bar_style.json",
     asset: `${SKILL_STATIC_ROOT}/bar.png`,
     blurb: "Best for category comparison, grouped bars, ranking, and stacked totals.",
     tags: ["horizontal", "ranking", "dataset + encode"],
-    usesGrid: true,
-    usesCartesian: true,
     fields: [
       { id: "showLabel", label: "Show Labels", type: "checkbox", default: true },
       { id: "barGap", label: "Bar Gap", type: "text", default: "10%" },
@@ -729,13 +723,9 @@ const CHART_DEFINITIONS = {
   },
   pie: {
     label: "Pie",
-    styleFile: "pie_style.json",
     asset: `${SKILL_STATIC_ROOT}/pie-basic.png`,
     blurb: "Best for simple part-to-whole storytelling with optional donut or rose variants.",
     tags: ["donut", "rose", "dataset + encode"],
-    supportsPlotArea: true,
-    usesGrid: false,
-    usesCartesian: false,
     fields: [
       {
         id: "labelPosition",
@@ -803,14 +793,9 @@ const CHART_DEFINITIONS = {
   },
   gauge: {
     label: "Gauge",
-    styleFile: "gauge_style.json",
     asset: `${SKILL_STATIC_ROOT}/gauge.png`,
     blurb: "Best for a single KPI, progress-like states, and segmented threshold displays.",
     tags: ["angles", "progress", "title/detail", "segments"],
-    supportsPlotArea: true,
-    usesGrid: false,
-    usesCartesian: false,
-    supportsLegend: false,
     fields: [
       { id: "gaugeFoundationGroup", label: "Foundation", type: "group", help: "Control gauge angles and progress ring." },
       { id: "startAngle", label: "Start Angle", type: "number", default: 225 },
@@ -897,12 +882,9 @@ const CHART_DEFINITIONS = {
   },
   area: {
     label: "Area",
-    styleFile: "area_style.json",
     asset: `${SKILL_STATIC_ROOT}/area.png`,
     blurb: "Best for trend comparison when filled volume or cumulative feel matters.",
     tags: ["area opacity", "smooth", "gradient", "dataset + encode"],
-    usesGrid: true,
-    usesCartesian: true,
     fields: [
       { id: "smooth", label: "Smooth", type: "checkbox", default: true },
       { id: "showSymbol", label: "Show Symbols", type: "checkbox", default: true },
@@ -989,12 +971,9 @@ const CHART_DEFINITIONS = {
   },
   dualAxis: {
     label: "Dual-Axis",
-    styleFile: "dual_axis_style.json",
     asset: `${SKILL_STATIC_ROOT}/dual-axis.png`,
     blurb: "Best for mixed two-series layouts when two units must coexist in one chart. Each side can be a bar or a line.",
     tags: ["bar/line mix", "secondary axis", "horizontal", "dataset + encode"],
-    usesGrid: true,
-    usesCartesian: true,
       fields: [
       { id: "layoutGroup", label: "Structure", type: "group", help: "Choose orientation and the left/right series types first." },
       { id: "horizontal", label: "Horizontal Layout", type: "checkbox", default: false },
@@ -1212,12 +1191,9 @@ const CHART_DEFINITIONS = {
   },
   scatter: {
     label: "Scatter",
-    styleFile: "scatter_style.json",
     asset: `${SKILL_STATIC_ROOT}/scatter-basic.png`,
     blurb: "Best for correlation, clusters, and point distributions on value axes.",
     tags: ["scatter", "value axes", "dataset + encode"],
-    usesGrid: true,
-    usesCartesian: true,
     fields: [
       { id: "showLabel", label: "Show Labels", type: "checkbox", default: false },
       {
@@ -1286,13 +1262,9 @@ const CHART_DEFINITIONS = {
   },
   radar: {
     label: "Radar",
-    styleFile: "radar_style.json",
     asset: `${SKILL_STATIC_ROOT}/radar.png`,
     blurb: "Best for multi-dimension scoring, balanced comparisons, and capability profiles.",
     tags: ["shape", "split area", "labels", "area fill"],
-    supportsPlotArea: true,
-    usesGrid: false,
-    usesCartesian: false,
     fields: [
       { id: "radarFoundationGroup", label: "Foundation", type: "group", help: "Control radar shape and split count." },
       {
@@ -1399,13 +1371,9 @@ const CHART_DEFINITIONS = {
   },
   funnel: {
     label: "Funnel",
-    styleFile: "funnel_style.json",
     asset: `${SKILL_STATIC_ROOT}/funnel.png`,
     blurb: "Best for stage conversion, process drop-off, and ordered business pipelines.",
     tags: ["sort", "gap", "label position", "dataset + encode"],
-    supportsPlotArea: true,
-    usesGrid: false,
-    usesCartesian: false,
     fields: [
       { id: "funnelBaseGroup", label: "Foundation", type: "group", help: "Control ordering, gap, and width range." },
       {

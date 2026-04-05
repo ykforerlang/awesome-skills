@@ -85,7 +85,7 @@
       <view class="section-tabs-shell">
         <scroll-view
           scroll-x
-          scroll-left="{{configTabsScrollLeft}}"
+          scroll-into-view="{{configTabsScrollIntoView}}"
           scroll-with-animation="{{true}}"
           class="section-tabs-scroll"
           show-scrollbar="{{false}}"
@@ -94,6 +94,7 @@
             <view
               wx:for="{{configTabs}}"
               wx:key="id"
+              id="config-tab-{{index}}"
               class="section-tab {{item.active ? 'active' : ''}}"
               data-section-id="{{item.id}}"
               bindtap="handleConfigSectionSwitch"
@@ -230,6 +231,7 @@
     type="multiple"
     format="HEX"
     value="{{colorPickerValue}}"
+    popupProps="{{colorPickerPopupProps}}"
     swatchColors="{{colorSwatches}}"
     bind:change="handleColorPickerChange"
     bind:close="handleColorPickerClose"

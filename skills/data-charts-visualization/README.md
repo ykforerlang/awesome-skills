@@ -10,7 +10,7 @@ This skill is built for agent workflows that need charts fast, with predictable 
 
 - Rich chart coverage: line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, and funnel.
 - ECharts-aligned option model: low learning cost if your data or prompts already target ECharts.
-- Shared helper config model: the same config structure drives helper preview rendering and skill rendering.
+- Shared helper config model: the same config structure drives helper rendering in both environments.
 - Single-preset configuration model: each chart type owns one persistent helper config file under `config/*.json`.
 - Dataset support: plain arrays, object arrays, `dataset.source`, and `series.encode`.
 - Stable rendering workflow: every chart type is covered by golden-image test cases.
@@ -93,9 +93,11 @@ This skill is not just a thin chart wrapper. It already covers the chart behavio
 
 The configuration path is intentionally simple:
 
-1. Put chart data and structure in `option`.
+1. Put chart data and structure in `data`.
 2. Keep reusable helper-style visual rules in the corresponding `config/<chart>_style.json`.
 3. Resolve one final ECharts option through the shared helper option builder, then render it through SSR.
+
+`config` is now treated as a complete helper config payload, not as a partial patch. In practice, prefer `--config-file` pointing at an exported config JSON under `config/`.
 
 The skill does not independently approximate chart styling anymore. It resolves the same final ECharts option structure that the helper uses, then feeds that option into ECharts SSR.
 
@@ -118,37 +120,52 @@ Each chart preset is self-contained, so editing one chart type no longer changes
 Primary CLI:
 
 ```bash
-data-charts-visualization render --chart-type line --option /tmp/line_basic_single_series.json --output /tmp/line.png
+areslabs-data-charts \
+  --chart-type line \
+  --config-file skills/data-charts-visualization/config/line_style.json \
+  --data-file /tmp/line_basic_single_series.json \
+  --out /tmp
 ```
 
 Repo-local `npx` invocation without install/link:
 
 ```bash
-npx --yes --package ./skills/data-charts-visualization data-charts-visualization render --chart-type line --option /tmp/line_basic_single_series.json --output /tmp/line.png
+npx --yes --package ./skills-scripts/data-charts-visualization areslabs-data-charts \
+  --chart-type line \
+  --config-file skills/data-charts-visualization/config/line_style.json \
+  --data-file /tmp/line_basic_single_series.json \
+  --out /tmp
 ```
 
 Inside this repo, the same entry can be called directly through the script:
 
 ```bash
-node skills/data-charts-visualization/scripts/cli.js render \
+node skills-scripts/data-charts-visualization/dist/cli.js \
   --chart-type line \
-  --option /tmp/line_basic_single_series.json \
-  --output skills/data-charts-visualization/test/manual/manual_line_chart.png
+  --config-file skills/data-charts-visualization/config/line_style.json \
+  --data-file /tmp/line_basic_single_series.json \
+  --out skills/data-charts-visualization/test/manual
 ```
 
-The recommended way to prepare that option file is to start from the shared default data source:
+The recommended way to prepare that data file is to start from the shared default data source:
 
 - `skills-helpler/data-charts-visualization/shared/charts-default-data.js`
 
-Render the same chart with an explicit helper config:
+Render the same chart with inline config:
 
 ```bash
-node skills/data-charts-visualization/scripts/cli.js render \
+node skills-scripts/data-charts-visualization/dist/cli.js \
   --chart-type line \
-  --style-config skills/data-charts-visualization/config/line_style.json \
-  --option /tmp/line_basic_single_series.json \
-  --output skills/data-charts-visualization/test/manual/manual_line_chart_styled.png
+  --data '{"xAxis":{"data":["Mon","Tue"]},"yAxis":{},"series":[{"type":"line","data":[120,132]}]}' \
+  --config "$(cat skills/data-charts-visualization/config/line_style.json)" \
+  --out skills/data-charts-visualization/test/manual
 ```
+
+Use `--variant` for one-off rendering strategy chosen by the agent, for example:
+
+- `{"layout":"horizontal","stack":true}`
+- `{"pieMode":"donut"}`
+- `{"leftSeriesType":"bar","rightSeriesType":"line"}`
 
 ## Reliability
 

@@ -5,6 +5,26 @@
   }
   root.DataChartsOptionBuilder = factory();
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
+  function getRuntimeDefinitionsModule() {
+    if (typeof module === "object" && module.exports) {
+      return require("./chart-runtime-definitions.js");
+    }
+    if (typeof globalThis !== "undefined") {
+      return globalThis.DataChartsRuntimeDefinitions || null;
+    }
+    return null;
+  }
+
+  function getChartRuntimeDefinition(chartType) {
+    const runtimeDefinitionsModule = getRuntimeDefinitionsModule();
+    const chartRuntimeDefinitions = runtimeDefinitionsModule && runtimeDefinitionsModule.CHART_RUNTIME_DEFINITIONS;
+    const definition = chartRuntimeDefinitions && chartRuntimeDefinitions[chartType];
+    if (!definition) {
+      throw new Error(`Unsupported chart type: ${chartType}`);
+    }
+    return definition;
+  }
+
   const DUAL_AXIS_COLOR_LIST_FALLBACKS = {
     leftBarColors: ["#5470c6", "#73c0de", "#91cc75"],
     leftLineColors: ["#5470c6", "#3b82f6", "#06b6d4"],
@@ -290,7 +310,7 @@
     return placementMap[position] || placementMap["top-left"];
   }
 
-  function buildCommonOption(commonState, definition) {
+  function buildCommonOption(commonState, runtimeDefinition) {
     const titleText = commonState.titleShow ? commonState.titleText : "";
     const subtitleText = commonState.subtitleShow ? commonState.subtitleText : "";
     const option = {
@@ -304,7 +324,7 @@
       color: Array.isArray(commonState.palette) ? commonState.palette : parsePalette(commonState.palette)
     };
 
-    if (definition.supportsLegend !== false) {
+    if (runtimeDefinition.supportsLegend !== false) {
       option.legend = {
         show: commonState.legendShow,
         orient: commonState.legendOrient,
@@ -312,7 +332,7 @@
       };
     }
 
-    if (definition.usesGrid || definition.supportsPlotArea) {
+    if (runtimeDefinition.usesGrid || runtimeDefinition.supportsPlotArea) {
       option.grid = {
         left: commonState.gridLeft,
         right: commonState.gridRight,
@@ -324,7 +344,7 @@
     return compactObject(option);
   }
 
-  function buildBaseStyleConfig(commonState, definition) {
+  function buildBaseStyleConfig(commonState, runtimeDefinition) {
     const titleText = commonState.titleShow ? commonState.titleText : "";
     const subtitleText = commonState.subtitleShow ? commonState.subtitleText : "";
     const base = {
@@ -347,7 +367,7 @@
       }
     };
 
-    if (definition.supportsLegend !== false) {
+    if (runtimeDefinition.supportsLegend !== false) {
       base.legend = {
         show: commonState.legendShow,
         orient: commonState.legendOrient,
@@ -359,7 +379,7 @@
       };
     }
 
-    if (definition.usesGrid || definition.supportsPlotArea) {
+    if (runtimeDefinition.usesGrid || runtimeDefinition.supportsPlotArea) {
       base.grid = {
         left: commonState.gridLeft,
         right: commonState.gridRight,
@@ -368,7 +388,7 @@
       };
     }
 
-    if (definition.usesCartesian) {
+    if (runtimeDefinition.usesCartesian) {
       base.xAxis = {
         axisLabel: {
           rotate: commonState.xRotate,
@@ -1307,7 +1327,7 @@
 
   function buildChartArtifacts(params) {
     const chartType = params.chartType;
-    const definition = params.definition;
+    const runtimeDefinition = getChartRuntimeDefinition(chartType);
     const commonState = params.commonState;
     const specificState = params.specificState;
     const sourceRawData = deepClone(params.rawData || {});
@@ -1324,7 +1344,7 @@
     const dualAxisTypes = params.dualAxisTypes || deriveDualAxisTypesFromRawData(rawData, previewState);
     const previewViewportSize = params.previewViewportSize || { width: 960, height: 520 };
 
-    const baseOption = buildCommonOption(commonState, definition);
+    const baseOption = buildCommonOption(commonState, runtimeDefinition);
     const structurePatch = buildStructurePatch(chartType, specificState);
     let rawOption;
 
@@ -1342,9 +1362,9 @@
     const stylePayload = {
       recommendedStyleFiles: [
         "config/base_style.json",
-        `config/${definition.styleFile}`
+        `config/${runtimeDefinition.styleFile}`
       ],
-      baseStyleConfig: buildBaseStyleConfig(commonState, definition),
+      baseStyleConfig: buildBaseStyleConfig(commonState, runtimeDefinition),
       chartStyleConfig: buildChartStyleConfig(chartType, specificState, commonState, rawOption, {
         previewState,
         dualAxisTypes,

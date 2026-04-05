@@ -1,0 +1,19 @@
+{
+  "name": "awesome-skills",
+  "version": "1.0.0",
+  "description": "awesome useful skills",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ykforerlang/awesome-skills.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ykforerlang/awesome-skills/issues"
+  },
+  "homepage": "https://github.com/ykforerlang/awesome-skills#readme"
+}

@@ -1,7 +1,9 @@
+.DS_Store
 **/*/.DS_Store
 .venv/
 venv/
 **/__pycache__/
 *.pyc
 .idea
-
+node_modules/
+skills-scripts/data-charts-visualization/dist/

@@ -16,17 +16,17 @@ const OUTPUT_DIR = TEST_DIR;
 const IMAGE_DIR = path.join(OUTPUT_DIR, "images");
 const DATA_DIR = path.join(OUTPUT_DIR, "data");
 
-const { CHART_DEFINITIONS } = require(path.join(HELPER_ROOT, "mini-program", "lib", "schema.js"));
+const { CHART_RUNTIME_DEFINITIONS } = require(path.join(HELPER_ROOT, "shared", "chart-runtime-definitions.js"));
 const optionBuilder = require(path.join(HELPER_ROOT, "shared", "option-builder.js"));
 const defaultDataModule = require(path.join(HELPER_ROOT, "shared", "charts-default-data.js"));
 const defaultConfigModule = require(path.join(HELPER_ROOT, "shared", "charts-default-config.js"));
 
 const NODE = process.env.NODE || "node";
-const CLI_SCRIPT = path.join(SKILL_DIR, "scripts", "cli.js");
+const CLI_SCRIPT = path.join(REPO_ROOT, "skills-scripts", "data-charts-visualization", "dist", "cli.js");
+const CONFIG_DIR = path.join(SKILL_DIR, "config");
 const DEFAULT_LOCALE = "zh";
-const EXPORT_WIDTH = String(650 / 160);
-const EXPORT_HEIGHT = String(360 / 160);
-const EXPORT_DPI = "160";
+const EXPORT_WIDTH = "650";
+const EXPORT_HEIGHT = "360";
 const PREVIEW_VIEWPORT = { width: 375, height: 375 / 1.8 };
 const CHART_ORDER = ["line", "bar", "area", "dualAxis", "scatter", "pie"];
 const SERIES_COUNT_OPTIONS = [1, 2, 5, 8];
@@ -90,24 +90,24 @@ function buildPreviewCases(chartType) {
     case "scatter":
       return SERIES_COUNT_OPTIONS.map((count) => ({
         variantId: `series-${count}`,
-        previewState: { previewSeriesCount: count },
+        dataSelection: { seriesCount: count },
       }));
     case "bar": {
       const cases = [];
       for (const count of SERIES_COUNT_OPTIONS) {
         for (const horizontal of [false, true]) {
           for (const stacked of [false, true]) {
-            cases.push({
-              variantId: [
-                `series-${count}`,
-                horizontal ? "horizontal" : "vertical",
-                stacked ? "stacked" : "normal",
-              ].join("-"),
-              previewState: {
-                previewSeriesCount: count,
-                previewBarHorizontal: horizontal,
-                previewStackMode: stacked,
-              },
+              cases.push({
+                variantId: [
+                  `series-${count}`,
+                  horizontal ? "horizontal" : "vertical",
+                  stacked ? "stacked" : "normal",
+                ].join("-"),
+                dataSelection: { seriesCount: count },
+                variant: {
+                  layout: horizontal ? "horizontal" : "vertical",
+                  stack: stacked,
+                },
             });
           }
         }
@@ -120,9 +120,9 @@ function buildPreviewCases(chartType) {
         for (const stacked of [false, true]) {
           cases.push({
             variantId: [`series-${count}`, stacked ? "stacked" : "normal"].join("-"),
-            previewState: {
-              previewSeriesCount: count,
-              previewStackMode: stacked,
+            dataSelection: { seriesCount: count },
+            variant: {
+              stack: stacked,
             },
           });
         }
@@ -132,7 +132,7 @@ function buildPreviewCases(chartType) {
     case "pie":
       return PIE_MODE_OPTIONS.map((mode) => ({
         variantId: toKebabCase(mode),
-        previewState: { previewPieMode: mode },
+        variant: { pieMode: mode },
       }));
     case "dualAxis": {
       const cases = [];
@@ -142,11 +142,13 @@ function buildPreviewCases(chartType) {
             for (const rightType of ["bar", "line"]) {
               cases.push({
                 variantId: [`left-${leftCount}-${leftType}`, `right-${rightCount}-${rightType}`].join("_"),
-                previewState: {
-                  previewDualAxisLeftSeriesCount: leftCount,
-                  previewDualAxisRightSeriesCount: rightCount,
-                  dualAxisPreviewLeftType: leftType,
-                  dualAxisPreviewRightType: rightType,
+                dataSelection: {
+                  leftSeriesCount: leftCount,
+                  rightSeriesCount: rightCount,
+                },
+                variant: {
+                  leftSeriesType: leftType,
+                  rightSeriesType: rightType,
                 },
               });
             }
@@ -158,6 +160,50 @@ function buildPreviewCases(chartType) {
     default:
       return [];
   }
+}
+
+function trimSeriesList(series, count) {
+  if (!Array.isArray(series) || !Number.isFinite(count) || count <= 0) {
+    return Array.isArray(series) ? deepClone(series) : [];
+  }
+  return deepClone(series.slice(0, count));
+}
+
+function resolveDualAxisSide(series, index) {
+  if (series && typeof series.yAxisIndex === "number") {
+    return series.yAxisIndex === 1 ? "right" : "left";
+  }
+  return index % 2 === 0 ? "left" : "right";
+}
+
+function applyDataSelection(chartType, rawData, dataSelection) {
+  const nextRawData = deepClone(rawData);
+  if (!dataSelection) {
+    return nextRawData;
+  }
+
+  if ("seriesCount" in dataSelection) {
+    nextRawData.series = trimSeriesList(nextRawData.series, Number(dataSelection.seriesCount));
+  }
+
+  if (chartType === "dualAxis" && Array.isArray(nextRawData.series)) {
+    const leftLimit = Number(dataSelection.leftSeriesCount) || 0;
+    const rightLimit = Number(dataSelection.rightSeriesCount) || 0;
+    if (leftLimit > 0 || rightLimit > 0) {
+      const counters = { left: 0, right: 0 };
+      nextRawData.series = deepClone(nextRawData.series.filter((series, index) => {
+        const side = resolveDualAxisSide(series, index);
+        const limit = side === "left" ? leftLimit : rightLimit;
+        if (limit > 0 && counters[side] >= limit) {
+          return false;
+        }
+        counters[side] += 1;
+        return true;
+      }));
+    }
+  }
+
+  return nextRawData;
 }
 
 async function withTempJson(payload, callback) {
@@ -174,8 +220,7 @@ async function withTempJson(payload, callback) {
 }
 
 async function renderVariant(chartType, entry) {
-  const definition = CHART_DEFINITIONS[chartType];
-  if (!definition) {
+  if (!CHART_RUNTIME_DEFINITIONS[chartType]) {
     throw new Error(`Unsupported chart type: ${chartType}`);
   }
 
@@ -183,13 +228,27 @@ async function renderVariant(chartType, entry) {
   const specificState = defaultConfigModule.getDefaultSpecificState(chartType);
   const previewState = {
     ...defaultConfigModule.getDefaultPreviewState(chartType),
-    ...deepClone(entry.previewState || {}),
+    ...(function buildPreviewStateFromVariant(variant) {
+      if (!variant) {
+        return {};
+      }
+      const nextState = {};
+      if ("stack" in variant) nextState.previewStackMode = Boolean(variant.stack);
+      if ("pieMode" in variant) nextState.previewPieMode = variant.pieMode;
+      if ("layout" in variant) nextState.previewBarHorizontal = variant.layout === "horizontal";
+      return nextState;
+    })(deepClone(entry.variant || {})),
   };
-  const rawData = defaultDataModule.getDefaultRawData(chartType);
+  const rawData = applyDataSelection(
+    chartType,
+    defaultDataModule.getDefaultRawData(chartType),
+    entry.dataSelection || null,
+  );
+  const helperConfigPath = path.join(CONFIG_DIR, CHART_RUNTIME_DEFINITIONS[chartType].styleFile);
+  const helperConfig = JSON.parse(await fs.readFile(helperConfigPath, "utf-8"));
 
   const artifacts = optionBuilder.buildChartArtifacts({
     chartType,
-    definition,
     commonState,
     specificState,
     rawData,
@@ -210,34 +269,37 @@ async function renderVariant(chartType, entry) {
   const summary = buildVariantSummary(artifacts);
   await fs.writeFile(summaryPath, `${JSON.stringify(summary, null, 2)}\n`, "utf-8");
 
-  await withTempJson(artifacts.resolvedOption, async (optionPath) => {
-    execFileSync(
-      NODE,
-      [
-        CLI_SCRIPT,
-        "render",
-        "--chart-type",
-        chartType,
-        "--option",
-        optionPath,
-        "--resolved-option",
-        "--output",
-        outputPath,
-        "--width",
-        EXPORT_WIDTH,
-        "--height",
-        EXPORT_HEIGHT,
-        "--dpi",
-        EXPORT_DPI,
-      ],
-      { cwd: REPO_ROOT, stdio: "inherit" },
-    );
+  await withTempJson(rawData, async (dataPath) => {
+    await withTempJson(helperConfig, async (configPath) => {
+      execFileSync(
+        NODE,
+        [
+          CLI_SCRIPT,
+          "--chart-type",
+          chartType,
+          "--data-file",
+          dataPath,
+          "--config-file",
+          configPath,
+          "--variant",
+          JSON.stringify(entry.variant || {}),
+          "--out",
+          outputPath,
+          "--width",
+          EXPORT_WIDTH,
+          "--height",
+          EXPORT_HEIGHT,
+        ],
+        { cwd: REPO_ROOT, stdio: "inherit" },
+      );
+    });
   });
 
   return {
     chartType,
     variantId: entry.variantId,
-    previewState,
+    dataSelection: entry.dataSelection || {},
+    variant: entry.variant || {},
     summary,
     outputFile: path.relative(SKILL_DIR, outputPath),
     rawOptionFile: path.relative(SKILL_DIR, rawOptionPath),

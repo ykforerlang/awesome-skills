@@ -1,6 +1,6 @@
 {
   "usingComponents": {
     "ec-canvas": "../../ec-canvas/ec-canvas",
-    "t-color-picker": "tdesign-miniprogram/color-picker/color-picker"
+    "t-color-picker": "../../vendor/tdesign-miniprogram/color-picker/color-picker"
   }
 }

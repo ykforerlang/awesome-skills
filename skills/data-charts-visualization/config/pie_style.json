@@ -60,7 +60,6 @@
     "labelLineWidth": 1,
     "itemOpacity": 0.96,
     "borderWidth": 0,
-    "borderColor": "#ffffff",
-    "previewPieMode": "donut"
+    "borderColor": "#ffffff"
   }
 }

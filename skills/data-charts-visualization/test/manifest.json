@@ -2,12 +2,10 @@
   {
     "chartType": "line",
     "variantId": "series-1",
-    "previewState": {
-      "previewStackMode": false,
-      "previewBarHorizontal": false,
-      "previewPieMode": "donut",
-      "previewSeriesCount": 1
+    "dataSelection": {
+      "seriesCount": 1
     },
+    "variant": {},
     "summary": {
       "rawSeriesCount": 1,
       "resolvedSeriesCount": 1,
@@ -27,12 +25,10 @@
   {
     "chartType": "line",
     "variantId": "series-2",
-    "previewState": {
-      "previewStackMode": false,
-      "previewBarHorizontal": false,
-      "previewPieMode": "donut",
-      "previewSeriesCount": 2
+    "dataSelection": {
+      "seriesCount": 2
     },
+    "variant": {},
     "summary": {
       "rawSeriesCount": 2,
       "resolvedSeriesCount": 2,
@@ -54,28 +50,20 @@
   {
     "chartType": "line",
     "variantId": "series-5",
-    "previewState": {
-      "previewStackMode": false,
-      "previewBarHorizontal": false,
-      "previewPieMode": "donut",
-      "previewSeriesCount": 5
+    "dataSelection": {
+      "seriesCount": 5
     },
+    "variant": {},
     "summary": {
-      "rawSeriesCount": 5,
-      "resolvedSeriesCount": 5,
+      "rawSeriesCount": 2,
+      "resolvedSeriesCount": 2,
       "rawSeriesNames": [
         "Visits",
-        "Orders",
-        "Leads",
-        "Signups",
-        "Revenue"
+        "Orders"
       ],
       "resolvedSeriesNames": [
         "Visits",
-        "Orders",
-        "Leads",
-        "Signups",
-        "Revenue"
+        "Orders"
       ],
       "resolvedBarWidths": []
     },
@@ -87,34 +75,20 @@
   {
     "chartType": "line",
     "variantId": "series-8",
-    "previewState": {
-      "previewStackMode": false,
-      "previewBarHorizontal": false,
-      "previewPieMode": "donut",
-      "previewSeriesCount": 8
+    "dataSelection": {
+      "seriesCount": 8
     },
+    "variant": {},
     "summary": {
-      "rawSeriesCount": 8,
-      "resolvedSeriesCount": 8,
+      "rawSeriesCount": 2,
+      "resolvedSeriesCount": 2,
       "rawSeriesNames": [
         "Visits",
-        "Orders",
-        "Leads",
-        "Signups",
-        "Revenue",
-        "Retention",
-        "Conversion",
-        "Satisfaction"
+        "Orders"
       ],
       "resolvedSeriesNames": [
         "Visits",
-        "Orders",
-        "Leads",
-        "Signups",
-        "Revenue",
-        "Retention",
-        "Conversion",
-        "Satisfaction"
+        "Orders"
       ],
       "resolvedBarWidths": []
     },

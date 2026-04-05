@@ -3,6 +3,9 @@
 This directory stores helper-schema config presets for each chart type.
 
 These files are not raw ECharts style fragments. They are helper-facing configs consumed by the shared helper option builder, which then produces the final ECharts option used by both helper preview and skill rendering.
+They should be treated as complete helper config payloads for CLI rendering, not as partial patches.
+
+One-off render choices such as bar layout, stack mode, pie mode, or dual-axis type selection should not be stored here. Pass those through CLI `--variant` instead.
 
 ## Files
 
@@ -19,11 +22,11 @@ These files are not raw ECharts style fragments. They are helper-facing configs 
 ## Usage
 
 ```bash
-node skills/data-charts-visualization/scripts/cli.js render \
+node skills-scripts/data-charts-visualization/dist/cli.js \
   --chart-type line \
-  --style-config skills/data-charts-visualization/config/line_style.json \
-  --option /tmp/line_basic_single_series.json \
-  --output skills/data-charts-visualization/test/manual/manual_line_chart_styled.png
+  --config-file skills/data-charts-visualization/config/line_style.json \
+  --data-file /tmp/line_basic_single_series.json \
+  --out skills/data-charts-visualization/test/manual
 ```
 
 Default demo data should come from:

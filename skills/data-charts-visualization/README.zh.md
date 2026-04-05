@@ -13,46 +13,63 @@
 
 ## 配置模型
 
-1. 在 `option` 中提供业务数据和基础结构。
+1. 在 `data` 中提供业务数据和基础结构。
 2. 在 `config/<chart>_style.json` 中维护该图的 helper 配置。
 3. skill 先用共享 builder 生成最终 ECharts option，再进行 SSR 渲染。
+
+现在 `config` 被视为一份完整 helper config，而不是局部 patch。实际使用上更推荐直接走 `--config-file`。
 
 ## 快速开始
 
 主命令：
 
 ```bash
-data-charts-visualization render --chart-type line --option /tmp/line_basic_single_series.json --output /tmp/line.png
+areslabs-data-charts \
+  --chart-type line \
+  --config-file skills/data-charts-visualization/config/line_style.json \
+  --data-file /tmp/line_basic_single_series.json \
+  --out /tmp
 ```
 
 如果是在当前仓库里直接按本地包的 `npx` 方式调用：
 
 ```bash
-npx --yes --package ./skills/data-charts-visualization data-charts-visualization render --chart-type line --option /tmp/line_basic_single_series.json --output /tmp/line.png
+npx --yes --package ./skills-scripts/data-charts-visualization areslabs-data-charts \
+  --chart-type line \
+  --config-file skills/data-charts-visualization/config/line_style.json \
+  --data-file /tmp/line_basic_single_series.json \
+  --out /tmp
 ```
 
 在当前仓库里，也可以直接调用脚本入口：
 
 ```bash
-node skills/data-charts-visualization/scripts/cli.js render \
+node skills-scripts/data-charts-visualization/dist/cli.js \
   --chart-type line \
-  --option /tmp/line_basic_single_series.json \
-  --output skills/data-charts-visualization/test/manual/manual_line_chart.png
+  --config-file skills/data-charts-visualization/config/line_style.json \
+  --data-file /tmp/line_basic_single_series.json \
+  --out skills/data-charts-visualization/test/manual
 ```
 
-这个 option 文件建议从 shared 默认数据生成或拷出，来源：
+这个 data 文件建议从 shared 默认数据生成或拷出，来源：
 
 - `skills-helpler/data-charts-visualization/shared/charts-default-data.js`
 
-带配置渲染：
+使用内联配置渲染：
 
 ```bash
-node skills/data-charts-visualization/scripts/cli.js render \
+node skills-scripts/data-charts-visualization/dist/cli.js \
   --chart-type line \
-  --style-config skills/data-charts-visualization/config/line_style.json \
-  --option /tmp/line_basic_single_series.json \
-  --output skills/data-charts-visualization/test/manual/manual_line_chart_styled.png
+  --data '{"xAxis":{"data":["Mon","Tue"]},"yAxis":{},"series":[{"type":"line","data":[120,132]}]}' \
+  --config "$(cat skills/data-charts-visualization/config/line_style.json)" \
+  --out skills/data-charts-visualization/test/manual
 ```
+
+`--variant` 用来承载 agent 一次性的渲染策略，例如：
+
+- `{"layout":"horizontal","stack":true}`
+- `{"pieMode":"donut"}`
+- `{"leftSeriesType":"bar","rightSeriesType":"line"}`
 
 ## 测试辅助
 

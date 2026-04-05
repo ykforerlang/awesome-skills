@@ -4,6 +4,7 @@ const {
   CHART_ORDER,
   CHART_DEFINITIONS
 } = require("../../lib/schema");
+const { CHART_RUNTIME_DEFINITIONS } = require("../../lib/chart-runtime-definitions");
 const { buildChartArtifacts } = require("../../lib/option-builder");
 const DEFAULT_DATA_MODULE = require("../../lib/charts-default-data");
 const DEFAULT_CONFIG_MODULE = require("../../lib/charts-default-config");
@@ -460,11 +461,11 @@ function buildSpecificValues(chartType) {
   return DEFAULT_CONFIG_MODULE.getDefaultSpecificState(chartType);
 }
 
-function shouldShowCommonGroup(groupId, definition) {
-  if (groupId === "legend" && definition.supportsLegend === false) {
+function shouldShowCommonGroup(groupId, runtimeDefinition) {
+  if (groupId === "legend" && runtimeDefinition.supportsLegend === false) {
     return false;
   }
-  if ((groupId === "axes" || groupId === "splitLines") && !definition.usesCartesian) {
+  if ((groupId === "axes" || groupId === "splitLines") && !runtimeDefinition.usesCartesian) {
     return false;
   }
   return true;
@@ -525,9 +526,9 @@ function pickReadableTextColor(hexColor) {
 }
 
 function buildCommonSections(chartType, values) {
-  const definition = CHART_DEFINITIONS[chartType];
+  const runtimeDefinition = CHART_RUNTIME_DEFINITIONS[chartType] || {};
   return COMMON_GROUPS
-    .filter((group) => shouldShowCommonGroup(group.id, definition))
+    .filter((group) => shouldShowCommonGroup(group.id, runtimeDefinition))
     .map((group) => ({
       ...group,
       help: COMMON_GROUP_HELP[group.id] || "",
@@ -854,14 +855,17 @@ Page({
     activeConfigSectionId: "",
     activeConfigSection: null,
     configScrollTop: 0,
-    configTabsScrollLeft: 0,
+    configTabsScrollIntoView: "",
     colorPickerVisible: false,
     colorPickerValue: "#2563eb",
     colorPickerScope: "",
     colorPickerFieldId: "",
     colorPickerFieldLabel: "",
     colorPickerItemIndex: -1,
-    colorSwatches: DEFAULT_COLOR_SWATCHES
+    colorSwatches: DEFAULT_COLOR_SWATCHES,
+    colorPickerPopupProps: {
+      closeBtn: true
+    }
   },
 
   onLoad() {
@@ -971,10 +975,8 @@ Page({
     if (!this.chart) {
       return;
     }
-    const definition = CHART_DEFINITIONS[this.data.chartType];
     const artifacts = buildChartArtifacts({
       chartType: this.data.chartType,
-      definition,
       commonState: this.data.commonValues,
       specificState: this.data.specificValues,
       rawData: DEFAULT_DATA_MODULE.getDefaultRawData(this.data.chartType),
@@ -1021,11 +1023,11 @@ Page({
   resetConfigScrollPosition() {
     this.setData({
       configScrollTop: 1,
-      configTabsScrollLeft: 1
+      configTabsScrollIntoView: ""
     }, () => {
       this.setData({
         configScrollTop: 0,
-        configTabsScrollLeft: 0
+        configTabsScrollIntoView: "config-tab-0"
       });
     });
   },

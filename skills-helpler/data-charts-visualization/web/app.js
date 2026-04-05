@@ -35,6 +35,8 @@ const FIXED_PREVIEW_VIEWPORT = Object.freeze({
   height: 360,
 });
 const PREVIEW_RENDERER = "svg";
+const MOBILE_BREAKPOINT = 760;
+const MOBILE_LAYOUT_MEDIA = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
 
 function toNumericDefaultValue(value) {
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -419,7 +421,12 @@ const webSchemaModule = globalThis.DataChartsSchema || null;
 if (!webSchemaModule) {
   throw new Error("DataChartsSchema is required before app.js");
 }
+const webRuntimeDefinitionsModule = globalThis.DataChartsRuntimeDefinitions || null;
+if (!webRuntimeDefinitionsModule) {
+  throw new Error("DataChartsRuntimeDefinitions is required before app.js");
+}
 const { COMMON_GROUPS, LOCALIZED_DEFINITION_TEXT, CHART_DEFINITIONS, CHART_TYPE_ORDER } = webSchemaModule;
+const { CHART_RUNTIME_DEFINITIONS } = webRuntimeDefinitionsModule;
 const COMMON_FIELD_MAP = buildFieldMapFromGroups(COMMON_GROUPS);
 
 const COMMON_FIELD_DOM_IDS = {
@@ -655,6 +662,8 @@ const COMMON_GROUP_RENDER_TEXT = {
 const appState = {
   chartType: "line",
   templateId: "series",
+  layoutMode: MOBILE_LAYOUT_MEDIA.matches ? "mobile" : "desktop",
+  activeMobileSectionId: "",
   dualAxisPreviewLeftType: null,
   dualAxisPreviewRightType: null,
   previewDualAxisLeftSeriesCount: 2,
@@ -664,6 +673,9 @@ const appState = {
   previewPieMode: "donut",
   previewSeriesCount: 2,
   latestResolvedOption: null,
+  commonValuesCache: null,
+  specificValuesCache: null,
+  hasInitialized: false,
 };
 
 const DUAL_AXIS_COLOR_LIST_FIELD_IDS = new Set([
@@ -764,8 +776,22 @@ function getNextDistinctPaletteColor(colors) {
 }
 
 function setPalette(colors) {
-  $("palette-input").value = paletteToText(colors);
+  const input = $("palette-input");
+  if (input) {
+    input.value = paletteToText(colors);
+  }
   renderPaletteColorInputs(colors);
+}
+
+function syncPaletteInput() {
+  const input = $("palette-input");
+  if (!input) {
+    return;
+  }
+  const colors = Array.from($("palette-custom-colors")?.querySelectorAll(".palette-color-input") || [])
+    .map((colorInput) => normalizeColorValue(colorInput.value))
+    .filter(Boolean);
+  input.value = paletteToText(colors);
 }
 
 function getCurrentGaugeBandColors() {
@@ -839,7 +865,10 @@ function renderGaugeBandColorInputs(colors) {
 
 function setBackgroundColorValue(color) {
   const normalized = normalizeColorValue(color);
-  $("background-color").value = normalized;
+  const hiddenInput = $("background-color");
+  if (hiddenInput) {
+    hiddenInput.value = normalized;
+  }
   const customInput = $("background-custom-input");
   if (customInput) {
     customInput.value = normalized;
@@ -1136,6 +1165,22 @@ function getText(key) {
 
 function $(id) {
   return document.getElementById(id);
+}
+
+function getLayoutMode() {
+  return MOBILE_LAYOUT_MEDIA.matches ? "mobile" : "desktop";
+}
+
+function isMobileLayout() {
+  return getLayoutMode() === "mobile";
+}
+
+function getActivePreviewContainerId() {
+  return appState.layoutMode === "mobile" ? "mobile-preview-canvas" : "preview-canvas";
+}
+
+function getInactivePreviewContainerId() {
+  return appState.layoutMode === "mobile" ? "preview-canvas" : "mobile-preview-canvas";
 }
 
 function setTextIfExists(id, value) {
@@ -1448,11 +1493,22 @@ function applySpecificFieldValues(values) {
 
 function applyChartBeautyDefaults(chartType) {
   const config = getChartBeautyDefaults(chartType);
+  appState.commonValuesCache = { ...getCommonDefaults() };
+  appState.specificValuesCache = buildSpecificDefaultState(getCurrentDefinition());
   resetCommonFields();
   if (chartType === "pie") {
     appState.previewPieMode = "donut";
   }
   if (config) {
+    appState.commonValuesCache = {
+      ...appState.commonValuesCache,
+      ...config.common,
+      palette: config.common?.palette ? parsePalette(config.common.palette) : appState.commonValuesCache.palette,
+    };
+    appState.specificValuesCache = {
+      ...appState.specificValuesCache,
+      ...config.specific,
+    };
     applyCommonFieldValues(config.common);
     applySpecificFieldValues(config.specific);
   }
@@ -1504,6 +1560,9 @@ function optionalNumber(value) {
 }
 
 function parsePalette(raw) {
+  if (Array.isArray(raw)) {
+    return raw.map((item) => String(item).trim()).filter(Boolean);
+  }
   return raw
     .split(/[\n,]+/)
     .map((item) => item.trim())
@@ -1512,6 +1571,10 @@ function parsePalette(raw) {
 
 function getCurrentDefinition() {
   return getLocalizedDefinition(appState.chartType);
+}
+
+function getCurrentRuntimeDefinition() {
+  return CHART_RUNTIME_DEFINITIONS[appState.chartType] || null;
 }
 
 function buildChartCards() {
@@ -1540,6 +1603,212 @@ function renderChartSummary() {
       .map((tag) => `<span class="pill">${tag}</span>`)
       .join("")}</div>
   `;
+}
+
+function getCachedCommonValues() {
+  return appState.commonValuesCache || getCommonDefaults();
+}
+
+function getCachedSpecificValues() {
+  const definition = getCurrentDefinition();
+  const fallback = {};
+  definition.fields.forEach((field) => {
+    if (field.type !== "group") {
+      fallback[field.id] = field.default;
+    }
+  });
+  return appState.specificValuesCache || fallback;
+}
+
+function shouldShowMobileCommonGroup(groupId, definition) {
+  const runtimeDefinition = CHART_RUNTIME_DEFINITIONS[appState.chartType] || {};
+  if (groupId === "legend") {
+    return runtimeDefinition.supportsLegend !== false;
+  }
+  if (groupId === "axes" || groupId === "splitLines") {
+    return Boolean(runtimeDefinition.usesCartesian);
+  }
+  return true;
+}
+
+function buildMobileCommonSections(values) {
+  const definition = getCurrentDefinition();
+  const localeText = getCommonRenderText();
+  return (COMMON_GROUPS || [])
+    .filter((group) => shouldShowMobileCommonGroup(group.id, definition))
+    .map((group) => ({
+      id: `common:${group.id}`,
+      scope: "common",
+      tabLabel: localeText.groups[group.id]?.title || group.label,
+      panelTitle: localeText.groups[group.id]?.title || group.label,
+      help: localeText.groups[group.id]?.help || "",
+      fieldIds: (group.fields || [])
+        .map((field) => field.id)
+        .filter((fieldId) => fieldId !== "titleText" && fieldId !== "subtitleText"),
+      values,
+    }))
+    .filter((section) => section.fieldIds.length);
+}
+
+function buildMobileSpecificSections(values) {
+  const definition = getCurrentDefinition();
+  const sections = [];
+  let current = {
+    id: "specific:default",
+    scope: "specific",
+    tabLabel: definition.label,
+    panelTitle: definition.label,
+    help: definition.blurb || "",
+    fieldIds: [],
+    values,
+  };
+
+  definition.fields.forEach((field) => {
+    if (field.type === "group") {
+      if (current.fieldIds.length) {
+        sections.push(current);
+      }
+      current = {
+        id: `specific:${field.id}`,
+        scope: "specific",
+        tabLabel: field.label,
+        panelTitle: field.label,
+        help: field.help || "",
+        fieldIds: [],
+        values,
+      };
+      return;
+    }
+    current.fieldIds.push(field.id);
+  });
+
+  if (current.fieldIds.length) {
+    sections.push(current);
+  }
+
+  return sections;
+}
+
+function getMobileConfigSections() {
+  const commonValues = getCachedCommonValues();
+  const specificValues = getCachedSpecificValues();
+  return [
+    ...buildMobileCommonSections(commonValues),
+    ...buildMobileSpecificSections(specificValues),
+  ];
+}
+
+function ensureActiveMobileSectionId(sections, preferredId = "") {
+  if (!sections.length) {
+    appState.activeMobileSectionId = "";
+    return null;
+  }
+  const candidate = preferredId || appState.activeMobileSectionId;
+  const active = sections.find((section) => section.id === candidate) || sections[0];
+  appState.activeMobileSectionId = active.id;
+  return active;
+}
+
+function buildMobileCommonFieldCard(fieldId, values) {
+  const field = getCommonFieldDefinition(fieldId);
+  if (!field) {
+    return "";
+  }
+  const isWide = fieldId === "palette" || fieldId === "backgroundColor";
+  return `
+    <div class="mobile-field-card${isWide ? " mobile-field-card-wide" : ""}">
+      ${renderCommonFieldControl(fieldId, values)}
+    </div>
+  `;
+}
+
+function buildMobileSpecificFieldCard(field, value) {
+  const isWide = field.id === "bandStops" || DUAL_AXIS_COLOR_LIST_FIELD_IDS.has(field.id);
+  const wrapper = document.createElement("div");
+  wrapper.className = `mobile-field-card${isWide ? " mobile-field-card-wide" : ""}`;
+  wrapper.appendChild(buildSpecificFieldControl(field, value));
+  return wrapper;
+}
+
+function renderMobileChartTabs() {
+  const container = $("mobile-chart-tabs");
+  if (!container) {
+    return;
+  }
+  container.innerHTML = CHART_TYPE_ORDER.filter((key) => CHART_DEFINITIONS[key]).map((key) => {
+    const localizedDefinition = getLocalizedDefinition(key);
+    return `
+      <button type="button" class="mobile-chart-tab${key === appState.chartType ? " active" : ""}" data-chart-type="${key}">
+        ${localizedDefinition.label}
+      </button>
+    `;
+  }).join("");
+}
+
+function renderMobileConfigPanel(preferredSectionId = "") {
+  const container = $("mobile-config-panel");
+  const tabsContainer = $("mobile-config-tabs");
+  const titleNode = $("mobile-config-panel-title");
+  const helpNode = $("mobile-config-panel-help");
+  const fieldsContainer = $("mobile-config-fields");
+  const chip = $("mobile-config-chip");
+  const previewTitle = $("mobile-preview-title");
+  const sections = getMobileConfigSections();
+  const activeSection = ensureActiveMobileSectionId(sections, preferredSectionId);
+
+  if (previewTitle) {
+    previewTitle.textContent = getCurrentDefinition().label;
+  }
+  if (chip) {
+    chip.textContent = getCurrentDefinition().label;
+  }
+  if (tabsContainer) {
+    tabsContainer.innerHTML = sections.map((section) => `
+      <button
+        type="button"
+        class="mobile-section-tab${section.id === appState.activeMobileSectionId ? " active" : ""}"
+        data-mobile-section-id="${section.id}"
+      >
+        ${section.tabLabel}
+      </button>
+    `).join("");
+  }
+
+  if (!container || !titleNode || !helpNode || !fieldsContainer) {
+    return;
+  }
+
+  if (!activeSection) {
+    container.classList.add("hidden");
+    titleNode.textContent = "";
+    helpNode.textContent = "";
+    helpNode.classList.add("hidden");
+    fieldsContainer.innerHTML = "";
+    return;
+  }
+
+  container.classList.remove("hidden");
+  titleNode.textContent = activeSection.panelTitle;
+  helpNode.textContent = activeSection.help || "";
+  helpNode.classList.toggle("hidden", !activeSection.help);
+
+  if (activeSection.scope === "common") {
+    fieldsContainer.innerHTML = activeSection.fieldIds
+      .map((fieldId) => buildMobileCommonFieldCard(fieldId, activeSection.values))
+      .join("");
+    return;
+  }
+
+  fieldsContainer.innerHTML = "";
+  const definition = getCurrentDefinition();
+  const fieldsById = new Map(definition.fields.filter((field) => field.type !== "group").map((field) => [field.id, field]));
+  activeSection.fieldIds.forEach((fieldId) => {
+    const field = fieldsById.get(fieldId);
+    if (!field) {
+      return;
+    }
+    fieldsContainer.appendChild(buildMobileSpecificFieldCard(field, activeSection.values[field.id]));
+  });
 }
 
 function buildPreviewToggleButtons(buttons, datasetKey) {
@@ -1576,181 +1845,230 @@ function supportsSeriesCountPreview(chartType) {
     || chartType === "scatter";
 }
 
-function renderDualAxisPreviewControls() {
-  const containers = [$("dual-axis-preview-controls")];
-  const isDualAxis = appState.chartType === "dualAxis";
-  const isLinePreviewChart = appState.chartType === "line";
-  const isBarPreviewChart = appState.chartType === "bar";
-  const isAreaPreviewChart = appState.chartType === "area";
-  const isScatterPreviewChart = appState.chartType === "scatter";
-  const isPiePreviewChart = appState.chartType === "pie";
+function getPreviewControlGroupsModel() {
+  const chartType = appState.chartType;
+  const isDualAxis = chartType === "dualAxis";
+  const isLinePreviewChart = chartType === "line";
+  const isBarPreviewChart = chartType === "bar";
+  const isAreaPreviewChart = chartType === "area";
+  const isScatterPreviewChart = chartType === "scatter";
+  const isPiePreviewChart = chartType === "pie";
   const panelTitle = CURRENT_LOCALE === "zh" ? "预览配置" : "Preview Config";
   const panelNote = CURRENT_LOCALE === "zh"
     ? "这里只切换预览展示方式，不影响复制出的配置结构，Agent会自动选择合适的图形方式。"
     : "These switches only change the preview presentation and do not change the copied config structure. The agent will choose an appropriate chart form automatically.";
-  const seriesCountLabel = CURRENT_LOCALE === "zh" ? "模拟数据数量" : "Mock Data Count";
-  const seriesCountButtons = buildPreviewToggleButtons(
-    [1, 2, 5, 8].map((count) => ({
-      label: String(count),
-      active: Number(appState.previewSeriesCount) === count,
-      dataset: { "preview-series-count": String(count) },
-    })),
-  );
+  if (!isDualAxis && !isLinePreviewChart && !isBarPreviewChart && !isAreaPreviewChart && !isScatterPreviewChart && !isPiePreviewChart) {
+    return { visible: false, panelTitle, panelNote, groups: [] };
+  }
 
-  containers.forEach((container) => {
-    if (!container) {
-      return;
-    }
-    if (!isDualAxis && !isLinePreviewChart && !isBarPreviewChart && !isAreaPreviewChart && !isScatterPreviewChart && !isPiePreviewChart) {
-      container.innerHTML = "";
-      container.classList.add("hidden");
-      return;
-    }
+  const seriesCountTitle = CURRENT_LOCALE === "zh" ? "预览数量" : "Mock Data Count";
+  const seriesCountButtons = [1, 2, 5, 8].map((count) => ({
+    label: String(count),
+    active: Number(appState.previewSeriesCount) === count,
+    dataset: { "preview-series-count": String(count) },
+  }));
 
-    if (isLinePreviewChart || isScatterPreviewChart) {
-      container.innerHTML = `
-        <div class="dual-axis-preview-head">
-          <div class="dual-axis-preview-title">${panelTitle}</div>
-          <p class="dual-axis-preview-note">${panelNote}</p>
-        </div>
-        <div class="dual-axis-preview-grid">
-          ${buildPreviewControlCard(seriesCountLabel, seriesCountButtons, { wide: true, wrap: true })}
-        </div>
-      `;
-      container.classList.remove("hidden");
-      return;
-    }
+  if (isLinePreviewChart || isScatterPreviewChart) {
+    return {
+      visible: true,
+      panelTitle,
+      panelNote,
+      groups: [{ id: "seriesCount", title: seriesCountTitle, buttons: seriesCountButtons }],
+    };
+  }
 
-    if (isBarPreviewChart) {
-      const layoutLabel = CURRENT_LOCALE === "zh" ? "布局预览" : "Layout Preview";
-      const verticalText = CURRENT_LOCALE === "zh" ? "纵向" : "Vertical";
-      const horizontalText = CURRENT_LOCALE === "zh" ? "横向" : "Horizontal";
-      const modeLabel = CURRENT_LOCALE === "zh" ? "预览方式" : "Preview Mode";
-      const normalText = CURRENT_LOCALE === "zh" ? "普通" : "Normal";
-      const stackedText = CURRENT_LOCALE === "zh" ? "堆叠" : "Stacked";
-      container.innerHTML = `
-        <div class="dual-axis-preview-head">
-          <div class="dual-axis-preview-title">${panelTitle}</div>
-          <p class="dual-axis-preview-note">${panelNote}</p>
-        </div>
-        <div class="dual-axis-preview-grid">
-          ${buildPreviewControlCard(seriesCountLabel, seriesCountButtons, { wide: true, wrap: true })}
-          ${buildPreviewControlCard(
-            layoutLabel,
-            buildPreviewToggleButtons([
-              { label: verticalText, active: !appState.previewBarHorizontal, dataset: { "preview-bar-layout": "vertical" } },
-              { label: horizontalText, active: appState.previewBarHorizontal, dataset: { "preview-bar-layout": "horizontal" } },
-            ]),
-          )}
-          ${buildPreviewControlCard(
-            modeLabel,
-            buildPreviewToggleButtons([
-              { label: normalText, active: !appState.previewStackMode, dataset: { "preview-stack-mode": "normal" } },
-              { label: stackedText, active: appState.previewStackMode, dataset: { "preview-stack-mode": "stacked" } },
-            ]),
-          )}
-        </div>
-      `;
-      container.classList.remove("hidden");
-      return;
-    }
-
-    if (isAreaPreviewChart) {
-      const label = CURRENT_LOCALE === "zh" ? "预览方式" : "Preview Mode";
-      const normalText = CURRENT_LOCALE === "zh" ? "普通" : "Normal";
-      const stackedText = CURRENT_LOCALE === "zh" ? "堆叠" : "Stacked";
-      container.innerHTML = `
-        <div class="dual-axis-preview-head">
-          <div class="dual-axis-preview-title">${panelTitle}</div>
-          <p class="dual-axis-preview-note">${panelNote}</p>
-        </div>
-        <div class="dual-axis-preview-grid">
-          ${buildPreviewControlCard(seriesCountLabel, seriesCountButtons, { wide: true, wrap: true })}
-          ${buildPreviewControlCard(
-            label,
-            buildPreviewToggleButtons([
-              { label: normalText, active: !appState.previewStackMode, dataset: { "preview-stack-mode": "normal" } },
-              { label: stackedText, active: appState.previewStackMode, dataset: { "preview-stack-mode": "stacked" } },
-            ]),
-          )}
-        </div>
-      `;
-      container.classList.remove("hidden");
-      return;
-    }
-
-    if (isPiePreviewChart) {
-      const label = CURRENT_LOCALE === "zh" ? "预览图形" : "Preview Shape";
-      const pieText = CURRENT_LOCALE === "zh" ? "饼图" : "Pie";
-      const donutText = CURRENT_LOCALE === "zh" ? "环图" : "Donut";
-      const roseAreaText = CURRENT_LOCALE === "zh" ? "玫瑰面积" : "Rose Area";
-      const roseRadiusText = CURRENT_LOCALE === "zh" ? "玫瑰半径" : "Rose Radius";
-      container.innerHTML = `
-        <div class="dual-axis-preview-head">
-          <div class="dual-axis-preview-title">${panelTitle}</div>
-          <p class="dual-axis-preview-note">${panelNote}</p>
-        </div>
-        <div class="dual-axis-preview-grid">
-          ${buildPreviewControlCard(
-            label,
-            buildPreviewToggleButtons([
-              { label: pieText, active: appState.previewPieMode === "pie", dataset: { "preview-pie-mode": "pie" } },
-              { label: donutText, active: appState.previewPieMode === "donut", dataset: { "preview-pie-mode": "donut" } },
-              { label: roseAreaText, active: appState.previewPieMode === "roseArea", dataset: { "preview-pie-mode": "roseArea" } },
-              { label: roseRadiusText, active: appState.previewPieMode === "roseRadius", dataset: { "preview-pie-mode": "roseRadius" } },
-            ]),
-            { wide: true, wrap: true },
-          )}
-        </div>
-      `;
-      container.classList.remove("hidden");
-      return;
-    }
-
-    const { leftType, rightType } = resolveDualAxisSeriesTypes();
-    const dualAxisLeftCountLabel = CURRENT_LOCALE === "zh" ? "左侧数量" : "Left Count";
-    const dualAxisRightCountLabel = CURRENT_LOCALE === "zh" ? "右侧数量" : "Right Count";
-    const dualAxisCountButtons = (side) => buildPreviewToggleButtons(
-      [1, 2, 4].map((count) => ({
-        label: String(count),
-        active: Number(side === "left" ? appState.previewDualAxisLeftSeriesCount : appState.previewDualAxisRightSeriesCount) === count,
-        dataset: {
-          "preview-dual-axis-series-side": side,
-          "preview-dual-axis-series-count": String(count),
+  if (isBarPreviewChart) {
+    const layoutLabel = CURRENT_LOCALE === "zh" ? "布局预览" : "Layout Preview";
+    const verticalText = CURRENT_LOCALE === "zh" ? "纵向" : "Vertical";
+    const horizontalText = CURRENT_LOCALE === "zh" ? "横向" : "Horizontal";
+    const modeLabel = CURRENT_LOCALE === "zh" ? "预览方式" : "Preview Mode";
+    const normalText = CURRENT_LOCALE === "zh" ? "普通" : "Normal";
+    const stackedText = CURRENT_LOCALE === "zh" ? "堆叠" : "Stacked";
+    return {
+      visible: true,
+      panelTitle,
+      panelNote,
+      groups: [
+        { id: "seriesCount", title: seriesCountTitle, buttons: seriesCountButtons },
+        {
+          id: "barLayout",
+          title: layoutLabel,
+          buttons: [
+            { label: verticalText, active: !appState.previewBarHorizontal, dataset: { "preview-bar-layout": "vertical" } },
+            { label: horizontalText, active: appState.previewBarHorizontal, dataset: { "preview-bar-layout": "horizontal" } },
+          ],
         },
-      })),
-    );
-    const leftLabel = CURRENT_LOCALE === "zh" ? "左侧预览类型" : "Left Preview Type";
-    const rightLabel = CURRENT_LOCALE === "zh" ? "右侧预览类型" : "Right Preview Type";
-    const barText = CURRENT_LOCALE === "zh" ? "柱" : "Bar";
-    const lineText = CURRENT_LOCALE === "zh" ? "线" : "Line";
+        {
+          id: "stackMode",
+          title: modeLabel,
+          buttons: [
+            { label: normalText, active: !appState.previewStackMode, dataset: { "preview-stack-mode": "normal" } },
+            { label: stackedText, active: appState.previewStackMode, dataset: { "preview-stack-mode": "stacked" } },
+          ],
+        },
+      ],
+    };
+  }
 
-      container.innerHTML = `
-        <div class="dual-axis-preview-head">
-          <div class="dual-axis-preview-title">${panelTitle}</div>
-          <p class="dual-axis-preview-note">${panelNote}</p>
+  if (isAreaPreviewChart) {
+    const modeLabel = CURRENT_LOCALE === "zh" ? "预览方式" : "Preview Mode";
+    const normalText = CURRENT_LOCALE === "zh" ? "普通" : "Normal";
+    const stackedText = CURRENT_LOCALE === "zh" ? "堆叠" : "Stacked";
+    return {
+      visible: true,
+      panelTitle,
+      panelNote,
+      groups: [
+        { id: "seriesCount", title: seriesCountTitle, buttons: seriesCountButtons },
+        {
+          id: "stackMode",
+          title: modeLabel,
+          buttons: [
+            { label: normalText, active: !appState.previewStackMode, dataset: { "preview-stack-mode": "normal" } },
+            { label: stackedText, active: appState.previewStackMode, dataset: { "preview-stack-mode": "stacked" } },
+          ],
+        },
+      ],
+    };
+  }
+
+  if (isPiePreviewChart) {
+    const label = CURRENT_LOCALE === "zh" ? "预览图形" : "Preview Shape";
+    const pieText = CURRENT_LOCALE === "zh" ? "饼图" : "Pie";
+    const donutText = CURRENT_LOCALE === "zh" ? "环图" : "Donut";
+    const roseAreaText = CURRENT_LOCALE === "zh" ? "玫瑰面积" : "Rose Area";
+    const roseRadiusText = CURRENT_LOCALE === "zh" ? "玫瑰半径" : "Rose Radius";
+    return {
+      visible: true,
+      panelTitle,
+      panelNote,
+      groups: [
+        {
+          id: "pieMode",
+          title: label,
+          buttons: [
+            { label: pieText, active: appState.previewPieMode === "pie", dataset: { "preview-pie-mode": "pie" } },
+            { label: donutText, active: appState.previewPieMode === "donut", dataset: { "preview-pie-mode": "donut" } },
+            { label: roseAreaText, active: appState.previewPieMode === "roseArea", dataset: { "preview-pie-mode": "roseArea" } },
+            { label: roseRadiusText, active: appState.previewPieMode === "roseRadius", dataset: { "preview-pie-mode": "roseRadius" } },
+          ],
+        },
+      ],
+    };
+  }
+
+  const { leftType, rightType } = resolveDualAxisSeriesTypes();
+  const dualAxisLeftCountLabel = CURRENT_LOCALE === "zh" ? "左侧数量" : "Left Count";
+  const dualAxisRightCountLabel = CURRENT_LOCALE === "zh" ? "右侧数量" : "Right Count";
+  const leftLabel = CURRENT_LOCALE === "zh" ? "左侧预览类型" : "Left Preview Type";
+  const rightLabel = CURRENT_LOCALE === "zh" ? "右侧预览类型" : "Right Preview Type";
+  const barText = CURRENT_LOCALE === "zh" ? "柱" : "Bar";
+  const lineText = CURRENT_LOCALE === "zh" ? "线" : "Line";
+  const dualAxisCountButtons = (side) => [1, 2, 4].map((count) => ({
+    label: String(count),
+    active: Number(side === "left" ? appState.previewDualAxisLeftSeriesCount : appState.previewDualAxisRightSeriesCount) === count,
+    dataset: {
+      "preview-dual-axis-series-side": side,
+      "preview-dual-axis-series-count": String(count),
+    },
+  }));
+
+  return {
+    visible: true,
+    panelTitle,
+    panelNote,
+    groups: [
+      { id: "dualAxisLeftCount", title: dualAxisLeftCountLabel, buttons: dualAxisCountButtons("left") },
+      { id: "dualAxisRightCount", title: dualAxisRightCountLabel, buttons: dualAxisCountButtons("right") },
+      {
+        id: "dualAxisLeftType",
+        title: leftLabel,
+        buttons: [
+          { label: barText, active: leftType === "bar", dataset: { "dual-axis-side": "left", "dual-axis-type": "bar" } },
+          { label: lineText, active: leftType === "line", dataset: { "dual-axis-side": "left", "dual-axis-type": "line" } },
+        ],
+      },
+      {
+        id: "dualAxisRightType",
+        title: rightLabel,
+        buttons: [
+          { label: barText, active: rightType === "bar", dataset: { "dual-axis-side": "right", "dual-axis-type": "bar" } },
+          { label: lineText, active: rightType === "line", dataset: { "dual-axis-side": "right", "dual-axis-type": "line" } },
+        ],
+      },
+    ],
+  };
+}
+
+function renderDualAxisPreviewControls() {
+  const container = $("dual-axis-preview-controls");
+  const model = getPreviewControlGroupsModel();
+  const seriesCountDesktopLabel = CURRENT_LOCALE === "zh" ? "模拟数据数量" : "Mock Data Count";
+  if (!container) {
+    return;
+  }
+  if (!model.visible) {
+    container.innerHTML = "";
+    container.classList.add("hidden");
+    return;
+  }
+  container.innerHTML = `
+    <div class="dual-axis-preview-head">
+      <div class="dual-axis-preview-title">${model.panelTitle}</div>
+      <p class="dual-axis-preview-note">${model.panelNote}</p>
+    </div>
+    <div class="dual-axis-preview-grid">
+      ${model.groups.map((group) => buildPreviewControlCard(
+        group.title === (CURRENT_LOCALE === "zh" ? "预览数量" : "Mock Data Count") ? seriesCountDesktopLabel : group.title,
+        buildPreviewToggleButtons(group.buttons),
+        { wide: group.buttons.length > 2, wrap: group.buttons.length > 2 },
+      )).join("")}
+    </div>
+  `;
+  container.classList.remove("hidden");
+}
+
+function renderMobilePreviewControls() {
+  const container = $("mobile-preview-controls");
+  const model = getPreviewControlGroupsModel();
+  const fixedLabel = CURRENT_LOCALE === "zh" ? "预览配置（不会导出）：" : "Preview Only:";
+  if (!container) {
+    return;
+  }
+  if (!model.visible) {
+    container.innerHTML = "";
+    container.classList.add("hidden");
+    return;
+  }
+  container.innerHTML = `
+    <div class="mobile-preview-config-layout">
+      <div class="mobile-preview-config-fixed-label">${fixedLabel}</div>
+      <div class="mobile-preview-config-scroll">
+        <div class="mobile-preview-config-row">
+          ${model.groups.map((group) => `
+            <div class="mobile-preview-config-group">
+              <div class="mobile-preview-config-group-label">${group.title}</div>
+              <div class="mobile-preview-config-buttons">
+                ${group.buttons.map((button) => `
+                  <button
+                    type="button"
+                    class="mobile-preview-config-button${button.active ? " active" : ""}"
+                    ${Object.entries(button.dataset || {}).map(([key, value]) => `data-${key}="${value}"`).join(" ")}
+                  >${button.label}</button>
+                `).join("")}
+              </div>
+            </div>
+          `).join("")}
         </div>
-        <div class="dual-axis-preview-grid">
-          ${buildPreviewControlCard(dualAxisLeftCountLabel, dualAxisCountButtons("left"))}
-          ${buildPreviewControlCard(dualAxisRightCountLabel, dualAxisCountButtons("right"))}
-          ${buildPreviewControlCard(
-            leftLabel,
-            buildPreviewToggleButtons([
-            { label: barText, active: leftType === "bar", dataset: { "dual-axis-side": "left", "dual-axis-type": "bar" } },
-            { label: lineText, active: leftType === "line", dataset: { "dual-axis-side": "left", "dual-axis-type": "line" } },
-          ]),
-        )}
-        ${buildPreviewControlCard(
-          rightLabel,
-          buildPreviewToggleButtons([
-            { label: barText, active: rightType === "bar", dataset: { "dual-axis-side": "right", "dual-axis-type": "bar" } },
-            { label: lineText, active: rightType === "line", dataset: { "dual-axis-side": "right", "dual-axis-type": "line" } },
-          ]),
-        )}
       </div>
-    `;
-    container.classList.remove("hidden");
-  });
+    </div>
+  `;
+  container.classList.remove("hidden");
+}
+
+function renderPreviewControls() {
+  renderDualAxisPreviewControls();
+  renderMobilePreviewControls();
 }
 
 const DUAL_AXIS_FOUNDATION_AXIS_FIELD_IDS = new Set([
@@ -2107,9 +2425,11 @@ function renderDualAxisFoundationAxes(snapshot) {
 
 function renderSpecificFields(options = {}) {
   const definition = getCurrentDefinition();
-  const snapshot = options.source === "defaults"
-    ? buildSpecificDefaultState(definition)
-    : captureSpecificFieldState(definition);
+  const snapshot = options.values
+    ? { ...options.values }
+    : options.source === "defaults"
+      ? buildSpecificDefaultState(definition)
+      : captureSpecificFieldState(definition);
   const container = $("specific-fields");
   container.innerHTML = "";
   $("specific-caption").textContent = `${definition.label} ${getText("specificFieldsSuffix")}`;
@@ -2201,6 +2521,111 @@ function renderSpecificFields(options = {}) {
 
   renderDualAxisFoundationAxes(snapshot);
   renderLabelSection(snapshot);
+}
+
+function clearDesktopInteractiveContainers() {
+  [
+    "title-group",
+    "legend-group",
+    "labels-group-content",
+    "layout-group",
+    "axes-group",
+    "split-lines-group",
+    "specific-fields",
+    "dual-axis-preview-controls",
+  ].forEach((id) => {
+    const node = $(id);
+    if (node) {
+      node.innerHTML = "";
+    }
+  });
+}
+
+function clearMobileInteractiveContainers() {
+  [
+    "mobile-preview-controls",
+    "mobile-chart-tabs",
+    "mobile-config-tabs",
+    "mobile-config-fields",
+  ].forEach((id) => {
+    const node = $(id);
+    if (node) {
+      node.innerHTML = "";
+    }
+  });
+}
+
+function preserveCurrentFormState() {
+  const hasCommonFields = Boolean($("title-show"));
+  const hasSpecificFields = Boolean(document.querySelector("[data-specific-field]"));
+  if (hasCommonFields) {
+    appState.commonValuesCache = getCommonState();
+  }
+  if (hasSpecificFields) {
+    appState.specificValuesCache = getSpecificState();
+  }
+}
+
+function applyCachedValuesToRenderedForm() {
+  if (appState.commonValuesCache) {
+    applyCommonFieldValues(appState.commonValuesCache);
+  } else {
+    resetCommonFields();
+  }
+  if (appState.specificValuesCache) {
+    applySpecificFieldValues(appState.specificValuesCache);
+  }
+}
+
+function renderLayoutShell(options = {}) {
+  const preferredSectionId = options.preferredSectionId || "";
+  if (appState.layoutMode === "mobile") {
+    clearDesktopInteractiveContainers();
+    renderMobileChartTabs();
+    renderMobilePreviewControls();
+    renderMobileConfigPanel(preferredSectionId);
+    applyCachedValuesToRenderedForm();
+    renderFoundationVisibility();
+    return;
+  }
+
+  clearMobileInteractiveContainers();
+  renderCommonFoundationSections();
+  buildChartCards();
+  renderChartSummary();
+  renderDualAxisPreviewControls();
+  renderSpecificFields(appState.specificValuesCache
+    ? { values: appState.specificValuesCache }
+    : { source: "defaults" });
+  applyCachedValuesToRenderedForm();
+  renderFoundationVisibility();
+}
+
+function updateLayoutVisibility() {
+  const desktopLayout = $("desktop-layout");
+  const mobileLayout = $("mobile-layout");
+  if (desktopLayout) {
+    desktopLayout.classList.toggle("hidden", appState.layoutMode !== "desktop");
+  }
+  if (mobileLayout) {
+    mobileLayout.classList.toggle("hidden", appState.layoutMode !== "mobile");
+  }
+}
+
+function switchLayoutMode(nextMode) {
+  if (nextMode === appState.layoutMode && appState.hasInitialized) {
+    updateLayoutVisibility();
+    return;
+  }
+  if (appState.hasInitialized) {
+    preserveCurrentFormState();
+    disposePreviewInstance($(getActivePreviewContainerId()));
+  }
+  appState.layoutMode = nextMode;
+  updateLayoutVisibility();
+  renderLayoutShell();
+  syncPreviewCanvasDimensions();
+  updateOutputs();
 }
 
 function normalizeSpecificFieldId(fieldId) {
@@ -2385,7 +2810,7 @@ function syncDualAxisPreviewTypesWithTemplate() {
 }
 
 function renderFoundationVisibility() {
-  const definition = getCurrentDefinition();
+  const runtimeDefinition = getCurrentRuntimeDefinition() || {};
   const axesGroup = $("axes-group");
   const splitLinesGroup = $("split-lines-group");
   const xSplitLineShowField = $("x-split-line-show-field");
@@ -2401,9 +2826,9 @@ function renderFoundationVisibility() {
   const axesGroupTitle = $("axes-group-title");
   const xAxisSubgroupHead = $("x-axis-subgroup-head");
   const yAxisSubgroupHead = $("y-axis-subgroup-head");
-  const showCartesian = Boolean(definition.usesCartesian);
-  const showLegend = definition.supportsLegend !== false;
-  const showLayoutSpacing = definition.usesGrid !== false || definition.supportsPlotArea === true;
+  const showCartesian = Boolean(runtimeDefinition.usesCartesian);
+  const showLegend = runtimeDefinition.supportsLegend !== false;
+  const showLayoutSpacing = runtimeDefinition.usesGrid !== false || runtimeDefinition.supportsPlotArea === true;
   const isDualAxis = appState.chartType === "dualAxis";
   const dualAxisHorizontal = readBooleanControl(document.querySelector('[data-specific-field="horizontal"]'));
   if (axesGroup) {
@@ -2535,108 +2960,114 @@ function renderFoundationVisibility() {
 
 function resetCommonFields() {
   const defaults = getCommonDefaults();
-  $("title-show").value = booleanSelectValue(defaults.titleShow);
-  $("subtitle-show").value = booleanSelectValue(defaults.subtitleShow);
-  $("title-align").value = defaults.titleAlign;
-  $("title-font-size").value = normalizeFontSizePresetValue(defaults.titleFontSize, TYPOGRAPHY_PRESET.titleFontSize);
-  $("title-color").value = defaults.titleColor;
-  $("title-bold").value = booleanSelectValue(defaults.titleBold);
-  $("subtitle-font-size").value = normalizeFontSizePresetValue(defaults.subtitleFontSize, TYPOGRAPHY_PRESET.subtitleFontSize);
-  $("subtitle-color").value = defaults.subtitleColor;
-  $("legend-font-size").value = normalizeFontSizePresetValue(defaults.legendFontSize, TYPOGRAPHY_PRESET.legendFontSize);
-  $("legend-color").value = defaults.legendColor;
-  $("palette-input").value = defaults.palette;
-  $("legend-show").value = booleanSelectValue(defaults.legendShow);
-  $("legend-position").value = defaults.legendPosition;
-  $("legend-orient").value = defaults.legendOrient;
-  $("x-split-line-show").value = booleanSelectValue(defaults.xSplitLineShow);
-  $("x-split-line-color").value = defaults.xSplitLineColor;
-  $("x-split-line-type").value = defaults.xSplitLineType;
-  $("x-split-line-width").value = defaults.xSplitLineWidth;
-  $("x-axis-label-font-size").value = normalizeFontSizePresetValue(defaults.xAxisLabelFontSize, TYPOGRAPHY_PRESET.xAxisLabelFontSize);
-  $("x-axis-label-color").value = defaults.xAxisLabelColor;
-  $("x-axis-line-show").value = booleanSelectValue(defaults.xAxisLineShow);
-  $("x-axis-tick-show").value = booleanSelectValue(defaults.xAxisTickShow);
-  $("x-axis-line-color").value = defaults.xAxisLineColor;
-  $("x-formatter").value = defaults.xFormatter;
-  $("x-rotate").value = defaults.xRotate;
-  $("y-axis-label-font-size").value = normalizeFontSizePresetValue(defaults.yAxisLabelFontSize, TYPOGRAPHY_PRESET.yAxisLabelFontSize);
-  $("y-axis-label-color").value = defaults.yAxisLabelColor;
-  $("y-axis-line-show").value = booleanSelectValue(defaults.yAxisLineShow);
-  $("y-axis-tick-show").value = booleanSelectValue(defaults.yAxisTickShow);
-  $("y-axis-line-color").value = defaults.yAxisLineColor;
-  $("y-formatter").value = defaults.yFormatter;
-  $("split-line-show").value = booleanSelectValue(defaults.splitLineShow);
-  $("split-line-color").value = defaults.splitLineColor;
-  $("split-line-type").value = defaults.splitLineType;
-  $("split-line-width").value = defaults.splitLineWidth;
-  $("grid-left").value = normalizeGridPercentValue(defaults.gridLeft, "12%");
-  $("grid-right").value = normalizeGridPercentValue(defaults.gridRight, "9%");
-  $("grid-top").value = normalizeGridPercentValue(defaults.gridTop, "21%");
-  $("grid-bottom").value = normalizeGridPercentValue(defaults.gridBottom, "15%");
+  setValueIfExists("title-show", defaults.titleShow);
+  setValueIfExists("subtitle-show", defaults.subtitleShow);
+  setValueIfExists("title-align", defaults.titleAlign);
+  setValueIfExists("title-font-size", normalizeFontSizePresetValue(defaults.titleFontSize, TYPOGRAPHY_PRESET.titleFontSize));
+  setValueIfExists("title-color", defaults.titleColor);
+  setValueIfExists("title-bold", defaults.titleBold);
+  setValueIfExists("subtitle-font-size", normalizeFontSizePresetValue(defaults.subtitleFontSize, TYPOGRAPHY_PRESET.subtitleFontSize));
+  setValueIfExists("subtitle-color", defaults.subtitleColor);
+  setValueIfExists("legend-font-size", normalizeFontSizePresetValue(defaults.legendFontSize, TYPOGRAPHY_PRESET.legendFontSize));
+  setValueIfExists("legend-color", defaults.legendColor);
+  setValueIfExists("palette-input", Array.isArray(defaults.palette) ? defaults.palette.join(", ") : defaults.palette);
+  setValueIfExists("legend-show", defaults.legendShow);
+  setValueIfExists("legend-position", defaults.legendPosition);
+  setValueIfExists("legend-orient", defaults.legendOrient);
+  setValueIfExists("x-split-line-show", defaults.xSplitLineShow);
+  setValueIfExists("x-split-line-color", defaults.xSplitLineColor);
+  setValueIfExists("x-split-line-type", defaults.xSplitLineType);
+  setValueIfExists("x-split-line-width", defaults.xSplitLineWidth);
+  setValueIfExists("x-axis-label-font-size", normalizeFontSizePresetValue(defaults.xAxisLabelFontSize, TYPOGRAPHY_PRESET.xAxisLabelFontSize));
+  setValueIfExists("x-axis-label-color", defaults.xAxisLabelColor);
+  setValueIfExists("x-axis-line-show", defaults.xAxisLineShow);
+  setValueIfExists("x-axis-tick-show", defaults.xAxisTickShow);
+  setValueIfExists("x-axis-line-color", defaults.xAxisLineColor);
+  setValueIfExists("x-formatter", defaults.xFormatter);
+  setValueIfExists("x-rotate", defaults.xRotate);
+  setValueIfExists("y-axis-label-font-size", normalizeFontSizePresetValue(defaults.yAxisLabelFontSize, TYPOGRAPHY_PRESET.yAxisLabelFontSize));
+  setValueIfExists("y-axis-label-color", defaults.yAxisLabelColor);
+  setValueIfExists("y-axis-line-show", defaults.yAxisLineShow);
+  setValueIfExists("y-axis-tick-show", defaults.yAxisTickShow);
+  setValueIfExists("y-axis-line-color", defaults.yAxisLineColor);
+  setValueIfExists("y-formatter", defaults.yFormatter);
+  setValueIfExists("split-line-show", defaults.splitLineShow);
+  setValueIfExists("split-line-color", defaults.splitLineColor);
+  setValueIfExists("split-line-type", defaults.splitLineType);
+  setValueIfExists("split-line-width", defaults.splitLineWidth);
+  setValueIfExists("grid-left", normalizeGridPercentValue(defaults.gridLeft, "12%"));
+  setValueIfExists("grid-right", normalizeGridPercentValue(defaults.gridRight, "9%"));
+  setValueIfExists("grid-top", normalizeGridPercentValue(defaults.gridTop, "21%"));
+  setValueIfExists("grid-bottom", normalizeGridPercentValue(defaults.gridBottom, "15%"));
   setPalette(parsePalette(defaults.palette));
   setBackgroundColorValue(defaults.backgroundColor);
 }
 
 function getCommonState() {
-  const defaults = getCommonDefaults();
+  const defaults = appState.commonValuesCache || getCommonDefaults();
+  const fallbackPalette = Array.isArray(defaults.palette) ? defaults.palette : parsePalette(String(defaults.palette || ""));
   return {
     titleText: defaults.titleText,
     subtitleText: defaults.subtitleText,
     titleShow: readBooleanControl($("title-show"), defaults.titleShow),
     subtitleShow: readBooleanControl($("subtitle-show"), defaults.subtitleShow),
-    titleAlign: $("title-align").value,
-    titleFontSize: numberOr($("title-font-size").value, defaults.titleFontSize),
-    titleColor: $("title-color").value,
+    titleAlign: $("title-align") ? $("title-align").value : defaults.titleAlign,
+    titleFontSize: numberOr($("title-font-size")?.value, defaults.titleFontSize),
+    titleColor: $("title-color") ? $("title-color").value : defaults.titleColor,
     titleBold: readBooleanControl($("title-bold"), defaults.titleBold),
-    subtitleFontSize: numberOr($("subtitle-font-size").value, defaults.subtitleFontSize),
-    subtitleColor: $("subtitle-color").value,
-    backgroundColor: $("background-color").value,
-    legendFontSize: numberOr($("legend-font-size").value, defaults.legendFontSize),
-    legendColor: $("legend-color").value,
-    palette: parsePalette($("palette-input").value),
+    subtitleFontSize: numberOr($("subtitle-font-size")?.value, defaults.subtitleFontSize),
+    subtitleColor: $("subtitle-color") ? $("subtitle-color").value : defaults.subtitleColor,
+    backgroundColor: $("background-color") ? $("background-color").value : defaults.backgroundColor,
+    legendFontSize: numberOr($("legend-font-size")?.value, defaults.legendFontSize),
+    legendColor: $("legend-color") ? $("legend-color").value : defaults.legendColor,
+    palette: $("palette-input") ? parsePalette($("palette-input").value) : fallbackPalette,
     legendShow: readBooleanControl($("legend-show"), defaults.legendShow),
-    legendPosition: $("legend-position").value,
-    legendOrient: $("legend-orient").value,
+    legendPosition: $("legend-position") ? $("legend-position").value : defaults.legendPosition,
+    legendOrient: $("legend-orient") ? $("legend-orient").value : defaults.legendOrient,
     xSplitLineShow: readBooleanControl($("x-split-line-show"), defaults.xSplitLineShow),
-    xSplitLineColor: $("x-split-line-color").value,
-    xSplitLineType: normalizeStrokeType($("x-split-line-type").value),
-    xSplitLineWidth: numberOr($("x-split-line-width").value, defaults.xSplitLineWidth),
-    xAxisLabelFontSize: numberOr($("x-axis-label-font-size").value, defaults.xAxisLabelFontSize),
-    xAxisLabelColor: $("x-axis-label-color").value,
+    xSplitLineColor: $("x-split-line-color") ? $("x-split-line-color").value : defaults.xSplitLineColor,
+    xSplitLineType: normalizeStrokeType($("x-split-line-type") ? $("x-split-line-type").value : defaults.xSplitLineType),
+    xSplitLineWidth: numberOr($("x-split-line-width")?.value, defaults.xSplitLineWidth),
+    xAxisLabelFontSize: numberOr($("x-axis-label-font-size")?.value, defaults.xAxisLabelFontSize),
+    xAxisLabelColor: $("x-axis-label-color") ? $("x-axis-label-color").value : defaults.xAxisLabelColor,
     xAxisLineShow: readBooleanControl($("x-axis-line-show"), defaults.xAxisLineShow),
     xAxisTickShow: readBooleanControl($("x-axis-tick-show"), defaults.xAxisTickShow),
-    xAxisLineColor: $("x-axis-line-color").value,
-    xFormatter: $("x-formatter").value.trim() || "{value}",
-    xRotate: numberOr($("x-rotate").value, 0),
-    yAxisLabelFontSize: numberOr($("y-axis-label-font-size").value, defaults.yAxisLabelFontSize),
-    yAxisLabelColor: $("y-axis-label-color").value,
+    xAxisLineColor: $("x-axis-line-color") ? $("x-axis-line-color").value : defaults.xAxisLineColor,
+    xFormatter: ($("x-formatter") ? $("x-formatter").value.trim() : defaults.xFormatter) || "{value}",
+    xRotate: numberOr($("x-rotate")?.value, defaults.xRotate ?? 0),
+    yAxisLabelFontSize: numberOr($("y-axis-label-font-size")?.value, defaults.yAxisLabelFontSize),
+    yAxisLabelColor: $("y-axis-label-color") ? $("y-axis-label-color").value : defaults.yAxisLabelColor,
     yAxisLineShow: readBooleanControl($("y-axis-line-show"), defaults.yAxisLineShow),
     yAxisTickShow: readBooleanControl($("y-axis-tick-show"), defaults.yAxisTickShow),
-    yAxisLineColor: $("y-axis-line-color").value,
-    yFormatter: $("y-formatter").value.trim() || "{value}",
+    yAxisLineColor: $("y-axis-line-color") ? $("y-axis-line-color").value : defaults.yAxisLineColor,
+    yFormatter: ($("y-formatter") ? $("y-formatter").value.trim() : defaults.yFormatter) || "{value}",
     splitLineShow: readBooleanControl($("split-line-show"), defaults.splitLineShow),
-    splitLineColor: $("split-line-color").value,
-    splitLineType: normalizeStrokeType($("split-line-type").value),
-    splitLineWidth: numberOr($("split-line-width").value, defaults.splitLineWidth),
-    gridLeft: normalizeGridPercentValue($("grid-left").value, "12%"),
-    gridRight: normalizeGridPercentValue($("grid-right").value, "9%"),
-    gridTop: normalizeGridPercentValue($("grid-top").value, "21%"),
-    gridBottom: normalizeGridPercentValue($("grid-bottom").value, "15%"),
+    splitLineColor: $("split-line-color") ? $("split-line-color").value : defaults.splitLineColor,
+    splitLineType: normalizeStrokeType($("split-line-type") ? $("split-line-type").value : defaults.splitLineType),
+    splitLineWidth: numberOr($("split-line-width")?.value, defaults.splitLineWidth),
+    gridLeft: normalizeGridPercentValue($("grid-left") ? $("grid-left").value : defaults.gridLeft, "12%"),
+    gridRight: normalizeGridPercentValue($("grid-right") ? $("grid-right").value : defaults.gridRight, "9%"),
+    gridTop: normalizeGridPercentValue($("grid-top") ? $("grid-top").value : defaults.gridTop, "21%"),
+    gridBottom: normalizeGridPercentValue($("grid-bottom") ? $("grid-bottom").value : defaults.gridBottom, "15%"),
   };
 }
 
 function getSpecificState() {
   const state = {};
+  const cachedValues = appState.specificValuesCache || {};
   getCurrentDefinition().fields.forEach((field) => {
+    if (field.type === "group") {
+      return;
+    }
     const input = document.querySelector(`[data-specific-field="${field.id}"]`);
     if (!input) {
+      state[field.id] = cachedValues[field.id] !== undefined ? cachedValues[field.id] : field.default;
       return;
     }
     if (field.type === "checkbox") {
-      state[field.id] = readBooleanControl(input, Boolean(field.default));
+      state[field.id] = readBooleanControl(input, cachedValues[field.id] !== undefined ? Boolean(cachedValues[field.id]) : Boolean(field.default));
     } else if (field.type === "number") {
-      state[field.id] = numberOr(input.value, field.default);
+      state[field.id] = numberOr(input.value, cachedValues[field.id] !== undefined ? cachedValues[field.id] : field.default);
     } else {
       state[field.id] = input.value;
     }
@@ -2649,8 +3080,17 @@ function getPreviewViewportSize() {
 }
 
 function syncPreviewCanvasDimensions() {
-  const canvas = $("preview-canvas");
+  const canvas = $(getActivePreviewContainerId());
   if (!canvas) {
+    return;
+  }
+  if (appState.layoutMode === "mobile") {
+    const pageWidth = Math.max(320, window.innerWidth || FIXED_PREVIEW_VIEWPORT.width);
+    const availableWidth = Math.max(0, pageWidth - 48);
+    const scale = Math.min(1, availableWidth / FIXED_PREVIEW_VIEWPORT.width);
+    canvas.style.width = `${Math.round(FIXED_PREVIEW_VIEWPORT.width * scale)}px`;
+    canvas.style.minWidth = "0";
+    canvas.style.height = `${Math.round(FIXED_PREVIEW_VIEWPORT.height * scale)}px`;
     return;
   }
   canvas.style.width = `${FIXED_PREVIEW_VIEWPORT.width}px`;
@@ -2733,32 +3173,33 @@ function renderPreview(option) {
   syncPreviewCanvasDimensions();
   appState.latestResolvedOption = option || null;
   if (!option) {
-    disposePreviewInstance($("preview-canvas"));
+    disposePreviewInstance($(getActivePreviewContainerId()));
     return;
   }
   if (!window.echarts) {
     return;
   }
 
-  renderPreviewInto("preview-canvas", option);
+  disposePreviewInstance($(getInactivePreviewContainerId()));
+  renderPreviewInto(getActivePreviewContainerId(), option);
 }
 
 function updateOutputs() {
   renderFoundationVisibility();
-  renderDualAxisPreviewControls();
+  renderPreviewControls();
   try {
     const sharedOptionBuilder = globalThis.DataChartsOptionBuilder;
     if (!sharedOptionBuilder || typeof sharedOptionBuilder.buildChartArtifacts !== "function") {
       throw new Error("Shared option builder failed to load.");
     }
 
-    const definition = getCurrentDefinition();
     const commonState = getCommonState();
     const specificState = getSpecificState();
+    appState.commonValuesCache = commonState;
+    appState.specificValuesCache = specificState;
     const rawData = getDefaultRawDataForChart(appState.chartType);
     const { stylePayload, resolvedOption: resolved } = sharedOptionBuilder.buildChartArtifacts({
       chartType: appState.chartType,
-      definition,
       commonState,
       specificState,
       rawData,
@@ -2829,13 +3270,13 @@ function wireCopyButtons() {
 function wirePreviewControls() {
   window.addEventListener("resize", () => {
     syncPreviewCanvasDimensions();
-    const previewChart = window.echarts?.getInstanceByDom($("preview-canvas"));
+    const previewChart = window.echarts?.getInstanceByDom($(getActivePreviewContainerId()));
     if (previewChart) {
-      previewChart.resize({
-        width: FIXED_PREVIEW_VIEWPORT.width,
-        height: FIXED_PREVIEW_VIEWPORT.height,
-      });
+      previewChart.resize();
     }
+  });
+  MOBILE_LAYOUT_MEDIA.addEventListener("change", (event) => {
+    switchLayoutMode(event.matches ? "mobile" : "desktop");
   });
 }
 
@@ -2848,30 +3289,31 @@ function switchChart(chartType) {
   appState.previewSeriesCount = supportsSeriesCountPreview(chartType) ? 2 : 1;
   appState.previewDualAxisLeftSeriesCount = 2;
   appState.previewDualAxisRightSeriesCount = 2;
+  appState.commonValuesCache = { ...getCommonDefaults() };
+  appState.specificValuesCache = buildSpecificDefaultState(getCurrentDefinition());
+  appState.activeMobileSectionId = "";
   syncDualAxisPreviewTypesWithTemplate();
-  buildChartCards();
-  renderChartSummary();
-  renderDualAxisPreviewControls();
-  renderFoundationVisibility();
-  renderSpecificFields({ source: "defaults" });
+  renderLayoutShell({ preferredSectionId: "common:title" });
   applyChartBeautyDefaults(chartType);
 }
 
 function wireEvents() {
-  $("chart-grid").addEventListener("click", (event) => {
-    const card = event.target.closest("[data-chart-type]");
-    if (!card) {
+  document.addEventListener("input", (event) => {
+    const chartTab = event.target.closest?.("[data-chart-type]");
+    if (chartTab) {
       return;
     }
-    switchChart(card.dataset.chartType);
-  });
-
-  document.addEventListener("input", (event) => {
     if (event.target.matches("[data-gauge-band-color]")) {
       syncGaugeBandStopsInput();
     }
     if (event.target.matches("[data-color-list-color]")) {
       syncSpecificColorListInput(event.target.dataset.colorListColor);
+    }
+    if (event.target.matches(".palette-color-input") && !event.target.matches("[data-gauge-band-color]") && !event.target.matches("[data-color-list-color]")) {
+      syncPaletteInput();
+    }
+    if (event.target.matches("#background-custom-input")) {
+      setBackgroundColorValue(event.target.value);
     }
     if (event.target.matches("input, textarea, select")) {
       updateOutputs();
@@ -2885,12 +3327,59 @@ function wireEvents() {
     if (event.target.matches("[data-color-list-color]")) {
       syncSpecificColorListInput(event.target.dataset.colorListColor);
     }
+    if (event.target.matches(".palette-color-input") && !event.target.matches("[data-gauge-band-color]") && !event.target.matches("[data-color-list-color]")) {
+      syncPaletteInput();
+    }
+    if (event.target.matches("#background-custom-input")) {
+      setBackgroundColorValue(event.target.value);
+    }
     if (event.target.matches("[data-specific-field]")) {
       updateOutputs();
     }
   });
 
   document.addEventListener("click", (event) => {
+    const chartTypeButton = event.target.closest("[data-chart-type]");
+    if (chartTypeButton) {
+      const nextChartType = chartTypeButton.dataset.chartType;
+      if (nextChartType && nextChartType !== appState.chartType) {
+        switchChart(nextChartType);
+      }
+      return;
+    }
+
+    const mobileConfigTab = event.target.closest("[data-mobile-section-id]");
+    if (mobileConfigTab) {
+      const nextSectionId = mobileConfigTab.dataset.mobileSectionId || "";
+      if (nextSectionId && nextSectionId !== appState.activeMobileSectionId) {
+        preserveCurrentFormState();
+        appState.activeMobileSectionId = nextSectionId;
+        renderMobileConfigPanel();
+        renderFoundationVisibility();
+      }
+      return;
+    }
+
+    const addCustomPalette = event.target.closest("#add-custom-palette");
+    if (addCustomPalette) {
+      const colors = Array.from($("palette-custom-colors")?.querySelectorAll(".palette-color-input") || []).map((input) => input.value);
+      const nextColor = getNextDistinctPaletteColor(colors);
+      setPalette(colors.concat(nextColor));
+      updateOutputs();
+      return;
+    }
+
+    const removeCustomPalette = event.target.closest("#remove-custom-palette");
+    if (removeCustomPalette) {
+      const colors = Array.from($("palette-custom-colors")?.querySelectorAll(".palette-color-input") || []).map((input) => input.value);
+      if (colors.length <= 1) {
+        return;
+      }
+      setPalette(colors.slice(0, -1));
+      updateOutputs();
+      return;
+    }
+
     const addGaugeBand = event.target.closest("[data-gauge-band-add]");
     if (addGaugeBand) {
       const colors = getCurrentGaugeBandColors();
@@ -2940,7 +3429,7 @@ function wireEvents() {
     const previewStackButton = event.target.closest("[data-preview-stack-mode]");
     if (previewStackButton && (appState.chartType === "bar" || appState.chartType === "area")) {
       appState.previewStackMode = previewStackButton.dataset.previewStackMode === "stacked";
-      renderDualAxisPreviewControls();
+      renderPreviewControls();
       updateOutputs();
       return;
     }
@@ -2948,7 +3437,7 @@ function wireEvents() {
     const previewSeriesCountButton = event.target.closest("[data-preview-series-count]");
     if (previewSeriesCountButton && supportsSeriesCountPreview(appState.chartType)) {
       appState.previewSeriesCount = Number(previewSeriesCountButton.dataset.previewSeriesCount) || 2;
-      renderDualAxisPreviewControls();
+      renderPreviewControls();
       updateOutputs();
       return;
     }
@@ -2962,7 +3451,7 @@ function wireEvents() {
       } else if (side === "right") {
         appState.previewDualAxisRightSeriesCount = count;
       }
-      renderDualAxisPreviewControls();
+      renderPreviewControls();
       updateOutputs();
       return;
     }
@@ -2970,7 +3459,7 @@ function wireEvents() {
     const previewBarLayoutButton = event.target.closest("[data-preview-bar-layout]");
     if (previewBarLayoutButton && appState.chartType === "bar") {
       appState.previewBarHorizontal = previewBarLayoutButton.dataset.previewBarLayout === "horizontal";
-      renderDualAxisPreviewControls();
+      renderPreviewControls();
       updateOutputs();
       return;
     }
@@ -2978,7 +3467,7 @@ function wireEvents() {
     const previewPieModeButton = event.target.closest("[data-preview-pie-mode]");
     if (previewPieModeButton && appState.chartType === "pie") {
       appState.previewPieMode = previewPieModeButton.dataset.previewPieMode || "donut";
-      renderDualAxisPreviewControls();
+      renderPreviewControls();
       updateOutputs();
       return;
     }
@@ -2994,54 +3483,22 @@ function wireEvents() {
     } else if (side === "right") {
       appState.dualAxisPreviewRightType = type;
     }
-    renderDualAxisPreviewControls();
-    renderSpecificFields();
+    renderPreviewControls();
     updateOutputs();
   });
-
-  const addCustomPalette = $("add-custom-palette");
-  if (addCustomPalette) {
-    addCustomPalette.addEventListener("click", () => {
-      const colors = Array.from($("palette-custom-colors")?.querySelectorAll(".palette-color-input") || []).map((input) => input.value);
-      const nextColor = getNextDistinctPaletteColor(colors);
-      setPalette(colors.concat(nextColor));
-      updateOutputs();
-    });
-  }
-
-  const removeCustomPalette = $("remove-custom-palette");
-  if (removeCustomPalette) {
-    removeCustomPalette.addEventListener("click", () => {
-      const colors = Array.from($("palette-custom-colors")?.querySelectorAll(".palette-color-input") || []).map((input) => input.value);
-      if (colors.length <= 1) {
-        return;
-      }
-      setPalette(colors.slice(0, -1));
-      updateOutputs();
-    });
-  }
-
-  const backgroundCustomInput = $("background-custom-input");
-  if (backgroundCustomInput) {
-    backgroundCustomInput.addEventListener("input", () => {
-      setBackgroundColorValue(backgroundCustomInput.value);
-      updateOutputs();
-    });
-  }
 }
 
 function init() {
-  renderCommonFoundationSections();
-  resetCommonFields();
-  buildChartCards();
-  renderChartSummary();
+  appState.layoutMode = getLayoutMode();
+  appState.commonValuesCache = { ...getCommonDefaults() };
+  appState.specificValuesCache = buildSpecificDefaultState(getCurrentDefinition());
+  updateLayoutVisibility();
   syncDualAxisPreviewTypesWithTemplate();
-  renderDualAxisPreviewControls();
-  renderFoundationVisibility();
-  renderSpecificFields();
+  renderLayoutShell({ preferredSectionId: "common:title" });
   wireEvents();
   wireCopyButtons();
   wirePreviewControls();
+  appState.hasInitialized = true;
   applyChartBeautyDefaults(appState.chartType);
 }
 
