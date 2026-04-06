@@ -221,7 +221,6 @@ Put these in `variant`:
 - pie vs donut vs rose
 - dual-axis horizontal vs vertical layout
 - dual-axis left/right series typing
-- dual-axis `splitLineFollowAxis`
 
 Short version:
 

@@ -148,7 +148,7 @@ areslabs-data-charts \
   --chart-type dualAxis \
   --config-file skills/data-charts-visualization/config/dual_axis_style.json \
   --data-file /tmp/dual_axis_two_series.json \
-  --variant '{"leftSeriesType":"bar","rightSeriesType":"line","splitLineFollowAxis":"left"}' \
+  --variant '{"leftSeriesType":"bar","rightSeriesType":"line"}' \
   --out /tmp
 ```
 

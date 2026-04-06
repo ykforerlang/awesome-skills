@@ -220,9 +220,7 @@ async function renderVariant(chartType, entry) {
     defaultDataModule.getDefaultRawData(chartType),
     entry.dataSelection || null,
   );
-  const helperConfig = defaultConfigModule.getDefaultHelperConfig(chartType, DEFAULT_LOCALE, {
-    dualAxisTypes: entry.variant || null,
-  });
+  const helperConfig = defaultConfigModule.getDefaultHelperConfig(chartType, DEFAULT_LOCALE);
 
   const imageChartDir = path.join(IMAGE_DIR, chartType);
   const outputPath = path.join(imageChartDir, `${entry.variantId}.png`);

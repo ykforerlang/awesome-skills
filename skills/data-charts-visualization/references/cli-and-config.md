@@ -71,7 +71,7 @@ Typical usage:
 - `scatter`: numeric `xAxis` and `yAxis`, plus `series[].data` as point arrays
 - `pie`: `series[0].data` with `{ name, value }`
 - `gauge`: `series[0].data` with one KPI item
-- `dualAxis`: shared `xAxis`, two `yAxis`, series with `yAxisIndex`
+- `dualAxis`: shared `xAxis`, two `yAxis`, series with `yAxisIndex`; series typing comes from `variant` or defaults to left `bar` plus right `line`
 - `radar`: `radar.indicator` plus `series[].data[].value`
 - `funnel`: `series[0].data` in stage order
 
@@ -209,8 +209,6 @@ Base shape:
 `dualAxis`:
 
 - `specific.layout.splitLineFollowAxis`
-- `specific.layout.leftSeriesType`
-- `specific.layout.rightSeriesType`
 - `specific.leftAxis.labelFontSize`
 - `specific.leftAxis.labelColor`
 - `specific.leftAxis.lineShow`
@@ -268,7 +266,7 @@ Base shape:
 - `specific.rightLine.labelFontSize`
 - `specific.rightLine.labelColor`
 
-For `dualAxis`, persistent `specific.layout` carries the base series-type and split-line strategy. Horizontal vs vertical dual-axis layout is a render-time `variant.layout` decision.
+For `dualAxis`, persistent `specific.layout` carries only split-line strategy. Left and right series typing is a render-time `variant` decision. Horizontal vs vertical dual-axis layout is also a render-time `variant.layout` decision.
 
 `gauge`:
 
@@ -404,7 +402,6 @@ Current supported keys are:
 - `pieMode`: pie-family one-off mode such as donut or rose
 - `leftSeriesType`: dual-axis left series type
 - `rightSeriesType`: dual-axis right series type
-- `splitLineFollowAxis`: which dual-axis side controls split-line behavior, typically `"left"` or `"right"`
 
 Dual-axis guidance:
 
@@ -414,7 +411,6 @@ Dual-axis guidance:
 - use `leftSeriesType=line` + `rightSeriesType=line` for two trend series with different units
 - use `leftSeriesType=line` + `rightSeriesType=bar` only when the line is the primary story and the bar is support
 - use `leftSeriesType=bar` + `rightSeriesType=bar` only when both series are truly discrete magnitude comparisons and both need separate axes
-- use `splitLineFollowAxis` to keep grid semantics aligned with the primary axis when needed
 
 Examples:
 
@@ -431,11 +427,7 @@ Examples:
 ```
 
 ```bash
---variant '{"leftSeriesType":"bar","rightSeriesType":"line","splitLineFollowAxis":"left"}'
-```
-
-```bash
---variant '{"layout":"horizontal","leftSeriesType":"bar","rightSeriesType":"line","splitLineFollowAxis":"left"}'
+--variant '{"layout":"horizontal","leftSeriesType":"bar","rightSeriesType":"line"}'
 ```
 
 Do not treat `variant` as a generic ECharts patch channel.

@@ -134,8 +134,8 @@ CLI 输入由三部分组成：
   "xAxis": { "data": ["Mon", "Tue", "Wed"] },
   "yAxis": [{ "name": "Volume" }, { "name": "Rate" }],
   "series": [
-    { "type": "bar", "name": "Sales", "yAxisIndex": 0, "data": [320, 332, 301] },
-    { "type": "line", "name": "Rate", "yAxisIndex": 1, "data": [10, 12, 9] }
+    { "name": "Sales", "yAxisIndex": 0, "data": [320, 332, 301] },
+    { "name": "Rate", "yAxisIndex": 1, "data": [10, 12, 9] }
   ]
 }
 ```
@@ -414,9 +414,6 @@ CLI 输入由三部分组成：
 
 `dualAxis`：
 
-- `layout.splitLineFollowAxis`
-- `layout.leftSeriesType`
-- `layout.rightSeriesType`
 - `leftAxis.labelFontSize`
 - `leftAxis.labelColor`
 - `leftAxis.lineShow`
@@ -571,7 +568,6 @@ CLI 输入由三部分组成：
 - `pieMode`：`pie`、`donut`、`roseArea`、`roseRadius`
 - `leftSeriesType`：通常为 `bar` 或 `line`
 - `rightSeriesType`：通常为 `bar` 或 `line`
-- `splitLineFollowAxis`：`left` 或 `right`
 
 按图表类型的生效范围：
 
@@ -579,14 +575,15 @@ CLI 输入由三部分组成：
 - `bar`：支持 `stack` 和 `layout`
 - `area`：支持 `stack`
 - `pie`：支持 `pieMode`
-- `dualAxis`：支持 `layout`、`leftSeriesType`、`rightSeriesType` 和 `splitLineFollowAxis`
+- `dualAxis`：支持 `layout`、`leftSeriesType` 和 `rightSeriesType`
 - `gauge`、`scatter`、`radar`、`funnel`：当前没有消费任何 variant 字段
 
 优先级说明：
 
 - `variant` 不会替代 `config`
 - `variant` 只影响一次性的临时渲染策略
-- 对 `dualAxis` 来说，`variant.layout`、`variant.leftSeriesType`、`variant.rightSeriesType` 和 `variant.splitLineFollowAxis` 会覆盖本次渲染使用的双轴基础策略，但不会回写持久化配置
+- 对 `dualAxis` 来说，`variant.layout`、`variant.leftSeriesType` 和 `variant.rightSeriesType` 会覆盖本次渲染使用的双轴基础策略，但不会回写持久化配置
+- 对 `dualAxis` 来说，分割线归属仍来自持久化 `config.specific.layout.splitLineFollowAxis`，不通过 `variant` 传递
 - 对柱状布局和堆叠预览来说，`variant` 只在本次渲染生效，不会回写到 helper config
 
 ## 输出规则

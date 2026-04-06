@@ -74,24 +74,24 @@ When the user directly names a chart or variant, map it into a normalized `chart
 - “dual-axis chart”, “dual y-axis chart”:
   `chart-type = dualAxis`
   if the user did not specify series types, default to:
-  `variant = { "leftSeriesType": "bar", "rightSeriesType": "line", "splitLineFollowAxis": "left" }`
+  `variant = { "leftSeriesType": "bar", "rightSeriesType": "line" }`
 
 - “dual-axis bar-line chart”:
   `chart-type = dualAxis`
-  `variant = { "leftSeriesType": "bar", "rightSeriesType": "line", "splitLineFollowAxis": "left" }`
+  `variant = { "leftSeriesType": "bar", "rightSeriesType": "line" }`
 
 - “horizontal dual-axis chart”:
   `chart-type = dualAxis`
   if the user did not specify series types, default to:
-  `variant = { "layout": "horizontal", "leftSeriesType": "bar", "rightSeriesType": "line", "splitLineFollowAxis": "left" }`
+  `variant = { "layout": "horizontal", "leftSeriesType": "bar", "rightSeriesType": "line" }`
 
 - “dual-axis line-line chart”:
   `chart-type = dualAxis`
-  `variant = { "leftSeriesType": "line", "rightSeriesType": "line", "splitLineFollowAxis": "left" }`
+  `variant = { "leftSeriesType": "line", "rightSeriesType": "line" }`
 
 - “dual-axis left-line right-bar”:
   `chart-type = dualAxis`
-  `variant = { "leftSeriesType": "line", "rightSeriesType": "bar", "splitLineFollowAxis": "left" }`
+  `variant = { "leftSeriesType": "line", "rightSeriesType": "bar" }`
 
 ### Other Common Terms
 
@@ -363,7 +363,7 @@ Prefer horizontal dual-axis layout when:
 Pass horizontal dual-axis layout as:
 
 ```json
-{ "layout": "horizontal", "leftSeriesType": "bar", "rightSeriesType": "line", "splitLineFollowAxis": "left" }
+{ "layout": "horizontal", "leftSeriesType": "bar", "rightSeriesType": "line" }
 ```
 
 Prefer left bar + right line when:
@@ -374,7 +374,7 @@ Prefer left bar + right line when:
 Pass this as:
 
 ```json
-{ "leftSeriesType": "bar", "rightSeriesType": "line", "splitLineFollowAxis": "left" }
+{ "leftSeriesType": "bar", "rightSeriesType": "line" }
 ```
 
 Prefer left line + right line when:
@@ -385,7 +385,7 @@ Prefer left line + right line when:
 Pass this as:
 
 ```json
-{ "leftSeriesType": "line", "rightSeriesType": "line", "splitLineFollowAxis": "left" }
+{ "leftSeriesType": "line", "rightSeriesType": "line" }
 ```
 
 Prefer left line + right bar when:
@@ -396,7 +396,7 @@ Prefer left line + right bar when:
 Use:
 
 ```json
-{ "leftSeriesType": "line", "rightSeriesType": "bar", "splitLineFollowAxis": "left" }
+{ "leftSeriesType": "line", "rightSeriesType": "bar" }
 ```
 
 Prefer left bar + right bar only when:
@@ -409,7 +409,7 @@ This is the least preferred dual-axis variant because it increases visual heavin
 Use:
 
 ```json
-{ "leftSeriesType": "bar", "rightSeriesType": "bar", "splitLineFollowAxis": "left" }
+{ "leftSeriesType": "bar", "rightSeriesType": "bar" }
 ```
 
 ## Scatter Vs Bubble

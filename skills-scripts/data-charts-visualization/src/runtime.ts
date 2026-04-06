@@ -108,12 +108,6 @@ function buildDualAxisLayoutOverridesFromVariant(variant: any): Record<string, a
     if (layout === "horizontal") overrides.horizontal = true;
     if (layout === "vertical") overrides.horizontal = false;
   }
-  if ("splitLineFollowAxis" in variant) {
-    const followAxis = String(variant.splitLineFollowAxis).trim().toLowerCase();
-    if (followAxis === "left" || followAxis === "right") {
-      overrides.splitLineFollowAxis = followAxis;
-    }
-  }
 
   return Object.keys(overrides).length ? overrides : undefined;
 }

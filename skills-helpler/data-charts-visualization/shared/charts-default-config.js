@@ -640,11 +640,10 @@
   }
 
   function buildRawHelperConfig(chartType, commonState, specificState, options) {
-    const cfg = options || {};
     return {
       chartType,
       common: buildHelperCommonState(commonState),
-      specific: buildHelperSpecificState(chartType, specificState, cfg.dualAxisTypes),
+      specific: buildHelperSpecificState(chartType, specificState),
     };
   }
 
@@ -744,7 +743,7 @@
     };
   }
 
-  function buildHelperSpecificState(chartType, specificState, dualAxisTypes) {
+  function buildHelperSpecificState(chartType, specificState) {
     const source = deepClone(specificState || {});
     switch (chartType) {
       case "line":
@@ -803,8 +802,6 @@
         return {
           layout: {
             splitLineFollowAxis: source.splitLineFollowAxis,
-            leftSeriesType: dualAxisTypes && (dualAxisTypes.leftType || dualAxisTypes.leftSeriesType) ? (dualAxisTypes.leftType || dualAxisTypes.leftSeriesType) : "bar",
-            rightSeriesType: dualAxisTypes && (dualAxisTypes.rightType || dualAxisTypes.rightSeriesType) ? (dualAxisTypes.rightType || dualAxisTypes.rightSeriesType) : "line",
           },
           leftAxis: {
             labelFontSize: source.leftAxisLabelFontSize,

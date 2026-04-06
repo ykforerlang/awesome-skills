@@ -269,9 +269,12 @@
     if (chartType === "dualAxis") {
       const layout = helperSpecific.layout || {};
       dualAxisTypes = {
-        leftType: layout.leftSeriesType || "bar",
-        rightType: layout.rightSeriesType || "line"
+        leftType: "leftSeriesType" in layout ? layout.leftSeriesType : undefined,
+        rightType: "rightSeriesType" in layout ? layout.rightSeriesType : undefined
       };
+      if (!dualAxisTypes.leftType && !dualAxisTypes.rightType) {
+        dualAxisTypes = undefined;
+      }
     }
 
     return {
@@ -784,28 +787,9 @@
   }
 
   function deriveDualAxisTypesFromRawData(rawData, previewState) {
-    const xAxes = Array.isArray(rawData && rawData.xAxis) ? rawData.xAxis : [rawData && rawData.xAxis ? rawData.xAxis : {}];
-    const yAxes = Array.isArray(rawData && rawData.yAxis) ? rawData.yAxis : [rawData && rawData.yAxis ? rawData.yAxis : {}];
-    const seriesList = Array.isArray(rawData && rawData.series) ? rawData.series : [];
-    const horizontal = (xAxes[0] && xAxes[0].type === "value" || xAxes[1] && xAxes[1].type === "value") && yAxes[0] && yAxes[0].type === "category";
-    let leftType = null;
-    let rightType = null;
-
-    seriesList.forEach((series, index) => {
-      const axisIndex = horizontal ? series && series.xAxisIndex : series && series.yAxisIndex;
-      const side = axisIndex === 1 ? "right" : axisIndex === 0 ? "left" : index === 1 ? "right" : "left";
-      const type = series && series.type === "line" ? "line" : "bar";
-      if (side === "left" && !leftType) {
-        leftType = type;
-      }
-      if (side === "right" && !rightType) {
-        rightType = type;
-      }
-    });
-
     return {
-      leftType: (previewState && previewState.dualAxisPreviewLeftType) || leftType || "bar",
-      rightType: (previewState && previewState.dualAxisPreviewRightType) || rightType || "line"
+      leftType: (previewState && previewState.dualAxisPreviewLeftType) || "bar",
+      rightType: (previewState && previewState.dualAxisPreviewRightType) || "line"
     };
   }
 

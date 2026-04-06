@@ -3,7 +3,7 @@
     "source": "skills-helpler/data-charts-visualization/shared/charts-default-config.js",
     "exportedBy": "skills-helpler/data-charts-visualization/scripts/export_default_configs.js",
     "chartType": "dualAxis",
-    "exportedAt": "2026-04-06T10:35:35.452Z",
+    "exportedAt": "2026-04-06T12:22:32.098Z",
     "note": "Default dual-axis helper config exported from shared defaults.",
     "combo": "bar-line"
   },
@@ -82,9 +82,7 @@
   },
   "specific": {
     "layout": {
-      "splitLineFollowAxis": "left",
-      "leftSeriesType": "bar",
-      "rightSeriesType": "line"
+      "splitLineFollowAxis": "left"
     },
     "leftAxis": {
       "labelFontSize": 12,

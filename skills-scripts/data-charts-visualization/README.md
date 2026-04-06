@@ -136,8 +136,8 @@ Dual-axis:
   "xAxis": { "data": ["Mon", "Tue", "Wed"] },
   "yAxis": [{ "name": "Volume" }, { "name": "Rate" }],
   "series": [
-    { "type": "bar", "name": "Sales", "yAxisIndex": 0, "data": [320, 332, 301] },
-    { "type": "line", "name": "Rate", "yAxisIndex": 1, "data": [10, 12, 9] }
+    { "name": "Sales", "yAxisIndex": 0, "data": [320, 332, 301] },
+    { "name": "Rate", "yAxisIndex": 1, "data": [10, 12, 9] }
   ]
 }
 ```
@@ -416,9 +416,6 @@ Rules:
 
 `dualAxis`:
 
-- `layout.splitLineFollowAxis`
-- `layout.leftSeriesType`
-- `layout.rightSeriesType`
 - `leftAxis.labelFontSize`
 - `leftAxis.labelColor`
 - `leftAxis.lineShow`
@@ -573,7 +570,6 @@ Supported fields:
 - `pieMode`: `pie`, `donut`, `roseArea`, `roseRadius`
 - `leftSeriesType`: usually `bar` or `line`
 - `rightSeriesType`: usually `bar` or `line`
-- `splitLineFollowAxis`: `left` or `right`
 
 Behavior by chart type:
 
@@ -581,14 +577,15 @@ Behavior by chart type:
 - `bar`: supports `stack` and `layout`.
 - `area`: supports `stack`.
 - `pie`: supports `pieMode`.
-- `dualAxis`: supports `layout`, `leftSeriesType`, `rightSeriesType`, and `splitLineFollowAxis`.
+- `dualAxis`: supports `layout`, `leftSeriesType`, and `rightSeriesType`.
 - `gauge`, `scatter`, `radar`, `funnel`: no current variant fields are consumed.
 
 Precedence:
 
 - `variant` does not replace `config`.
 - `variant` only affects temporary render strategy fields.
-- For `dualAxis`, `layout`, `leftSeriesType`, `rightSeriesType`, and `splitLineFollowAxis` in `variant` override the base dual-axis render strategy for this render only.
+- For `dualAxis`, `layout`, `leftSeriesType`, and `rightSeriesType` in `variant` override the base dual-axis render strategy for this render only.
+- For `dualAxis`, split-line ownership stays in persisted `config.specific.layout.splitLineFollowAxis`; do not pass it through `variant`.
 - For bar layout and stack preview behavior, `variant` is applied at render time and does not mutate the saved helper config.
 
 ## Output

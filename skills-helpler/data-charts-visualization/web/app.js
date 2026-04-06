@@ -1193,6 +1193,7 @@ function getLocalizedDefinition(chartType) {
     fields: base.fields.map((field) => ({
       ...field,
       label: localized.fields?.[field.id] || field.label,
+      help: localized.fieldHelp?.[field.id] || field.help,
       options: field.options
         ? field.options.map(([value, label]) => [value, localized.options?.[field.id]?.[value] || label])
         : field.options,
@@ -1696,41 +1697,43 @@ function buildMobileCommonSections(values) {
 
 function buildMobileSpecificSections(values) {
   const definition = getCurrentDefinition();
-  const sections = [];
-  let current = {
+  const groups = [];
+  let currentGroup = {
     id: "specific:default",
-    scope: "specific",
-    tabLabel: definition.label,
-    panelTitle: definition.label,
-    help: definition.blurb || "",
+    title: "",
+    help: "",
     fieldIds: [],
-    values,
   };
 
   definition.fields.forEach((field) => {
     if (field.type === "group") {
-      if (current.fieldIds.length) {
-        sections.push(current);
+      if (currentGroup.fieldIds.length) {
+        groups.push(currentGroup);
       }
-      current = {
-        id: `specific:${field.id}`,
-        scope: "specific",
-        tabLabel: field.label,
-        panelTitle: field.label,
+      currentGroup = {
+        id: field.id,
+        title: field.label || "",
         help: field.help || "",
         fieldIds: [],
-        values,
       };
       return;
     }
-    current.fieldIds.push(field.id);
+    currentGroup.fieldIds.push(field.id);
   });
 
-  if (current.fieldIds.length) {
-    sections.push(current);
+  if (currentGroup.fieldIds.length) {
+    groups.push(currentGroup);
   }
 
-  return sections;
+  return [{
+    id: "specific:style",
+    scope: "specific",
+    tabLabel: CURRENT_LOCALE === "zh" ? "专属样式" : "Specific Style",
+    panelTitle: CURRENT_LOCALE === "zh" ? "图表专属样式" : "Chart-Specific Style",
+    help: definition.blurb || "",
+    groups,
+    values,
+  }];
 }
 
 function getMobileConfigSections() {
@@ -1846,12 +1849,42 @@ function renderMobileConfigPanel(preferredSectionId = "") {
   fieldsContainer.innerHTML = "";
   const definition = getCurrentDefinition();
   const fieldsById = new Map(definition.fields.filter((field) => field.type !== "group").map((field) => [field.id, field]));
-  activeSection.fieldIds.forEach((fieldId) => {
-    const field = fieldsById.get(fieldId);
-    if (!field) {
+  const groups = Array.isArray(activeSection.groups) ? activeSection.groups : [{
+    id: activeSection.id,
+    title: "",
+    help: "",
+    fieldIds: activeSection.fieldIds || [],
+  }];
+
+  groups.forEach((group) => {
+    const visibleFieldIds = (group.fieldIds || []).filter((fieldId) => fieldsById.has(fieldId));
+    if (!visibleFieldIds.length) {
       return;
     }
-    fieldsContainer.appendChild(buildMobileSpecificFieldCard(field, activeSection.values[field.id]));
+
+    const subgroup = document.createElement("section");
+    subgroup.className = "mobile-subgroup";
+    const hasMeta = Boolean(group.title || group.help);
+    if (hasMeta) {
+      subgroup.innerHTML = `
+        <div class="mobile-subgroup-head">
+          ${group.title ? `<div class="mobile-subgroup-title">${group.title}</div>` : ""}
+          ${group.help ? `<div class="mobile-subgroup-help">${group.help}</div>` : ""}
+        </div>
+      `;
+    }
+
+    const grid = document.createElement("div");
+    grid.className = "mobile-field-grid";
+    visibleFieldIds.forEach((fieldId) => {
+      const field = fieldsById.get(fieldId);
+      if (!field) {
+        return;
+      }
+      grid.appendChild(buildMobileSpecificFieldCard(field, activeSection.values[field.id]));
+    });
+    subgroup.appendChild(grid);
+    fieldsContainer.appendChild(subgroup);
   });
 }
 
