@@ -14,10 +14,12 @@ const REPO_ROOT = path.resolve(PACKAGE_DIR, "..", "..");
 const HELPER_ROOT = path.join(REPO_ROOT, "skills-helpler", "data-charts-visualization");
 const OUTPUT_DIR = TEST_DIR;
 const IMAGE_DIR = path.join(OUTPUT_DIR, "images");
+const DATA_DIR = path.join(OUTPUT_DIR, "data");
 
 const { CHART_RUNTIME_DEFINITIONS } = require(path.join(HELPER_ROOT, "shared", "chart-runtime-definitions.js"));
 const defaultDataModule = require(path.join(HELPER_ROOT, "shared", "charts-default-data.js"));
 const defaultConfigModule = require(path.join(HELPER_ROOT, "shared", "charts-default-config.js"));
+const optionBuilder = require(path.join(HELPER_ROOT, "shared", "option-builder.js"));
 
 const NODE = process.env.NODE || "node";
 const CLI_SCRIPT = path.join(PACKAGE_DIR, "dist", "cli.js");
@@ -34,6 +36,30 @@ function deepClone(value) {
     return undefined;
   }
   return JSON.parse(JSON.stringify(value));
+}
+
+function isObject(value) {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function deepMerge(base, patch) {
+  if (patch === undefined) {
+    return deepClone(base);
+  }
+  if (base === undefined) {
+    return deepClone(patch);
+  }
+  if (Array.isArray(base) && Array.isArray(patch)) {
+    return deepClone(patch);
+  }
+  if (isObject(base) && isObject(patch)) {
+    const result = deepClone(base);
+    Object.keys(patch).forEach((key) => {
+      result[key] = key in result ? deepMerge(result[key], patch[key]) : deepClone(patch[key]);
+    });
+    return result;
+  }
+  return deepClone(patch);
 }
 
 function toKebabCase(value) {
@@ -64,9 +90,77 @@ function parseArgs(argv) {
   return args;
 }
 
+function buildDefaultPreviewState() {
+  return {
+    previewStackMode: false,
+    previewBarHorizontal: false,
+    previewPieMode: "donut"
+  };
+}
+
+function buildPreviewStateFromVariant(variant) {
+  if (!variant || !isObject(variant)) {
+    return {};
+  }
+
+  const previewState = {};
+  if ("stack" in variant) previewState.previewStackMode = Boolean(variant.stack);
+  if ("pieMode" in variant) previewState.previewPieMode = variant.pieMode;
+
+  if ("layout" in variant) {
+    const layout = String(variant.layout).trim().toLowerCase();
+    if (layout === "horizontal") previewState.previewBarHorizontal = true;
+    if (layout === "vertical") previewState.previewBarHorizontal = false;
+  }
+
+  return previewState;
+}
+
+function buildDualAxisTypesFromVariant(variant) {
+  if (!variant || !isObject(variant)) {
+    return undefined;
+  }
+
+  const dualAxisTypes = {};
+  if ("leftSeriesType" in variant) dualAxisTypes.leftType = variant.leftSeriesType;
+  if ("rightSeriesType" in variant) dualAxisTypes.rightType = variant.rightSeriesType;
+  return Object.keys(dualAxisTypes).length ? dualAxisTypes : undefined;
+}
+
+function buildDualAxisLayoutOverridesFromVariant(variant) {
+  if (!variant || !isObject(variant)) {
+    return undefined;
+  }
+
+  const overrides = {};
+  if ("layout" in variant) {
+    const layout = String(variant.layout).trim().toLowerCase();
+    if (layout === "horizontal") overrides.horizontal = true;
+    if (layout === "vertical") overrides.horizontal = false;
+  }
+
+  return Object.keys(overrides).length ? overrides : undefined;
+}
+
 function buildPreviewCases(chartType) {
   switch (chartType) {
     case "line":
+      return [
+        ...SERIES_COUNT_OPTIONS.map((count) => ({
+          variantId: `series-${count}`,
+          dataSelection: { seriesCount: count },
+        })),
+        {
+          variantId: "title-from-data",
+          dataSelection: { seriesCount: 2 },
+          dataPatch: {
+            title: {
+              text: "Revenue Trend",
+              subtext: "Generated from test data"
+            }
+          }
+        }
+      ];
     case "scatter":
       return SERIES_COUNT_OPTIONS.map((count) => ({
         variantId: `series-${count}`,
@@ -116,6 +210,50 @@ function buildPreviewCases(chartType) {
       }));
     case "dualAxis": {
       const cases = [];
+      cases.push({
+        variantId: "default-types_vertical",
+        dataSelection: {
+          leftSeriesCount: 1,
+          rightSeriesCount: 1,
+        },
+        variant: {
+          layout: "vertical",
+        },
+      });
+      cases.push({
+        variantId: "split-right_vertical",
+        dataSelection: {
+          leftSeriesCount: 1,
+          rightSeriesCount: 1,
+        },
+        variant: {
+          layout: "vertical",
+        },
+        configPatch: {
+          specific: {
+            layout: {
+              horizontalSplitLineDisplay: "right"
+            }
+          }
+        }
+      });
+      cases.push({
+        variantId: "split-none_vertical",
+        dataSelection: {
+          leftSeriesCount: 1,
+          rightSeriesCount: 1,
+        },
+        variant: {
+          layout: "vertical",
+        },
+        configPatch: {
+          specific: {
+            layout: {
+              horizontalSplitLineDisplay: "none"
+            }
+          }
+        }
+      });
       for (const leftCount of DUAL_AXIS_COUNT_OPTIONS) {
         for (const rightCount of DUAL_AXIS_COUNT_OPTIONS) {
           for (const leftType of ["bar", "line"]) {
@@ -197,6 +335,73 @@ function applyDataSelection(chartType, rawData, dataSelection) {
   return nextRawData;
 }
 
+function buildChartArtifacts(chartType, rawData, helperConfig, variant) {
+  return optionBuilder.buildChartArtifactsFromHelperConfig({
+    chartType,
+    helperConfig,
+    rawData,
+    previewState: deepMerge(
+      buildDefaultPreviewState(),
+      buildPreviewStateFromVariant(variant)
+    ),
+    dualAxisTypes: buildDualAxisTypesFromVariant(variant),
+    dualAxisLayoutOverrides: buildDualAxisLayoutOverridesFromVariant(variant)
+  });
+}
+
+function buildSummary(chartType, inputData, rawOption, resolvedOption) {
+  const summary = {
+    inputSeriesCount: Array.isArray(inputData && inputData.series) ? inputData.series.length : 0,
+    rawSeriesCount: Array.isArray(rawOption && rawOption.series) ? rawOption.series.length : 0,
+    resolvedSeriesCount: Array.isArray(resolvedOption && resolvedOption.series) ? resolvedOption.series.length : 0,
+    inputSeriesNames: Array.isArray(inputData && inputData.series) ? inputData.series.map((series) => series && series.name).filter(Boolean) : [],
+    rawSeriesNames: Array.isArray(rawOption && rawOption.series) ? rawOption.series.map((series) => series && series.name).filter(Boolean) : [],
+    resolvedSeriesNames: Array.isArray(resolvedOption && resolvedOption.series) ? resolvedOption.series.map((series) => series && series.name).filter(Boolean) : []
+  };
+
+  if (inputData && inputData.title) {
+    summary.inputTitleText = inputData.title.text;
+    summary.inputTitleSubtext = inputData.title.subtext;
+  }
+  if (rawOption && rawOption.title) {
+    summary.rawTitleText = rawOption.title.text;
+    summary.rawTitleSubtext = rawOption.title.subtext;
+  }
+  if (resolvedOption && resolvedOption.title) {
+    summary.resolvedTitleText = resolvedOption.title.text;
+    summary.resolvedTitleSubtext = resolvedOption.title.subtext;
+  }
+  if (chartType === "dualAxis") {
+    summary.inputSeriesHaveType = Array.isArray(inputData && inputData.series)
+      ? inputData.series.map((series) => Object.prototype.hasOwnProperty.call(series || {}, "type"))
+      : [];
+    summary.resolvedYAxisSplitLineShow = Array.isArray(resolvedOption && resolvedOption.yAxis)
+      ? resolvedOption.yAxis.map((axis) => Boolean(axis && axis.splitLine && axis.splitLine.show))
+      : [];
+    summary.rawSeriesTypes = Array.isArray(rawOption && rawOption.series)
+      ? rawOption.series.map((series) => series && series.type)
+      : [];
+    summary.resolvedSeriesTypes = Array.isArray(resolvedOption && resolvedOption.series)
+      ? resolvedOption.series.map((series) => series && series.type)
+      : [];
+  }
+
+  return summary;
+}
+
+async function writeArtifacts(chartType, variantId, inputData, artifacts) {
+  const chartDataDir = path.join(DATA_DIR, chartType);
+  await fs.mkdir(chartDataDir, { recursive: true });
+  const basePath = path.join(chartDataDir, variantId);
+  const writes = [
+    fs.writeFile(`${basePath}.input-data.json`, `${JSON.stringify(inputData, null, 2)}\n`, "utf-8"),
+    fs.writeFile(`${basePath}.raw-option.json`, `${JSON.stringify(artifacts.rawOption, null, 2)}\n`, "utf-8"),
+    fs.writeFile(`${basePath}.resolved-option.json`, `${JSON.stringify(artifacts.resolvedOption, null, 2)}\n`, "utf-8"),
+    fs.writeFile(`${basePath}.summary.json`, `${JSON.stringify(buildSummary(chartType, inputData, artifacts.rawOption, artifacts.resolvedOption), null, 2)}\n`, "utf-8")
+  ];
+  await Promise.all(writes);
+}
+
 async function withTempJson(payload, callback) {
   const tempPath = path.join(
     os.tmpdir(),
@@ -215,16 +420,22 @@ async function renderVariant(chartType, entry) {
     throw new Error(`Unsupported chart type: ${chartType}`);
   }
 
-  const rawData = applyDataSelection(
+  const selectedData = applyDataSelection(
     chartType,
     defaultDataModule.getDefaultRawData(chartType),
     entry.dataSelection || null,
   );
-  const helperConfig = defaultConfigModule.getDefaultHelperConfig(chartType, DEFAULT_LOCALE);
+  const rawData = deepMerge(selectedData, entry.dataPatch || undefined);
+  const helperConfig = deepMerge(
+    defaultConfigModule.getDefaultHelperConfig(chartType, DEFAULT_LOCALE),
+    entry.configPatch || undefined,
+  );
+  const artifacts = buildChartArtifacts(chartType, rawData, helperConfig, entry.variant || {});
 
   const imageChartDir = path.join(IMAGE_DIR, chartType);
   const outputPath = path.join(imageChartDir, `${entry.variantId}.png`);
   await fs.mkdir(imageChartDir, { recursive: true });
+  await writeArtifacts(chartType, entry.variantId, rawData, artifacts);
 
   await withTempJson(rawData, async (dataPath) => {
     await withTempJson(helperConfig, async (configPath) => {
@@ -273,7 +484,16 @@ async function main() {
     throw new Error("No chart types selected.");
   }
 
-  await fs.rm(IMAGE_DIR, { recursive: true, force: true });
+  const isFullRun = selectedChartTypes.length === CHART_ORDER.length;
+  if (isFullRun) {
+    await fs.rm(IMAGE_DIR, { recursive: true, force: true });
+    await fs.rm(DATA_DIR, { recursive: true, force: true });
+  } else {
+    for (const chartType of selectedChartTypes) {
+      await fs.rm(path.join(IMAGE_DIR, chartType), { recursive: true, force: true });
+      await fs.rm(path.join(DATA_DIR, chartType), { recursive: true, force: true });
+    }
+  }
   await fs.rm(path.join(OUTPUT_DIR, "manifest.json"), { force: true });
   await fs.mkdir(OUTPUT_DIR, { recursive: true });
 

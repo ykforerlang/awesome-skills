@@ -228,7 +228,6 @@ Rules:
   "title": {
     "main": {
       "show": true,
-      "text": "Main Title",
       "align": "left",
       "fontSize": 18,
       "color": "#111827",
@@ -236,7 +235,6 @@ Rules:
     },
     "subtitle": {
       "show": false,
-      "text": "",
       "fontSize": 12,
       "color": "#6b7280"
     }
@@ -293,6 +291,8 @@ Rules:
   }
 }
 ```
+
+Title copy does not belong in `config.common.title`. Put it in `data.title.text` and `data.title.subtext` instead.
 
 `common.title.main`:
 
@@ -585,7 +585,7 @@ Precedence:
 - `variant` does not replace `config`.
 - `variant` only affects temporary render strategy fields.
 - For `dualAxis`, `layout`, `leftSeriesType`, and `rightSeriesType` in `variant` override the base dual-axis render strategy for this render only.
-- For `dualAxis`, split-line ownership stays in persisted `config.specific.layout.splitLineFollowAxis`; do not pass it through `variant`.
+- For `dualAxis`, horizontal split-line display stays in persisted `config.specific.layout.horizontalSplitLineDisplay`; supported values are `left`, `right`, and `none`.
 - For bar layout and stack preview behavior, `variant` is applied at render time and does not mutate the saved helper config.
 
 ## Output

@@ -133,8 +133,8 @@ const SPECIFIC_FIELD_LABELS = {
     labelColor: "标签颜色"
   },
   dualAxis: {
-    splitLineAxisGroup: "分割线归属",
-    splitLineFollowAxis: "分割线跟随",
+    splitLineAxisGroup: "水平分割线",
+    horizontalSplitLineDisplay: "显示位置",
     leftAxisGroup: "左轴",
     leftAxisLabelFontSize: "左轴字号",
     leftAxisLabelColor: "左轴颜色",
@@ -317,7 +317,7 @@ const SPECIFIC_OPTION_LABELS = {
     lineStyleType: { solid: "实线", dashed: "虚线", dotted: "点线" }
   },
   dualAxis: {
-    splitLineFollowAxis: { left: "左轴", right: "右轴" },
+    horizontalSplitLineDisplay: { left: "左轴", right: "右轴", none: "不显示" },
     leftBarLabelPosition: { top: "顶部", inside: "内部", insideTop: "内部顶部", insideRight: "内部右侧", outside: "外部" },
     rightBarLabelPosition: { top: "顶部", inside: "内部", insideTop: "内部顶部", insideRight: "内部右侧", outside: "外部" },
     leftLineStyleType: { solid: "实线", dashed: "虚线", dotted: "点线" },

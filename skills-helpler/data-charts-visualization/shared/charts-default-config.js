@@ -316,7 +316,7 @@
         gridBottom: "15%",
       },
       specific: {
-        splitLineFollowAxis: "left",
+        horizontalSplitLineDisplay: "left",
         leftBarGap: "10%",
         leftLineSmooth: true,
         leftLineArea: false,
@@ -449,7 +449,7 @@
       labelColor: "#334155",
     },
     dualAxis: {
-      splitLineFollowAxis: "left",
+      horizontalSplitLineDisplay: "left",
       leftAxisLabelFontSize: 12,
       leftAxisLabelColor: "#9ca3af",
       leftAxisLineShow: true,
@@ -801,7 +801,7 @@
       case "dualAxis":
         return {
           layout: {
-            splitLineFollowAxis: source.splitLineFollowAxis,
+            horizontalSplitLineDisplay: source.horizontalSplitLineDisplay,
           },
           leftAxis: {
             labelFontSize: source.leftAxisLabelFontSize,

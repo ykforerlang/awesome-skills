@@ -44,6 +44,17 @@
     "height": 360
   },
   {
+    "chartType": "line",
+    "variantId": "title-from-data",
+    "dataSelection": {
+      "seriesCount": 2
+    },
+    "variant": {},
+    "outputFile": "test/images/line/title-from-data.png",
+    "width": 650,
+    "height": 360
+  },
+  {
     "chartType": "bar",
     "variantId": "series-1-vertical-normal",
     "dataSelection": {
@@ -368,6 +379,48 @@
       "stack": true
     },
     "outputFile": "test/images/area/series-8-stacked.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "dualAxis",
+    "variantId": "default-types_vertical",
+    "dataSelection": {
+      "leftSeriesCount": 1,
+      "rightSeriesCount": 1
+    },
+    "variant": {
+      "layout": "vertical"
+    },
+    "outputFile": "test/images/dualAxis/default-types_vertical.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "dualAxis",
+    "variantId": "split-right_vertical",
+    "dataSelection": {
+      "leftSeriesCount": 1,
+      "rightSeriesCount": 1
+    },
+    "variant": {
+      "layout": "vertical"
+    },
+    "outputFile": "test/images/dualAxis/split-right_vertical.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "dualAxis",
+    "variantId": "split-none_vertical",
+    "dataSelection": {
+      "leftSeriesCount": 1,
+      "rightSeriesCount": 1
+    },
+    "variant": {
+      "layout": "vertical"
+    },
+    "outputFile": "test/images/dualAxis/split-none_vertical.png",
     "width": 650,
     "height": 360
   },

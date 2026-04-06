@@ -987,7 +987,7 @@ const CHART_BEAUTY_DEFAULTS = {
     },
     specific: {
       horizontal: false,
-      splitLineFollowAxis: "left",
+      horizontalSplitLineDisplay: "left",
       leftBarGap: "10%",
       leftLineSmooth: true,
       leftLineArea: false,
@@ -1889,7 +1889,7 @@ function renderMobileConfigPanel(preferredSectionId = "") {
 }
 
 function resetMobileConfigViewport(options = {}) {
-  const { resetChartTabs = false } = options;
+  const { resetChartTabs = false, scrollPageToConfigTop = false } = options;
   const tabsScroll = $("mobile-config-tabs-scroll");
   const panelScroll = $("mobile-config-panel-scroll");
   if (resetChartTabs) {
@@ -1903,6 +1903,18 @@ function resetMobileConfigViewport(options = {}) {
   }
   if (panelScroll) {
     panelScroll.scrollTop = 0;
+  }
+  if (scrollPageToConfigTop) {
+    const configCard = $("mobile-config-card");
+    const sticky = $("mobile-preview-sticky");
+    const stickyHeight = sticky ? sticky.getBoundingClientRect().height : 0;
+    if (configCard) {
+      const targetTop = Math.max(0, window.scrollY + configCard.getBoundingClientRect().top - stickyHeight - 8);
+      window.scrollTo({
+        top: targetTop,
+        behavior: "auto",
+      });
+    }
   }
 }
 
@@ -2181,7 +2193,8 @@ function renderDualAxisPreviewControls() {
 function renderMobilePreviewControls() {
   const container = $("mobile-preview-controls");
   const model = getPreviewControlGroupsModel();
-  const fixedLabel = CURRENT_LOCALE === "zh" ? "预览配置（不会导出）：" : "Preview Only:";
+  const toolbarTitle = CURRENT_LOCALE === "zh" ? "预览配置" : "Preview Controls";
+  const toolbarNote = CURRENT_LOCALE === "zh" ? "仅预览" : "Preview Only";
   if (!container) {
     return;
   }
@@ -2191,29 +2204,22 @@ function renderMobilePreviewControls() {
     return;
   }
   container.innerHTML = `
-    <div class="mobile-preview-config-layout">
-      <div class="mobile-preview-config-fixed-label">${fixedLabel}</div>
+    <div class="mobile-preview-toolbar">
+      <div class="mobile-preview-toolbar-head">
+        <div class="mobile-preview-toolbar-title">${toolbarTitle}</div>
+        <div class="mobile-preview-toolbar-note">${toolbarNote}</div>
+      </div>
       <div class="mobile-preview-config-scroll">
-        <div class="mobile-preview-config-row">
-          ${model.groups.map((group) => `
-            <div class="mobile-preview-config-group">
-              <div class="mobile-preview-config-group-label">${group.title}</div>
-              ${Array.isArray(group.sections) && group.sections.length ? group.sections.map((section) => `
-                <div class="mobile-preview-config-subgroup">
-                  <div class="mobile-preview-config-subgroup-label">${section.label}</div>
-                  <div class="mobile-preview-config-buttons">
-                    ${(section.buttons || []).map((button) => `
-                      <button
-                        type="button"
-                        class="mobile-preview-config-button${button.active ? " active" : ""}"
-                        ${Object.entries(button.dataset || {}).map(([key, value]) => `data-${key}="${value}"`).join(" ")}
-                      >${button.label}</button>
-                    `).join("")}
-                  </div>
-                </div>
-              `).join("") : `
+        <div class="mobile-preview-toolbar-rail">
+          ${model.groups.map((group) => {
+            const entries = Array.isArray(group.sections) && group.sections.length
+              ? group.sections.map((section) => ({ label: section.label, buttons: section.buttons || [] }))
+              : [{ label: group.title, buttons: group.buttons || [] }];
+            return entries.map((entry) => `
+              <section class="mobile-preview-toolbar-group">
+                <div class="mobile-preview-toolbar-group-title">${entry.label}</div>
                 <div class="mobile-preview-config-buttons">
-                  ${(group.buttons || []).map((button) => `
+                  ${entry.buttons.map((button) => `
                     <button
                       type="button"
                       class="mobile-preview-config-button${button.active ? " active" : ""}"
@@ -2221,9 +2227,9 @@ function renderMobilePreviewControls() {
                     >${button.label}</button>
                   `).join("")}
                 </div>
-              `}
-            </div>
-          `).join("")}
+              </section>
+            `).join("");
+          }).join("")}
         </div>
       </div>
     </div>
@@ -2237,7 +2243,7 @@ function renderPreviewControls() {
 }
 
 const DUAL_AXIS_FOUNDATION_AXIS_FIELD_IDS = new Set([
-  "splitLineFollowAxis",
+  "horizontalSplitLineDisplay",
   "leftAxisLabelFontSize",
   "leftAxisLabelColor",
   "leftAxisLineShow",
@@ -2528,7 +2534,7 @@ function renderDualAxisFoundationAxes(snapshot) {
   const groups = [
     {
       id: "splitLineAxisGroup",
-      fields: ["splitLineFollowAxis"],
+      fields: ["horizontalSplitLineDisplay"],
     },
     {
       id: "leftAxisGroup",
@@ -3502,6 +3508,13 @@ function switchChart(chartType) {
   syncDualAxisPreviewTypesWithTemplate();
   renderLayoutShell({ preferredSectionId: "common:title" });
   applyChartBeautyDefaults(chartType);
+  if (appState.layoutMode === "mobile") {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        resetMobileConfigViewport({ scrollPageToConfigTop: true });
+      });
+    });
+  }
 }
 
 function wireEvents() {

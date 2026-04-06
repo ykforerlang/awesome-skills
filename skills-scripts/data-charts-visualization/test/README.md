@@ -31,7 +31,8 @@ The test is intentionally black-box:
 Manual CLI rendering still requires an explicit helper config, either through `--config` or `--config-file`.
 Use `--data` for inline JSON and `--data-file` for file input.
 One-off render strategy should go through CLI `--variant`, not through config files.
-For dual-axis charts, horizontal layout and split-line binding should also go through `--variant`.
+For dual-axis charts, horizontal layout and left/right series typing should go through `--variant`.
+Dual-axis horizontal split-line display belongs to persisted config through `specific.layout.horizontalSplitLineDisplay`.
 
 Example repo-local invocation with a skill config file:
 

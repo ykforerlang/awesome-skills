@@ -1,0 +1,68 @@
+{
+  "title": {
+    "show": true,
+    "left": "center",
+    "text": "Revenue Trend",
+    "subtext": "Generated from test data"
+  },
+  "backgroundColor": "#fafafa",
+  "color": [
+    "#2563eb",
+    "#14b8a6",
+    "#f59e0b",
+    "#ef4444",
+    "#8b5cf6"
+  ],
+  "legend": {
+    "show": true,
+    "orient": "horizontal",
+    "left": "center",
+    "top": "bottom"
+  },
+  "grid": {
+    "left": "12%",
+    "right": "9%",
+    "top": "21%",
+    "bottom": "15%"
+  },
+  "xAxis": {
+    "type": "category",
+    "data": [
+      "Mon",
+      "Tue",
+      "Wed",
+      "Thu",
+      "Fri",
+      "Sat"
+    ]
+  },
+  "yAxis": {
+    "type": "value"
+  },
+  "series": [
+    {
+      "type": "line",
+      "name": "Visits",
+      "data": [
+        120,
+        132,
+        101,
+        134,
+        90,
+        230
+      ]
+    },
+    {
+      "type": "line",
+      "name": "Orders",
+      "data": [
+        32,
+        41,
+        38,
+        52,
+        49,
+        68
+      ]
+    }
+  ]
+}

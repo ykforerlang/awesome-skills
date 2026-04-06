@@ -208,7 +208,7 @@ Base shape:
 
 `dualAxis`:
 
-- `specific.layout.splitLineFollowAxis`
+- `specific.layout.horizontalSplitLineDisplay`
 - `specific.leftAxis.labelFontSize`
 - `specific.leftAxis.labelColor`
 - `specific.leftAxis.lineShow`
@@ -266,7 +266,7 @@ Base shape:
 - `specific.rightLine.labelFontSize`
 - `specific.rightLine.labelColor`
 
-For `dualAxis`, persistent `specific.layout` carries only split-line strategy. Left and right series typing is a render-time `variant` decision. Horizontal vs vertical dual-axis layout is also a render-time `variant.layout` decision.
+For `dualAxis`, persistent `specific.layout.horizontalSplitLineDisplay` controls whether horizontal split lines render on the left axis, right axis, or stay hidden. Left and right series typing is a render-time `variant` decision. Horizontal vs vertical dual-axis layout is also a render-time `variant.layout` decision.
 
 `gauge`:
 

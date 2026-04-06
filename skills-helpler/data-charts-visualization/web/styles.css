@@ -223,34 +223,70 @@ button {
 
 .mobile-preview-config-panel {
   margin-top: 4px;
-  padding: 10px 12px;
-  border-radius: 18px;
+  padding: 8px 10px;
+  border-radius: 16px;
   border: 1px solid rgba(58, 74, 69, 0.12);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(250, 245, 238, 0.92));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(249, 243, 235, 0.94)),
+    linear-gradient(135deg, rgba(191, 95, 47, 0.05), rgba(111, 152, 141, 0.04));
 }
 
-.mobile-preview-config-layout {
+.mobile-preview-toolbar {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 56px;
+  flex-direction: column;
+  gap: 6px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
 }
 
-.mobile-preview-config-fixed-label {
-  flex: 0 1 auto;
+.mobile-preview-toolbar-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   min-width: 0;
-  max-width: 100%;
-  padding: 8px 12px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.78);
-  border: 1px solid rgba(58, 74, 69, 0.08);
-  color: #32413f;
-  font-size: 0.78rem;
+}
+
+.mobile-preview-toolbar-title {
+  font-size: 0.7rem;
   font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8d3f19;
+  flex: none;
+}
+
+.mobile-preview-toolbar-note {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(141, 63, 25, 0.08);
+  color: #8d3f19;
+  font-size: 0.66rem;
+  font-weight: 700;
+  line-height: 1.2;
+  flex: none;
+}
+
+.mobile-preview-toolbar-rail,
+.mobile-preview-toolbar-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-preview-toolbar-rail {
+  min-width: 100%;
+  padding-right: 8px;
+}
+
+.mobile-preview-toolbar-group-title {
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #8d3f19;
   white-space: nowrap;
+  flex: none;
 }
 
 .mobile-preview-config-scroll,
@@ -270,11 +306,6 @@ button {
   display: none;
 }
 
-.mobile-preview-config-scroll {
-  flex: 1;
-  min-width: 0;
-}
-
 .mobile-preview-config-row,
 .mobile-tabs-row,
 .mobile-section-tabs-row {
@@ -284,42 +315,14 @@ button {
   padding-right: 8px;
 }
 
-.mobile-preview-config-group {
-  flex: none;
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 8px;
-  min-width: 0;
-  padding: 8px 10px;
-  border-radius: 999px;
-  background: rgba(255, 251, 245, 0.9);
-  border: 1px solid rgba(58, 74, 69, 0.08);
-}
-
-.mobile-preview-config-group-label {
-  padding: 0 2px;
-  font-size: 0.76rem;
-  font-weight: 700;
-  color: var(--muted);
-  white-space: nowrap;
-}
-
-.mobile-preview-config-subgroup {
-  display: grid;
-  gap: 6px;
-}
-
-.mobile-preview-config-subgroup-label {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--muted);
-  white-space: nowrap;
-}
-
 .mobile-preview-config-buttons {
-  display: flex;
+  display: inline-flex;
   flex-wrap: nowrap;
-  gap: 6px;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(58, 74, 69, 0.08);
 }
 
 .mobile-preview-config-button,
@@ -334,18 +337,20 @@ button {
 }
 
 .mobile-preview-config-button {
-  min-width: 56px;
-  padding: 8px 16px;
+  min-width: 68px;
+  padding: 5px 14px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.92);
-  font-size: 0.76rem;
-  line-height: 1.3;
+  background: transparent;
+  font-size: 0.7rem;
+  line-height: 1.1;
+  box-shadow: none;
 }
 
 .mobile-preview-config-button.active {
-  border-color: rgba(191, 95, 47, 0.42);
-  background: rgba(248, 230, 212, 0.96);
-  color: var(--accent-deep);
+  border-color: rgba(169, 74, 37, 0.22);
+  background: linear-gradient(135deg, #c86a36, #a94a25);
+  color: #fffaf3;
+  box-shadow: 0 4px 10px rgba(169, 74, 37, 0.16);
 }
 
 .mobile-chart-tab {
@@ -416,7 +421,7 @@ button {
 .mobile-form-section-title {
   font-size: 0.98rem;
   font-weight: 800;
-  color: var(--text);
+  color: #8d3f19;
 }
 
 .mobile-form-section-help {
@@ -457,7 +462,7 @@ button {
 .mobile-subgroup-title {
   font-size: 0.9rem;
   font-weight: 800;
-  color: var(--accent-deep);
+  color: #8d3f19;
 }
 
 .mobile-subgroup-help {

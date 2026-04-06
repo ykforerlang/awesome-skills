@@ -217,26 +217,6 @@
     return nextState;
   }
 
-  function extractLegacyTitlePatch(helperConfig) {
-    const helperCommon = isObject(helperConfig && helperConfig.common) ? helperConfig.common : {};
-    const titleMain = helperCommon && helperCommon.title && helperCommon.title.main || {};
-    const titleSubtitle = helperCommon && helperCommon.title && helperCommon.title.subtitle || {};
-    const titlePatch = {};
-
-    if ("text" in titleMain) {
-      titlePatch.text = titleMain.text;
-    }
-    if ("text" in titleSubtitle) {
-      titlePatch.subtext = titleSubtitle.text;
-    }
-
-    if (!Object.keys(titlePatch).length) {
-      return undefined;
-    }
-
-    return { title: titlePatch };
-  }
-
   function buildBuilderConfigFromHelperConfig(chartType, helperConfig) {
     if (!helperConfig || !isObject(helperConfig)) {
       throw new Error("Helper config must be a JSON object.");
@@ -250,7 +230,6 @@
 
     const commonState = applyCommonHelperConfig({}, helperConfig.common);
     const helperSpecific = helperConfig.specific;
-    let dualAxisTypes;
 
     if (
       chartType !== "line"
@@ -266,21 +245,10 @@
       throw new Error(`Unsupported chart type: ${chartType}`);
     }
 
-    if (chartType === "dualAxis") {
-      const layout = helperSpecific.layout || {};
-      dualAxisTypes = {
-        leftType: "leftSeriesType" in layout ? layout.leftSeriesType : undefined,
-        rightType: "rightSeriesType" in layout ? layout.rightSeriesType : undefined
-      };
-      if (!dualAxisTypes.leftType && !dualAxisTypes.rightType) {
-        dualAxisTypes = undefined;
-      }
-    }
-
     return {
       common: commonState,
       specific: deepClone(helperSpecific),
-      dualAxisTypes
+      dualAxisTypes: undefined
     };
   }
 
@@ -544,6 +512,14 @@
     return { ...layout, ...layoutOverrides };
   }
 
+  function resolveDualAxisHorizontalSplitLineDisplay(layout) {
+    const explicitDisplay = readOptionalValue(layout, "horizontalSplitLineDisplay");
+    if (explicitDisplay === "left" || explicitDisplay === "right" || explicitDisplay === "none") {
+      return explicitDisplay;
+    }
+    return "left";
+  }
+
   function isDualAxisHorizontal(specificConfig, layoutOverrides) {
     const layout = getDualAxisLayoutConfig(specificConfig, layoutOverrides);
     return "horizontal" in layout ? Boolean(layout.horizontal) : false;
@@ -802,13 +778,15 @@
     const axisLineShow = readOptionalBoolean(axisConfig, "lineShow");
     const axisLineColor = readOptionalValue(axisConfig, "lineColor");
     const axisTickShow = readOptionalBoolean(axisConfig, "tickShow");
-    const followAxis = layout.splitLineFollowAxis || "left";
+    const horizontalSplitLineDisplay = resolveDualAxisHorizontalSplitLineDisplay(layout);
     const horizontal = isDualAxisHorizontal(specificConfig, dualAxisLayoutOverrides);
     const sharedSplitLineShow = horizontal ? commonState.xSplitLineShow : commonState.splitLineShow;
     const sharedSplitLineColor = horizontal ? commonState.xSplitLineColor : commonState.splitLineColor;
     const sharedSplitLineType = normalizeStrokeType(horizontal ? commonState.xSplitLineType : commonState.splitLineType);
     const sharedSplitLineWidth = horizontal ? commonState.xSplitLineWidth : commonState.splitLineWidth;
-    const effectiveSplitLineShow = side === followAxis ? sharedSplitLineShow : false;
+    const effectiveSplitLineShow = horizontalSplitLineDisplay === "none"
+      ? false
+      : side === horizontalSplitLineDisplay ? sharedSplitLineShow : false;
 
     return compactObject({
       type: "value",
@@ -1542,13 +1520,10 @@
   function buildChartArtifactsFromHelperConfig(params) {
     const chartType = params.chartType;
     const builderConfig = buildBuilderConfigFromHelperConfig(chartType, params.helperConfig);
-    const sourceRawData = deepClone(params.rawData || {});
-    const legacyTitlePatch = extractLegacyTitlePatch(params.helperConfig);
-    const rawData = legacyTitlePatch ? deepMerge(legacyTitlePatch, sourceRawData) : sourceRawData;
     return buildChartArtifactsFromBuilderConfig({
       chartType: chartType,
       builderConfig,
-      rawData,
+      rawData: params.rawData,
       previewState: params.previewState,
       previewViewportSize: params.previewViewportSize,
       dualAxisTypes: params.dualAxisTypes || builderConfig.dualAxisTypes,

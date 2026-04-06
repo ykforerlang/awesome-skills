@@ -1,0 +1,23 @@
+{
+  "inputSeriesCount": 2,
+  "rawSeriesCount": 2,
+  "resolvedSeriesCount": 2,
+  "inputSeriesNames": [
+    "Visits",
+    "Orders"
+  ],
+  "rawSeriesNames": [
+    "Visits",
+    "Orders"
+  ],
+  "resolvedSeriesNames": [
+    "Visits",
+    "Orders"
+  ],
+  "inputTitleText": "Revenue Trend",
+  "inputTitleSubtext": "Generated from test data",
+  "rawTitleText": "Revenue Trend",
+  "rawTitleSubtext": "Generated from test data",
+  "resolvedTitleText": "Revenue Trend",
+  "resolvedTitleSubtext": "Generated from test data"
+}
