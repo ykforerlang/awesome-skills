@@ -209,7 +209,6 @@ Base shape:
 
 `dualAxis`:
 
-- `specific.layout.horizontal`
 - `specific.layout.splitLineFollowAxis`
 - `specific.layout.leftSeriesType`
 - `specific.layout.rightSeriesType`
@@ -269,6 +268,8 @@ Base shape:
 - `specific.rightLine.symbolSize`
 - `specific.rightLine.labelFontSize`
 - `specific.rightLine.labelColor`
+
+For `dualAxis`, persistent `specific.layout` carries the base series-type and split-line strategy. Horizontal vs vertical dual-axis layout is a render-time `variant.layout` decision.
 
 `gauge`:
 
@@ -399,7 +400,7 @@ Examples:
 `variant` is intentionally small and agent-controlled.
 Current supported keys are:
 
-- `layout`: `"horizontal"` or `"vertical"` for bar-like layout choices
+- `layout`: `"horizontal"` or `"vertical"` for bar layout, and for one-off dual-axis orientation
 - `stack`: `true` or `false` for stacked bar mode
 - `pieMode`: pie-family one-off mode such as donut or rose
 - `leftSeriesType`: dual-axis left series type
@@ -409,6 +410,7 @@ Current supported keys are:
 Dual-axis guidance:
 
 - if the user names only “dual-axis”, default to `leftSeriesType=bar` and `rightSeriesType=line`
+- use `layout=horizontal` only when the current render needs a horizontal dual-axis layout
 - use `leftSeriesType=bar` + `rightSeriesType=line` for volume-plus-rate combinations
 - use `leftSeriesType=line` + `rightSeriesType=line` for two trend series with different units
 - use `leftSeriesType=line` + `rightSeriesType=bar` only when the line is the primary story and the bar is support
@@ -431,6 +433,10 @@ Examples:
 
 ```bash
 --variant '{"leftSeriesType":"bar","rightSeriesType":"line","splitLineFollowAxis":"left"}'
+```
+
+```bash
+--variant '{"layout":"horizontal","leftSeriesType":"bar","rightSeriesType":"line","splitLineFollowAxis":"left"}'
 ```
 
 Do not treat `variant` as a generic ECharts patch channel.

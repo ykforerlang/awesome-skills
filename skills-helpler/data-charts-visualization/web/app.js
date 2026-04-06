@@ -667,7 +667,7 @@ const appState = {
   dualAxisPreviewLeftType: null,
   dualAxisPreviewRightType: null,
   previewDualAxisLeftSeriesCount: 2,
-  previewDualAxisRightSeriesCount: 2,
+  previewDualAxisRightSeriesCount: 1,
   previewStackMode: false,
   previewBarHorizontal: false,
   previewPieMode: "donut",
@@ -1890,15 +1890,36 @@ function buildPreviewToggleButtons(buttons, datasetKey) {
     .join("");
 }
 
+function buildPreviewControlSections(sections = []) {
+  return sections
+    .map((section) => {
+      const columnCount = Math.max(2, Math.min(Number(section.columns) || section.buttons?.length || 2, 4));
+      return `
+        <div class="dual-axis-preview-subsection">
+          <div class="dual-axis-preview-sublabel">${section.label}</div>
+          <div class="dual-axis-preview-toggle" style="grid-template-columns: repeat(${columnCount}, minmax(0, 1fr));">
+            ${buildPreviewToggleButtons(section.buttons || [])}
+          </div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
 function buildPreviewControlCard(label, buttons, options = {}) {
   const cardClassName = `dual-axis-preview-control${options.wide ? " dual-axis-preview-control-wide" : ""}`;
   const toggleClassName = `dual-axis-preview-toggle${options.wrap ? " dual-axis-preview-toggle-wrap" : ""}`;
-  return `
-    <div class="${cardClassName}">
-      <div class="dual-axis-preview-label">${label}</div>
+  const content = Array.isArray(options.sections) && options.sections.length
+    ? buildPreviewControlSections(options.sections)
+    : `
       <div class="${toggleClassName}">
         ${buttons}
       </div>
+    `;
+  return `
+    <div class="${cardClassName}">
+      <div class="dual-axis-preview-label">${label}</div>
+      ${content}
     </div>
   `;
 }
@@ -2023,10 +2044,15 @@ function getPreviewControlGroupsModel() {
   }
 
   const { leftType, rightType } = resolveDualAxisSeriesTypes();
-  const dualAxisLeftCountLabel = CURRENT_LOCALE === "zh" ? "左侧数量" : "Left Count";
-  const dualAxisRightCountLabel = CURRENT_LOCALE === "zh" ? "右侧数量" : "Right Count";
-  const leftLabel = CURRENT_LOCALE === "zh" ? "左侧预览类型" : "Left Preview Type";
-  const rightLabel = CURRENT_LOCALE === "zh" ? "右侧预览类型" : "Right Preview Type";
+  const dualAxisLeftLabel = CURRENT_LOCALE === "zh" ? "左侧" : "Left";
+  const dualAxisRightLabel = CURRENT_LOCALE === "zh" ? "右侧" : "Right";
+  const layoutLabel = CURRENT_LOCALE === "zh" ? "布局预览" : "Layout Preview";
+  const verticalText = CURRENT_LOCALE === "zh" ? "纵向" : "Vertical";
+  const horizontalText = CURRENT_LOCALE === "zh" ? "横向" : "Horizontal";
+  const leftCountLabel = CURRENT_LOCALE === "zh" ? "左侧数据数量" : "Left Data Count";
+  const rightCountLabel = CURRENT_LOCALE === "zh" ? "右侧数据数量" : "Right Data Count";
+  const leftTypeLabel = CURRENT_LOCALE === "zh" ? "左侧图形" : "Left Shape";
+  const rightTypeLabel = CURRENT_LOCALE === "zh" ? "右侧图形" : "Right Shape";
   const barText = CURRENT_LOCALE === "zh" ? "柱" : "Bar";
   const lineText = CURRENT_LOCALE === "zh" ? "线" : "Line";
   const dualAxisCountButtons = (side) => [1, 2, 4].map((count) => ({
@@ -2043,22 +2069,51 @@ function getPreviewControlGroupsModel() {
     panelTitle,
     panelNote,
     groups: [
-      { id: "dualAxisLeftCount", title: dualAxisLeftCountLabel, buttons: dualAxisCountButtons("left") },
-      { id: "dualAxisRightCount", title: dualAxisRightCountLabel, buttons: dualAxisCountButtons("right") },
       {
-        id: "dualAxisLeftType",
-        title: leftLabel,
-        buttons: [
-          { label: barText, active: leftType === "bar", dataset: { "dual-axis-side": "left", "dual-axis-type": "bar" } },
-          { label: lineText, active: leftType === "line", dataset: { "dual-axis-side": "left", "dual-axis-type": "line" } },
+        id: "dualAxisLeft",
+        title: dualAxisLeftLabel,
+        sections: [
+          {
+            label: leftCountLabel,
+            columns: 3,
+            buttons: dualAxisCountButtons("left"),
+          },
+          {
+            label: leftTypeLabel,
+            columns: 2,
+            buttons: [
+              { label: barText, active: leftType === "bar", dataset: { "dual-axis-side": "left", "dual-axis-type": "bar" } },
+              { label: lineText, active: leftType === "line", dataset: { "dual-axis-side": "left", "dual-axis-type": "line" } },
+            ],
+          },
         ],
       },
       {
-        id: "dualAxisRightType",
-        title: rightLabel,
+        id: "dualAxisRight",
+        title: dualAxisRightLabel,
+        sections: [
+          {
+            label: rightCountLabel,
+            columns: 3,
+            buttons: dualAxisCountButtons("right"),
+          },
+          {
+            label: rightTypeLabel,
+            columns: 2,
+            buttons: [
+              { label: barText, active: rightType === "bar", dataset: { "dual-axis-side": "right", "dual-axis-type": "bar" } },
+              { label: lineText, active: rightType === "line", dataset: { "dual-axis-side": "right", "dual-axis-type": "line" } },
+            ],
+          },
+        ],
+      },
+      {
+        id: "dualAxisLayout",
+        title: layoutLabel,
+        wide: true,
         buttons: [
-          { label: barText, active: rightType === "bar", dataset: { "dual-axis-side": "right", "dual-axis-type": "bar" } },
-          { label: lineText, active: rightType === "line", dataset: { "dual-axis-side": "right", "dual-axis-type": "line" } },
+          { label: verticalText, active: !appState.previewBarHorizontal, dataset: { "preview-bar-layout": "vertical" } },
+          { label: horizontalText, active: appState.previewBarHorizontal, dataset: { "preview-bar-layout": "horizontal" } },
         ],
       },
     ],
@@ -2085,8 +2140,8 @@ function renderDualAxisPreviewControls() {
     <div class="dual-axis-preview-grid">
       ${model.groups.map((group) => buildPreviewControlCard(
         group.title === (CURRENT_LOCALE === "zh" ? "预览数量" : "Mock Data Count") ? seriesCountDesktopLabel : group.title,
-        buildPreviewToggleButtons(group.buttons),
-        { wide: group.buttons.length > 2, wrap: group.buttons.length > 2 },
+        buildPreviewToggleButtons(group.buttons || []),
+        { wide: Boolean(group.wide) || ((group.buttons || []).length > 2), wrap: ((group.buttons || []).length > 2), sections: group.sections },
       )).join("")}
     </div>
   `;
@@ -2113,15 +2168,30 @@ function renderMobilePreviewControls() {
           ${model.groups.map((group) => `
             <div class="mobile-preview-config-group">
               <div class="mobile-preview-config-group-label">${group.title}</div>
-              <div class="mobile-preview-config-buttons">
-                ${group.buttons.map((button) => `
-                  <button
-                    type="button"
-                    class="mobile-preview-config-button${button.active ? " active" : ""}"
-                    ${Object.entries(button.dataset || {}).map(([key, value]) => `data-${key}="${value}"`).join(" ")}
-                  >${button.label}</button>
-                `).join("")}
-              </div>
+              ${Array.isArray(group.sections) && group.sections.length ? group.sections.map((section) => `
+                <div class="mobile-preview-config-subgroup">
+                  <div class="mobile-preview-config-subgroup-label">${section.label}</div>
+                  <div class="mobile-preview-config-buttons">
+                    ${(section.buttons || []).map((button) => `
+                      <button
+                        type="button"
+                        class="mobile-preview-config-button${button.active ? " active" : ""}"
+                        ${Object.entries(button.dataset || {}).map(([key, value]) => `data-${key}="${value}"`).join(" ")}
+                      >${button.label}</button>
+                    `).join("")}
+                  </div>
+                </div>
+              `).join("") : `
+                <div class="mobile-preview-config-buttons">
+                  ${(group.buttons || []).map((button) => `
+                    <button
+                      type="button"
+                      class="mobile-preview-config-button${button.active ? " active" : ""}"
+                      ${Object.entries(button.dataset || {}).map(([key, value]) => `data-${key}="${value}"`).join(" ")}
+                    >${button.label}</button>
+                  `).join("")}
+                </div>
+              `}
             </div>
           `).join("")}
         </div>
@@ -2295,7 +2365,7 @@ function buildSpecificDefaultState(definition) {
 }
 
 function isDualAxisSpecificGroupVisible(groupId, state) {
-  if (groupId === "layoutGroup" || groupId === "splitLineAxisGroup") {
+  if (groupId === "splitLineAxisGroup") {
     return true;
   }
   if (groupId === "leftBarGroup") {
@@ -2318,9 +2388,6 @@ function isDualAxisSpecificFieldVisible(fieldId, state) {
   const bothBar = leftType === "bar" && rightType === "bar";
   const anyBar = leftType === "bar" || rightType === "bar";
 
-  if (fieldId === "horizontal") {
-    return true;
-  }
   if (fieldId.startsWith("leftBar")) {
     return true;
   }
@@ -3400,7 +3467,7 @@ function switchChart(chartType) {
   appState.previewPieMode = chartType === "pie" ? "donut" : appState.previewPieMode;
   appState.previewSeriesCount = supportsSeriesCountPreview(chartType) ? 2 : 1;
   appState.previewDualAxisLeftSeriesCount = 2;
-  appState.previewDualAxisRightSeriesCount = 2;
+  appState.previewDualAxisRightSeriesCount = 1;
   appState.commonValuesCache = { ...getCommonDefaults() };
   appState.specificValuesCache = buildSpecificDefaultState(getCurrentDefinition());
   appState.activeMobileSectionId = "";
@@ -3569,7 +3636,7 @@ function wireEvents() {
     }
 
     const previewBarLayoutButton = event.target.closest("[data-preview-bar-layout]");
-    if (previewBarLayoutButton && appState.chartType === "bar") {
+    if (previewBarLayoutButton && (appState.chartType === "bar" || appState.chartType === "dualAxis")) {
       appState.previewBarHorizontal = previewBarLayoutButton.dataset.previewBarLayout === "horizontal";
       renderPreviewControls();
       updateOutputs();

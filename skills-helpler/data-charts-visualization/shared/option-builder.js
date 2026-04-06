@@ -523,12 +523,16 @@
     return { point, dataLabels };
   }
 
-  function getDualAxisLayoutConfig(specificConfig) {
-    return isObject(specificConfig && specificConfig.layout) ? specificConfig.layout : {};
+  function getDualAxisLayoutConfig(specificConfig, layoutOverrides) {
+    const layout = isObject(specificConfig && specificConfig.layout) ? specificConfig.layout : {};
+    if (!isObject(layoutOverrides)) {
+      return layout;
+    }
+    return { ...layout, ...layoutOverrides };
   }
 
-  function isDualAxisHorizontal(specificConfig) {
-    const layout = getDualAxisLayoutConfig(specificConfig);
+  function isDualAxisHorizontal(specificConfig, layoutOverrides) {
+    const layout = getDualAxisLayoutConfig(specificConfig, layoutOverrides);
     return "horizontal" in layout ? Boolean(layout.horizontal) : false;
   }
 
@@ -565,7 +569,7 @@
     return config[fieldName];
   }
 
-  function buildStructurePatch(chartType, specificConfig) {
+  function buildStructurePatch(chartType, specificConfig, dualAxisLayoutOverrides) {
     switch (chartType) {
       case "line":
       case "area":
@@ -579,7 +583,7 @@
           yAxis: { type: "value" }
         };
       case "dualAxis":
-        return isDualAxisHorizontal(specificConfig)
+        return isDualAxisHorizontal(specificConfig, dualAxisLayoutOverrides)
           ? {
               xAxis: [{ type: "value" }, { type: "value" }],
               yAxis: { type: "category" }
@@ -795,9 +799,9 @@
     };
   }
 
-  function buildDualAxisValueAxisConfig(commonState, specificConfig, side) {
+  function buildDualAxisValueAxisConfig(commonState, specificConfig, side, dualAxisLayoutOverrides) {
     const axisConfig = getDualAxisAxisConfig(specificConfig, side);
-    const layout = getDualAxisLayoutConfig(specificConfig);
+    const layout = getDualAxisLayoutConfig(specificConfig, dualAxisLayoutOverrides);
     const formatter = readOptionalValue(axisConfig, "formatter");
     const labelFontSize = readOptionalNumber(axisConfig, "labelFontSize");
     const labelColor = readOptionalValue(axisConfig, "labelColor");
@@ -805,7 +809,7 @@
     const axisLineColor = readOptionalValue(axisConfig, "lineColor");
     const axisTickShow = readOptionalBoolean(axisConfig, "tickShow");
     const followAxis = layout.splitLineFollowAxis || "left";
-    const horizontal = isDualAxisHorizontal(specificConfig);
+    const horizontal = isDualAxisHorizontal(specificConfig, dualAxisLayoutOverrides);
     const sharedSplitLineShow = horizontal ? commonState.xSplitLineShow : commonState.splitLineShow;
     const sharedSplitLineColor = horizontal ? commonState.xSplitLineColor : commonState.splitLineColor;
     const sharedSplitLineType = normalizeStrokeType(horizontal ? commonState.xSplitLineType : commonState.splitLineType);
@@ -839,14 +843,14 @@
     });
   }
 
-  function buildDualAxisSeriesAxisRef(specificConfig, side) {
+  function buildDualAxisSeriesAxisRef(specificConfig, side, dualAxisLayoutOverrides) {
     const axisIndex = side === "left" ? 0 : 1;
-    return isDualAxisHorizontal(specificConfig) ? { xAxisIndex: axisIndex, yAxisIndex: 0 } : { yAxisIndex: axisIndex };
+    return isDualAxisHorizontal(specificConfig, dualAxisLayoutOverrides) ? { xAxisIndex: axisIndex, yAxisIndex: 0 } : { yAxisIndex: axisIndex };
   }
 
-  function resolveDualAxisSeriesSide(series, specificConfig, index) {
+  function resolveDualAxisSeriesSide(series, specificConfig, index, dualAxisLayoutOverrides) {
     const nextIndex = index || 0;
-    const horizontal = isDualAxisHorizontal(specificConfig);
+    const horizontal = isDualAxisHorizontal(specificConfig, dualAxisLayoutOverrides);
     const axisIndex = horizontal
       ? (series && (series.xAxisIndex !== undefined ? series.xAxisIndex : series.yAxisIndex))
       : (series && (series.yAxisIndex !== undefined ? series.yAxisIndex : series.xAxisIndex));
@@ -859,25 +863,25 @@
     return nextIndex === 1 ? "right" : "left";
   }
 
-  function buildDualAxisSeriesStructure(specificConfig, side, dualAxisTypes) {
+  function buildDualAxisSeriesStructure(specificConfig, side, dualAxisTypes, dualAxisLayoutOverrides) {
     const isLeft = side === "left";
     return compactObject({
       type: isLeft ? dualAxisTypes.leftType : dualAxisTypes.rightType,
-      ...buildDualAxisSeriesAxisRef(specificConfig, side)
+      ...buildDualAxisSeriesAxisRef(specificConfig, side, dualAxisLayoutOverrides)
     });
   }
 
-  function normalizeDualAxisSeriesStructure(sourceSeries, specificConfig, dualAxisTypes) {
+  function normalizeDualAxisSeriesStructure(sourceSeries, specificConfig, dualAxisTypes, dualAxisLayoutOverrides) {
     const seriesList = Array.isArray(sourceSeries) ? sourceSeries : [];
     if (!seriesList.length) {
       return [
-        buildDualAxisSeriesStructure(specificConfig, "left", dualAxisTypes),
-        buildDualAxisSeriesStructure(specificConfig, "right", dualAxisTypes)
+        buildDualAxisSeriesStructure(specificConfig, "left", dualAxisTypes, dualAxisLayoutOverrides),
+        buildDualAxisSeriesStructure(specificConfig, "right", dualAxisTypes, dualAxisLayoutOverrides)
       ];
     }
     return seriesList.map((series, index) => {
-      const side = resolveDualAxisSeriesSide(series, specificConfig, index);
-      return compactObject(deepMerge(series, buildDualAxisSeriesStructure(specificConfig, side, dualAxisTypes)));
+      const side = resolveDualAxisSeriesSide(series, specificConfig, index, dualAxisLayoutOverrides);
+      return compactObject(deepMerge(series, buildDualAxisSeriesStructure(specificConfig, side, dualAxisTypes, dualAxisLayoutOverrides)));
     });
   }
 
@@ -914,21 +918,21 @@
     return normalized;
   }
 
-  function countDualAxisSeriesBySide(seriesList, specificConfig) {
+  function countDualAxisSeriesBySide(seriesList, specificConfig, dualAxisLayoutOverrides) {
     const counts = { left: 0, right: 0 };
     (Array.isArray(seriesList) ? seriesList : []).forEach((series, index) => {
-      const side = resolveDualAxisSeriesSide(series, specificConfig, index);
+      const side = resolveDualAxisSeriesSide(series, specificConfig, index, dualAxisLayoutOverrides);
       counts[side] += 1;
     });
     return counts;
   }
 
-  function buildDualAxisSeriesConfig(specificConfig, side, dualAxisTypes, previewState, sideSeriesCount) {
+  function buildDualAxisSeriesConfig(specificConfig, side, dualAxisTypes, previewState, sideSeriesCount, dualAxisLayoutOverrides) {
     const isLeft = side === "left";
     const barConfig = getDualAxisBarConfig(specificConfig, side);
     const lineConfig = getDualAxisLineConfig(specificConfig, side);
     const seriesType = isLeft ? dualAxisTypes.leftType : dualAxisTypes.rightType;
-    const axisRef = buildDualAxisSeriesAxisRef(specificConfig, side);
+    const axisRef = buildDualAxisSeriesAxisRef(specificConfig, side, dualAxisLayoutOverrides);
     if (seriesType === "bar") {
       const isSingleBarVisual = Number(sideSeriesCount) === 1
         || Boolean(previewState && previewState.previewStackMode);
@@ -995,13 +999,13 @@
     return palette[nextSideIndex % palette.length] || palette[0];
   }
 
-  function buildDualAxisSeriesConfigForSeries(specificConfig, series, index, sideIndex, dualAxisTypes, previewState, sideSeriesCount) {
+  function buildDualAxisSeriesConfigForSeries(specificConfig, series, index, sideIndex, dualAxisTypes, previewState, sideSeriesCount, dualAxisLayoutOverrides) {
     const nextIndex = index || 0;
     const nextSideIndex = sideIndex || 0;
-    const side = resolveDualAxisSeriesSide(series, specificConfig, nextIndex);
+    const side = resolveDualAxisSeriesSide(series, specificConfig, nextIndex, dualAxisLayoutOverrides);
     const seriesType = side === "left" ? dualAxisTypes.leftType : dualAxisTypes.rightType;
     const sideColor = resolveDualAxisSeriesColor(specificConfig, side, seriesType, nextSideIndex);
-    const baseConfig = buildDualAxisSeriesConfig(specificConfig, side, dualAxisTypes, previewState, sideSeriesCount);
+    const baseConfig = buildDualAxisSeriesConfig(specificConfig, side, dualAxisTypes, previewState, sideSeriesCount, dualAxisLayoutOverrides);
     if (seriesType === "bar") {
       return compactObject(deepMerge(baseConfig, {
         itemStyle: { color: sideColor }
@@ -1148,6 +1152,7 @@
     const cfg = options || {};
     const previewState = cfg.previewState || {};
     const dualAxisTypes = cfg.dualAxisTypes || { leftType: "bar", rightType: "line" };
+    const dualAxisLayoutOverrides = cfg.dualAxisLayoutOverrides;
     const previewViewportSize = cfg.previewViewportSize || { width: 650, height: 360 };
     const layoutBox = buildLayoutBox(commonState);
 
@@ -1339,10 +1344,10 @@
         }
       case "dualAxis": {
         const sourceSeries = Array.isArray(rawOption && rawOption.series) ? rawOption.series : [];
-        const sideSeriesCounts = countDualAxisSeriesBySide(sourceSeries, specificConfig);
+        const sideSeriesCounts = countDualAxisSeriesBySide(sourceSeries, specificConfig, dualAxisLayoutOverrides);
         const sideCounters = { left: 0, right: 0 };
         const styleSeries = (sourceSeries.length ? sourceSeries : [{}, {}]).map((series, index) => {
-          const side = resolveDualAxisSeriesSide(series, specificConfig, index);
+          const side = resolveDualAxisSeriesSide(series, specificConfig, index, dualAxisLayoutOverrides);
           const sideIndex = sideCounters[side];
           sideCounters[side] += 1;
           return buildDualAxisSeriesConfigForSeries(
@@ -1352,21 +1357,22 @@
             sideIndex,
             dualAxisTypes,
             previewState,
-            sideSeriesCounts[side]
+            sideSeriesCounts[side],
+            dualAxisLayoutOverrides
           );
         });
         return compactObject({
-          xAxis: isDualAxisHorizontal(specificConfig)
+          xAxis: isDualAxisHorizontal(specificConfig, dualAxisLayoutOverrides)
             ? [
-                buildDualAxisValueAxisConfig(commonState, specificConfig, "left"),
-                buildDualAxisValueAxisConfig(commonState, specificConfig, "right")
+                buildDualAxisValueAxisConfig(commonState, specificConfig, "left", dualAxisLayoutOverrides),
+                buildDualAxisValueAxisConfig(commonState, specificConfig, "right", dualAxisLayoutOverrides)
               ]
             : buildDualAxisCategoryAxisConfig(commonState, false),
-          yAxis: isDualAxisHorizontal(specificConfig)
+          yAxis: isDualAxisHorizontal(specificConfig, dualAxisLayoutOverrides)
             ? buildDualAxisCategoryAxisConfig(commonState, true)
             : [
-                buildDualAxisValueAxisConfig(commonState, specificConfig, "left"),
-                buildDualAxisValueAxisConfig(commonState, specificConfig, "right")
+                buildDualAxisValueAxisConfig(commonState, specificConfig, "left", dualAxisLayoutOverrides),
+                buildDualAxisValueAxisConfig(commonState, specificConfig, "right", dualAxisLayoutOverrides)
               ],
           series: styleSeries
         });
@@ -1494,17 +1500,18 @@
     };
     const rawData = sourceRawData;
     const dualAxisTypes = params.dualAxisTypes || deriveDualAxisTypesFromRawData(rawData, previewState);
+    const dualAxisLayoutOverrides = isObject(params.dualAxisLayoutOverrides) ? params.dualAxisLayoutOverrides : undefined;
     const previewViewportSize = params.previewViewportSize || { width: 650, height: 360 };
 
     const baseOption = buildCommonOption(commonState, runtimeDefinition);
-    const structurePatch = buildStructurePatch(chartType, specificConfig);
+    const structurePatch = buildStructurePatch(chartType, specificConfig, dualAxisLayoutOverrides);
     let rawOption;
 
     if (chartType === "dualAxis") {
       const baseWithData = compactObject(deepMerge(baseOption, rawData));
       rawOption = compactObject(deepMerge(baseWithData, structurePatch));
-      rawOption.series = compactObject(normalizeDualAxisSeriesStructure(baseWithData.series, specificConfig, dualAxisTypes));
-      if (isDualAxisHorizontal(specificConfig)) {
+      rawOption.series = compactObject(normalizeDualAxisSeriesStructure(baseWithData.series, specificConfig, dualAxisTypes, dualAxisLayoutOverrides));
+      if (isDualAxisHorizontal(specificConfig, dualAxisLayoutOverrides)) {
         rawOption = compactObject(normalizeDualAxisHorizontalOption(rawOption, baseWithData));
       }
     } else {
@@ -1520,6 +1527,7 @@
       chartStyleConfig: buildChartStyleConfig(chartType, specificConfig, commonState, rawOption, {
         previewState,
         dualAxisTypes,
+        dualAxisLayoutOverrides,
         previewViewportSize
       })
     };
@@ -1546,7 +1554,8 @@
       rawData: params.rawData,
       previewState: params.previewState,
       previewViewportSize: params.previewViewportSize,
-      dualAxisTypes: params.dualAxisTypes || builderConfig.dualAxisTypes
+      dualAxisTypes: params.dualAxisTypes || builderConfig.dualAxisTypes,
+      dualAxisLayoutOverrides: params.dualAxisLayoutOverrides
     });
   }
 

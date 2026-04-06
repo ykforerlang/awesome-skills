@@ -416,7 +416,6 @@ Rules:
 
 `dualAxis`:
 
-- `layout.horizontal`
 - `layout.splitLineFollowAxis`
 - `layout.leftSeriesType`
 - `layout.rightSeriesType`
@@ -574,6 +573,7 @@ Supported fields:
 - `pieMode`: `pie`, `donut`, `roseArea`, `roseRadius`
 - `leftSeriesType`: usually `bar` or `line`
 - `rightSeriesType`: usually `bar` or `line`
+- `splitLineFollowAxis`: `left` or `right`
 
 Behavior by chart type:
 
@@ -581,14 +581,14 @@ Behavior by chart type:
 - `bar`: supports `stack` and `layout`.
 - `area`: supports `stack`.
 - `pie`: supports `pieMode`.
-- `dualAxis`: supports `leftSeriesType` and `rightSeriesType`.
+- `dualAxis`: supports `layout`, `leftSeriesType`, `rightSeriesType`, and `splitLineFollowAxis`.
 - `gauge`, `scatter`, `radar`, `funnel`: no current variant fields are consumed.
 
 Precedence:
 
 - `variant` does not replace `config`.
 - `variant` only affects temporary render strategy fields.
-- For `dualAxis`, `leftSeriesType` and `rightSeriesType` in `variant` override the corresponding values from `config.specific.layout`.
+- For `dualAxis`, `layout`, `leftSeriesType`, `rightSeriesType`, and `splitLineFollowAxis` in `variant` override the base dual-axis render strategy for this render only.
 - For bar layout and stack preview behavior, `variant` is applied at render time and does not mutate the saved helper config.
 
 ## Output

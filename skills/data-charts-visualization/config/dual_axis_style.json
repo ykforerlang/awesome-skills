@@ -84,7 +84,6 @@
   },
   "specific": {
     "layout": {
-      "horizontal": false,
       "splitLineFollowAxis": "left",
       "leftSeriesType": "bar",
       "rightSeriesType": "line"

@@ -19,7 +19,31 @@
                 class="preview-config-group"
               >
                 <view class="preview-config-group-label">{{item.title}}</view>
-                <view class="preview-config-buttons">
+                <block wx:if="{{item.sections && item.sections.length}}">
+                  <view
+                    wx:for="{{item.sections}}"
+                    wx:for-item="section"
+                    wx:key="label"
+                    class="preview-config-subgroup"
+                  >
+                    <view class="preview-config-subgroup-label">{{section.label}}</view>
+                    <view class="preview-config-buttons">
+                      <view
+                        wx:for="{{section.buttons}}"
+                        wx:for-item="button"
+                        wx:key="label"
+                        class="preview-config-button {{button.active ? 'active' : ''}}"
+                        data-action="{{button.action}}"
+                        data-value="{{button.value}}"
+                        data-side="{{button.side}}"
+                        bindtap="handlePreviewControlTap"
+                      >
+                        {{button.label}}
+                      </view>
+                    </view>
+                  </view>
+                </block>
+                <view wx:else class="preview-config-buttons">
                   <view
                     wx:for="{{item.buttons}}"
                     wx:for-item="button"

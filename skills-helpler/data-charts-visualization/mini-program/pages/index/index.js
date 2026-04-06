@@ -135,8 +135,6 @@ const SPECIFIC_FIELD_LABELS = {
     labelColor: "标签颜色"
   },
   dualAxis: {
-    layoutGroup: "结构",
-    horizontal: "横向布局",
     splitLineAxisGroup: "分割线归属",
     splitLineFollowAxis: "分割线跟随",
     leftAxisGroup: "左轴",
@@ -355,7 +353,6 @@ const SPECIFIC_OPTION_LABELS = {
 
 const SPECIFIC_SECTION_HELP = {
   dualAxis: {
-    layoutGroup: "先确定横纵布局和双轴结构。",
     splitLineAxisGroup: "选择共享分割线跟随左轴还是右轴。",
     leftAxisGroup: "控制左侧数值轴。",
     leftBarGroup: "控制左侧柱图样式。",
@@ -587,7 +584,7 @@ function getDefaultPreviewState(chartType) {
     previewPieMode: "donut",
     previewSeriesCount: 2,
     previewDualAxisLeftSeriesCount: 2,
-    previewDualAxisRightSeriesCount: 2,
+    previewDualAxisRightSeriesCount: 1,
     dualAxisPreviewLeftType: null,
     dualAxisPreviewRightType: null,
     ...previewState
@@ -796,41 +793,57 @@ function buildPreviewConfig(chartType, previewState) {
       visible: true,
       groups: [
         {
-          id: "dualAxisLeftCount",
-          title: "左侧数量",
-          buttons: [1, 2, 4].map((count) => ({
-            label: String(count),
-            action: "dualAxisSeriesCount",
-            side: "left",
-            value: String(count),
-            active: Number(previewState.previewDualAxisLeftSeriesCount) === count
-          }))
-        },
-        {
-          id: "dualAxisRightCount",
-          title: "右侧数量",
-          buttons: [1, 2, 4].map((count) => ({
-            label: String(count),
-            action: "dualAxisSeriesCount",
-            side: "right",
-            value: String(count),
-            active: Number(previewState.previewDualAxisRightSeriesCount) === count
-          }))
-        },
-        {
-          id: "dualAxisLeftType",
-          title: "左侧预览类型",
-          buttons: [
-            { label: "柱", action: "dualAxisType", side: "left", value: "bar", active: previewState.dualAxisPreviewLeftType === "bar" },
-            { label: "线", action: "dualAxisType", side: "left", value: "line", active: previewState.dualAxisPreviewLeftType === "line" }
+          id: "dualAxisLeft",
+          title: "左侧",
+          sections: [
+            {
+              label: "左侧数据数量",
+              buttons: [1, 2, 4].map((count) => ({
+                label: String(count),
+                action: "dualAxisSeriesCount",
+                side: "left",
+                value: String(count),
+                active: Number(previewState.previewDualAxisLeftSeriesCount) === count
+              }))
+            },
+            {
+              label: "左侧图形",
+              buttons: [
+                { label: "柱", action: "dualAxisType", side: "left", value: "bar", active: previewState.dualAxisPreviewLeftType === "bar" },
+                { label: "线", action: "dualAxisType", side: "left", value: "line", active: previewState.dualAxisPreviewLeftType === "line" }
+              ]
+            }
           ]
         },
         {
-          id: "dualAxisRightType",
-          title: "右侧预览类型",
+          id: "dualAxisRight",
+          title: "右侧",
+          sections: [
+            {
+              label: "右侧数据数量",
+              buttons: [1, 2, 4].map((count) => ({
+                label: String(count),
+                action: "dualAxisSeriesCount",
+                side: "right",
+                value: String(count),
+                active: Number(previewState.previewDualAxisRightSeriesCount) === count
+              }))
+            },
+            {
+              label: "右侧图形",
+              buttons: [
+                { label: "柱", action: "dualAxisType", side: "right", value: "bar", active: previewState.dualAxisPreviewRightType === "bar" },
+                { label: "线", action: "dualAxisType", side: "right", value: "line", active: previewState.dualAxisPreviewRightType === "line" }
+              ]
+            }
+          ]
+        },
+        {
+          id: "dualAxisLayout",
+          title: "布局预览",
           buttons: [
-            { label: "柱", action: "dualAxisType", side: "right", value: "bar", active: previewState.dualAxisPreviewRightType === "bar" },
-            { label: "线", action: "dualAxisType", side: "right", value: "line", active: previewState.dualAxisPreviewRightType === "line" }
+            { label: "纵向", action: "barLayout", value: "vertical", active: !previewState.previewBarHorizontal },
+            { label: "横向", action: "barLayout", value: "horizontal", active: Boolean(previewState.previewBarHorizontal) }
           ]
         }
       ]

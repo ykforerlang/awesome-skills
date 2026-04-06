@@ -120,17 +120,20 @@ function buildPreviewCases(chartType) {
         for (const rightCount of DUAL_AXIS_COUNT_OPTIONS) {
           for (const leftType of ["bar", "line"]) {
             for (const rightType of ["bar", "line"]) {
-              cases.push({
-                variantId: [`left-${leftCount}-${leftType}`, `right-${rightCount}-${rightType}`].join("_"),
-                dataSelection: {
-                  leftSeriesCount: leftCount,
-                  rightSeriesCount: rightCount,
-                },
-                variant: {
-                  leftSeriesType: leftType,
-                  rightSeriesType: rightType,
-                },
-              });
+              for (const layout of ["vertical", "horizontal"]) {
+                cases.push({
+                  variantId: [`left-${leftCount}-${leftType}`, `right-${rightCount}-${rightType}`, layout].join("_"),
+                  dataSelection: {
+                    leftSeriesCount: leftCount,
+                    rightSeriesCount: rightCount,
+                  },
+                  variant: {
+                    layout,
+                    leftSeriesType: leftType,
+                    rightSeriesType: rightType,
+                  },
+                });
+              }
             }
           }
         }

@@ -151,7 +151,7 @@
 .preview-config-group {
   flex: none;
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10rpx;
   min-width: 0;
   padding: 10rpx 12rpx;
@@ -163,6 +163,18 @@
 .preview-config-group-label {
   padding: 0 4rpx;
   font-size: 19rpx;
+  font-weight: 700;
+  color: #5d6a67;
+  white-space: nowrap;
+}
+
+.preview-config-subgroup {
+  display: grid;
+  gap: 8rpx;
+}
+
+.preview-config-subgroup-label {
+  font-size: 18rpx;
   font-weight: 700;
   color: #5d6a67;
   white-space: nowrap;

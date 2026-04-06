@@ -281,7 +281,7 @@ button {
 .mobile-preview-config-group {
   flex: none;
   display: inline-flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   min-width: 0;
   padding: 8px 10px;
@@ -293,6 +293,18 @@ button {
 .mobile-preview-config-group-label {
   padding: 0 2px;
   font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.mobile-preview-config-subgroup {
+  display: grid;
+  gap: 6px;
+}
+
+.mobile-preview-config-subgroup-label {
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--muted);
   white-space: nowrap;
@@ -689,6 +701,17 @@ button {
   letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--accent-deep);
+}
+
+.dual-axis-preview-subsection {
+  display: grid;
+  gap: 8px;
+}
+
+.dual-axis-preview-sublabel {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: var(--muted);
 }
 
 .dual-axis-preview-toggle {

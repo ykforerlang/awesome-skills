@@ -414,7 +414,6 @@ CLI 输入由三部分组成：
 
 `dualAxis`：
 
-- `layout.horizontal`
 - `layout.splitLineFollowAxis`
 - `layout.leftSeriesType`
 - `layout.rightSeriesType`
@@ -572,6 +571,7 @@ CLI 输入由三部分组成：
 - `pieMode`：`pie`、`donut`、`roseArea`、`roseRadius`
 - `leftSeriesType`：通常为 `bar` 或 `line`
 - `rightSeriesType`：通常为 `bar` 或 `line`
+- `splitLineFollowAxis`：`left` 或 `right`
 
 按图表类型的生效范围：
 
@@ -579,14 +579,14 @@ CLI 输入由三部分组成：
 - `bar`：支持 `stack` 和 `layout`
 - `area`：支持 `stack`
 - `pie`：支持 `pieMode`
-- `dualAxis`：支持 `leftSeriesType` 和 `rightSeriesType`
+- `dualAxis`：支持 `layout`、`leftSeriesType`、`rightSeriesType` 和 `splitLineFollowAxis`
 - `gauge`、`scatter`、`radar`、`funnel`：当前没有消费任何 variant 字段
 
 优先级说明：
 
 - `variant` 不会替代 `config`
 - `variant` 只影响一次性的临时渲染策略
-- 对 `dualAxis` 来说，`variant.leftSeriesType` 和 `variant.rightSeriesType` 会覆盖 `config.specific.layout` 中对应的值
+- 对 `dualAxis` 来说，`variant.layout`、`variant.leftSeriesType`、`variant.rightSeriesType` 和 `variant.splitLineFollowAxis` 会覆盖本次渲染使用的双轴基础策略，但不会回写持久化配置
 - 对柱状布局和堆叠预览来说，`variant` 只在本次渲染生效，不会回写到 helper config
 
 ## 输出规则

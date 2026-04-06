@@ -97,6 +97,27 @@ function buildDualAxisTypesFromVariant(variant: any): DualAxisTypes | undefined 
   return Object.keys(dualAxisTypes).length ? dualAxisTypes : undefined;
 }
 
+function buildDualAxisLayoutOverridesFromVariant(variant: any): Record<string, any> | undefined {
+  if (!variant || !isObject(variant)) {
+    return undefined;
+  }
+
+  const overrides: Record<string, any> = {};
+  if ("layout" in variant) {
+    const layout = String(variant.layout).trim().toLowerCase();
+    if (layout === "horizontal") overrides.horizontal = true;
+    if (layout === "vertical") overrides.horizontal = false;
+  }
+  if ("splitLineFollowAxis" in variant) {
+    const followAxis = String(variant.splitLineFollowAxis).trim().toLowerCase();
+    if (followAxis === "left" || followAxis === "right") {
+      overrides.splitLineFollowAxis = followAxis;
+    }
+  }
+
+  return Object.keys(overrides).length ? overrides : undefined;
+}
+
 function parseArgv(argv: string[]): ParsedArgs {
   const args: ParsedArgs = {
     positionals: []
@@ -200,7 +221,8 @@ function buildChartArtifactsFromArgs(chartType: ChartType, args: ParsedArgs): Ch
       buildDefaultPreviewState(),
       buildPreviewStateFromVariant(variant)
     ),
-    dualAxisTypes: buildDualAxisTypesFromVariant(variant)
+    dualAxisTypes: buildDualAxisTypesFromVariant(variant),
+    dualAxisLayoutOverrides: buildDualAxisLayoutOverridesFromVariant(variant)
   });
 }
 

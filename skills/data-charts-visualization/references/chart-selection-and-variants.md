@@ -80,6 +80,11 @@ When the user directly names a chart or variant, map it into a normalized `chart
   `chart-type = dualAxis`
   `variant = { "leftSeriesType": "bar", "rightSeriesType": "line", "splitLineFollowAxis": "left" }`
 
+- “horizontal dual-axis chart”:
+  `chart-type = dualAxis`
+  if the user did not specify series types, default to:
+  `variant = { "layout": "horizontal", "leftSeriesType": "bar", "rightSeriesType": "line", "splitLineFollowAxis": "left" }`
+
 - “dual-axis line-line chart”:
   `chart-type = dualAxis`
   `variant = { "leftSeriesType": "line", "rightSeriesType": "line", "splitLineFollowAxis": "left" }`
@@ -344,6 +349,22 @@ Do not use dual-axis when:
 - both metrics are better understood separately
 
 ### Dual-Axis Variant Selection
+
+Prefer vertical dual-axis layout when:
+
+- the shared category axis is a timeline, ordered stage list, or other natural left-to-right sequence
+- the chart reads like a standard metric-trend or metric-vs-rate comparison
+
+Prefer horizontal dual-axis layout when:
+
+- the shared category axis is a ranked or named category list
+- both series still describe the same category set, but a horizontal reading direction fits the comparison better
+
+Pass horizontal dual-axis layout as:
+
+```json
+{ "layout": "horizontal", "leftSeriesType": "bar", "rightSeriesType": "line", "splitLineFollowAxis": "left" }
+```
 
 Prefer left bar + right line when:
 

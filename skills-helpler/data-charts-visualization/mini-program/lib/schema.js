@@ -356,10 +356,8 @@ const LOCALIZED_DEFINITION_TEXT = {
     dualAxis: {
       label: "双轴图",
       blurb: "适合双系列混合、两个量纲同时展示的复合场景，左右都可以选择柱或线。",
-      tags: ["柱/线组合", "副轴", "横向", "dataset + encode"],
+      tags: ["柱/线组合", "副轴", "dataset + encode"],
       fields: {
-        layoutGroup: "结构",
-        horizontal: "横向布局",
         leftSeriesType: "左侧图形",
         rightSeriesType: "右侧图形",
         barGap: "柱间距",
@@ -372,8 +370,6 @@ const LOCALIZED_DEFINITION_TEXT = {
         leftAxisLineColor: "左轴线颜色",
         leftAxisTickShow: "显示左轴刻度",
         leftAxisFormatter: "左轴格式",
-        leftAxisMin: "左轴最小值",
-        leftAxisMax: "左轴最大值",
         leftBarGroup: "左柱",
         leftBarShowLabel: "显示左柱标签",
         leftBarLabelPosition: "左柱标签位置",
@@ -405,8 +401,6 @@ const LOCALIZED_DEFINITION_TEXT = {
         rightAxisLineColor: "右轴线颜色",
         rightAxisTickShow: "显示右轴刻度",
         rightAxisFormatter: "右轴格式",
-        rightAxisMin: "右轴最小值",
-        rightAxisMax: "右轴最大值",
         rightBarGroup: "右柱",
         rightBarShowLabel: "显示右柱标签",
         rightBarLabelPosition: "右柱标签位置",
@@ -973,10 +967,8 @@ const CHART_DEFINITIONS = {
     label: "Dual-Axis",
     asset: `${SKILL_STATIC_ROOT}/dual-axis.png`,
     blurb: "Best for mixed two-series layouts when two units must coexist in one chart. Each side can be a bar or a line.",
-    tags: ["bar/line mix", "secondary axis", "horizontal", "dataset + encode"],
+    tags: ["bar/line mix", "secondary axis", "dataset + encode"],
       fields: [
-      { id: "layoutGroup", label: "Structure", type: "group", help: "Choose orientation and the left/right series types first." },
-      { id: "horizontal", label: "Horizontal Layout", type: "checkbox", default: false },
       { id: "splitLineAxisGroup", label: "Split Line Binding", type: "group", help: "Choose which value axis the shared split lines follow." },
       {
         id: "splitLineFollowAxis",
@@ -995,8 +987,6 @@ const CHART_DEFINITIONS = {
       { id: "leftAxisLineColor", label: "Left Axis Line Color", type: "color", default: "#9ca3af" },
       { id: "leftAxisTickShow", label: "Show Left Axis Ticks", type: "checkbox", default: true },
       { id: "leftAxisFormatter", label: "Left Axis Formatter", type: "text", default: "{value}" },
-      { id: "leftAxisMin", label: "Left Axis Min", type: "text", default: "" },
-      { id: "leftAxisMax", label: "Left Axis Max", type: "text", default: "" },
       { id: "leftBarGroup", label: "Left Bar", type: "group", help: "Bar-style controls for the left series." },
       { id: "leftBarShowLabel", label: "Show Left Bar Labels", type: "checkbox", default: true },
       {
@@ -1061,8 +1051,6 @@ const CHART_DEFINITIONS = {
       { id: "rightAxisLineColor", label: "Right Axis Line Color", type: "color", default: "#9ca3af" },
       { id: "rightAxisTickShow", label: "Show Right Axis Ticks", type: "checkbox", default: true },
       { id: "rightAxisFormatter", label: "Right Axis Formatter", type: "text", default: "{value}" },
-      { id: "rightAxisMin", label: "Right Axis Min", type: "text", default: "" },
-      { id: "rightAxisMax", label: "Right Axis Max", type: "text", default: "" },
       { id: "rightBarGroup", label: "Right Bar", type: "group", help: "Bar-style controls for the right series." },
       { id: "rightBarShowLabel", label: "Show Right Bar Labels", type: "checkbox", default: true },
       {
