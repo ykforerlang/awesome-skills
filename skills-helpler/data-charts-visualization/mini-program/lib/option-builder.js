@@ -167,14 +167,12 @@
     const verticalSplit = helperCommon && helperCommon.splitLines && helperCommon.splitLines.vertical || {};
 
     if ("show" in titleMain) nextState.titleShow = Boolean(titleMain.show);
-    if ("text" in titleMain) nextState.titleText = titleMain.text;
     if ("align" in titleMain) nextState.titleAlign = titleMain.align;
     if ("fontSize" in titleMain) nextState.titleFontSize = coerceNumeric(titleMain.fontSize);
     if ("color" in titleMain) nextState.titleColor = titleMain.color;
     if ("bold" in titleMain) nextState.titleBold = Boolean(titleMain.bold);
 
     if ("show" in titleSubtitle) nextState.subtitleShow = Boolean(titleSubtitle.show);
-    if ("text" in titleSubtitle) nextState.subtitleText = titleSubtitle.text;
     if ("fontSize" in titleSubtitle) nextState.subtitleFontSize = coerceNumeric(titleSubtitle.fontSize);
     if ("color" in titleSubtitle) nextState.subtitleColor = titleSubtitle.color;
 
@@ -217,6 +215,26 @@
     if ("width" in verticalSplit) nextState.xSplitLineWidth = coerceNumeric(verticalSplit.width);
 
     return nextState;
+  }
+
+  function extractLegacyTitlePatch(helperConfig) {
+    const helperCommon = isObject(helperConfig && helperConfig.common) ? helperConfig.common : {};
+    const titleMain = helperCommon && helperCommon.title && helperCommon.title.main || {};
+    const titleSubtitle = helperCommon && helperCommon.title && helperCommon.title.subtitle || {};
+    const titlePatch = {};
+
+    if ("text" in titleMain) {
+      titlePatch.text = titleMain.text;
+    }
+    if ("text" in titleSubtitle) {
+      titlePatch.subtext = titleSubtitle.text;
+    }
+
+    if (!Object.keys(titlePatch).length) {
+      return undefined;
+    }
+
+    return { title: titlePatch };
   }
 
   function buildBuilderConfigFromHelperConfig(chartType, helperConfig) {
@@ -367,13 +385,9 @@
   }
 
   function buildCommonOption(commonState, runtimeDefinition) {
-    const titleText = commonState.titleShow ? commonState.titleText : "";
-    const subtitleText = commonState.subtitleShow ? commonState.subtitleText : "";
     const option = {
       title: {
         show: commonState.titleShow || commonState.subtitleShow,
-        text: titleText,
-        subtext: subtitleText,
         left: commonState.titleAlign
       },
       backgroundColor: commonState.backgroundColor,
@@ -401,15 +415,11 @@
   }
 
   function buildBaseStyleConfig(commonState, runtimeDefinition) {
-    const titleText = commonState.titleShow ? commonState.titleText : "";
-    const subtitleText = commonState.subtitleShow ? commonState.subtitleText : "";
     const base = {
       color: Array.isArray(commonState.palette) ? commonState.palette : parsePalette(commonState.palette),
       backgroundColor: commonState.backgroundColor,
       title: {
         show: commonState.titleShow || commonState.subtitleShow,
-        text: titleText,
-        subtext: subtitleText,
         left: commonState.titleAlign,
         textStyle: {
           fontSize: commonState.titleFontSize,
@@ -1548,10 +1558,13 @@
   function buildChartArtifactsFromHelperConfig(params) {
     const chartType = params.chartType;
     const builderConfig = buildBuilderConfigFromHelperConfig(chartType, params.helperConfig);
+    const sourceRawData = deepClone(params.rawData || {});
+    const legacyTitlePatch = extractLegacyTitlePatch(params.helperConfig);
+    const rawData = legacyTitlePatch ? deepMerge(legacyTitlePatch, sourceRawData) : sourceRawData;
     return buildChartArtifactsFromBuilderConfig({
       chartType: chartType,
       builderConfig,
-      rawData: params.rawData,
+      rawData,
       previewState: params.previewState,
       previewViewportSize: params.previewViewportSize,
       dualAxisTypes: params.dualAxisTypes || builderConfig.dualAxisTypes,

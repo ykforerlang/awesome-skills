@@ -35,13 +35,11 @@ const COMMON_GROUP_HELP = {
 };
 
 const COMMON_FIELD_LABELS = {
-  titleText: "主标题",
   titleShow: "显示主标题",
   titleAlign: "标题对齐",
   titleFontSize: "标题字号",
   titleColor: "标题颜色",
   titleBold: "标题加粗",
-  subtitleText: "副标题",
   subtitleShow: "显示副标题",
   subtitleFontSize: "副标题字号",
   subtitleColor: "副标题颜色",
@@ -529,9 +527,7 @@ function buildCommonSections(chartType, values) {
     .map((group) => ({
       ...group,
       help: COMMON_GROUP_HELP[group.id] || "",
-      fields: group.fields
-        .filter((field) => !["titleText", "subtitleText"].includes(field.id))
-        .map((field) => toFieldView("common", chartType, field, values[field.id]))
+      fields: group.fields.map((field) => toFieldView("common", chartType, field, values[field.id]))
     }));
 }
 

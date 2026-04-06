@@ -184,6 +184,7 @@ This is one of the most important execution rules in the skill.
 Put these in `data`:
 
 - business values
+- title copy such as `title.text` and `title.subtext`
 - `series`
 - `xAxis` / `yAxis`
 - `dataset` / `encode`
@@ -198,8 +199,8 @@ Short version:
 
 Put these in `config`:
 
-- title styling
-- subtitle styling
+- title styling such as show, align, size, color, and bold
+- subtitle styling such as show, size, and color
 - palette
 - background
 - legend position and typography

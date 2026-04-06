@@ -63,6 +63,7 @@ It may include:
 - `dataset`
 - `radar`
 - chart-specific raw option fragments needed for the data layer
+- `title.text` and `title.subtext` when title copy belongs to the input data
 
 Typical usage:
 
@@ -95,13 +96,11 @@ Base shape:
 `common` is shared across chart types and supports:
 
 - `title.main.show`
-- `title.main.text`
 - `title.main.align`
 - `title.main.fontSize`
 - `title.main.color`
 - `title.main.bold`
 - `title.subtitle.show`
-- `title.subtitle.text`
 - `title.subtitle.fontSize`
 - `title.subtitle.color`
 - `canvas.backgroundColor`

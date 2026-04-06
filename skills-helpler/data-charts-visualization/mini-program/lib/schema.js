@@ -46,7 +46,6 @@
       id: "title",
       label: "标题",
       fields: [
-        { id: "titleText", label: "主标题", type: "text" },
         { id: "titleShow", label: "显示主标题", type: "checkbox" },
         {
           id: "titleAlign",
@@ -61,7 +60,6 @@
         { id: "titleFontSize", label: "标题字号", type: "select", options: FONT_SIZE_OPTIONS.map((value) => [value, value]) },
         { id: "titleColor", label: "标题颜色", type: "color" },
         { id: "titleBold", label: "标题加粗", type: "checkbox" },
-        { id: "subtitleText", label: "副标题", type: "text" },
         { id: "subtitleShow", label: "显示副标题", type: "checkbox" },
         { id: "subtitleFontSize", label: "副标题字号", type: "select", options: FONT_SIZE_OPTIONS.map((value) => [value, value]) },
         { id: "subtitleColor", label: "副标题颜色", type: "color" },

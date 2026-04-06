@@ -4,6 +4,7 @@ This directory stores helper-schema config presets for each chart type.
 
 These files are not raw ECharts style fragments. They are helper-facing configs consumed by the shared helper option builder, which then produces the final ECharts option used by both helper preview and CLI rendering.
 They should be treated as complete helper config payloads for CLI rendering, not as partial patches.
+Title copy does not live here. Put chart title text in the data payload, for example `data.title.text` and `data.title.subtext`.
 
 One-off render choices such as bar layout, stack mode, pie mode, or dual-axis type selection should not be stored here. Pass those through CLI `--variant` instead.
 
@@ -32,3 +33,9 @@ npx --yes --package ./skills-scripts/data-charts-visualization areslabs-data-cha
 Default demo data should come from:
 
 - `skills-helpler/data-charts-visualization/shared/charts-default-data.js`
+
+Default config files can be regenerated with:
+
+```bash
+node skills-helpler/data-charts-visualization/scripts/export_default_configs.js
+```

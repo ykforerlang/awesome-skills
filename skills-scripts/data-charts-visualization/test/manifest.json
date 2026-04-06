@@ -1,5 +1,377 @@
 [
   {
+    "chartType": "line",
+    "variantId": "series-1",
+    "dataSelection": {
+      "seriesCount": 1
+    },
+    "variant": {},
+    "outputFile": "test/images/line/series-1.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "line",
+    "variantId": "series-2",
+    "dataSelection": {
+      "seriesCount": 2
+    },
+    "variant": {},
+    "outputFile": "test/images/line/series-2.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "line",
+    "variantId": "series-5",
+    "dataSelection": {
+      "seriesCount": 5
+    },
+    "variant": {},
+    "outputFile": "test/images/line/series-5.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "line",
+    "variantId": "series-8",
+    "dataSelection": {
+      "seriesCount": 8
+    },
+    "variant": {},
+    "outputFile": "test/images/line/series-8.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-1-vertical-normal",
+    "dataSelection": {
+      "seriesCount": 1
+    },
+    "variant": {
+      "layout": "vertical",
+      "stack": false
+    },
+    "outputFile": "test/images/bar/series-1-vertical-normal.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-1-vertical-stacked",
+    "dataSelection": {
+      "seriesCount": 1
+    },
+    "variant": {
+      "layout": "vertical",
+      "stack": true
+    },
+    "outputFile": "test/images/bar/series-1-vertical-stacked.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-1-horizontal-normal",
+    "dataSelection": {
+      "seriesCount": 1
+    },
+    "variant": {
+      "layout": "horizontal",
+      "stack": false
+    },
+    "outputFile": "test/images/bar/series-1-horizontal-normal.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-1-horizontal-stacked",
+    "dataSelection": {
+      "seriesCount": 1
+    },
+    "variant": {
+      "layout": "horizontal",
+      "stack": true
+    },
+    "outputFile": "test/images/bar/series-1-horizontal-stacked.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-2-vertical-normal",
+    "dataSelection": {
+      "seriesCount": 2
+    },
+    "variant": {
+      "layout": "vertical",
+      "stack": false
+    },
+    "outputFile": "test/images/bar/series-2-vertical-normal.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-2-vertical-stacked",
+    "dataSelection": {
+      "seriesCount": 2
+    },
+    "variant": {
+      "layout": "vertical",
+      "stack": true
+    },
+    "outputFile": "test/images/bar/series-2-vertical-stacked.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-2-horizontal-normal",
+    "dataSelection": {
+      "seriesCount": 2
+    },
+    "variant": {
+      "layout": "horizontal",
+      "stack": false
+    },
+    "outputFile": "test/images/bar/series-2-horizontal-normal.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-2-horizontal-stacked",
+    "dataSelection": {
+      "seriesCount": 2
+    },
+    "variant": {
+      "layout": "horizontal",
+      "stack": true
+    },
+    "outputFile": "test/images/bar/series-2-horizontal-stacked.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-5-vertical-normal",
+    "dataSelection": {
+      "seriesCount": 5
+    },
+    "variant": {
+      "layout": "vertical",
+      "stack": false
+    },
+    "outputFile": "test/images/bar/series-5-vertical-normal.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-5-vertical-stacked",
+    "dataSelection": {
+      "seriesCount": 5
+    },
+    "variant": {
+      "layout": "vertical",
+      "stack": true
+    },
+    "outputFile": "test/images/bar/series-5-vertical-stacked.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-5-horizontal-normal",
+    "dataSelection": {
+      "seriesCount": 5
+    },
+    "variant": {
+      "layout": "horizontal",
+      "stack": false
+    },
+    "outputFile": "test/images/bar/series-5-horizontal-normal.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-5-horizontal-stacked",
+    "dataSelection": {
+      "seriesCount": 5
+    },
+    "variant": {
+      "layout": "horizontal",
+      "stack": true
+    },
+    "outputFile": "test/images/bar/series-5-horizontal-stacked.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-8-vertical-normal",
+    "dataSelection": {
+      "seriesCount": 8
+    },
+    "variant": {
+      "layout": "vertical",
+      "stack": false
+    },
+    "outputFile": "test/images/bar/series-8-vertical-normal.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-8-vertical-stacked",
+    "dataSelection": {
+      "seriesCount": 8
+    },
+    "variant": {
+      "layout": "vertical",
+      "stack": true
+    },
+    "outputFile": "test/images/bar/series-8-vertical-stacked.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-8-horizontal-normal",
+    "dataSelection": {
+      "seriesCount": 8
+    },
+    "variant": {
+      "layout": "horizontal",
+      "stack": false
+    },
+    "outputFile": "test/images/bar/series-8-horizontal-normal.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "bar",
+    "variantId": "series-8-horizontal-stacked",
+    "dataSelection": {
+      "seriesCount": 8
+    },
+    "variant": {
+      "layout": "horizontal",
+      "stack": true
+    },
+    "outputFile": "test/images/bar/series-8-horizontal-stacked.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "area",
+    "variantId": "series-1-normal",
+    "dataSelection": {
+      "seriesCount": 1
+    },
+    "variant": {
+      "stack": false
+    },
+    "outputFile": "test/images/area/series-1-normal.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "area",
+    "variantId": "series-1-stacked",
+    "dataSelection": {
+      "seriesCount": 1
+    },
+    "variant": {
+      "stack": true
+    },
+    "outputFile": "test/images/area/series-1-stacked.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "area",
+    "variantId": "series-2-normal",
+    "dataSelection": {
+      "seriesCount": 2
+    },
+    "variant": {
+      "stack": false
+    },
+    "outputFile": "test/images/area/series-2-normal.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "area",
+    "variantId": "series-2-stacked",
+    "dataSelection": {
+      "seriesCount": 2
+    },
+    "variant": {
+      "stack": true
+    },
+    "outputFile": "test/images/area/series-2-stacked.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "area",
+    "variantId": "series-5-normal",
+    "dataSelection": {
+      "seriesCount": 5
+    },
+    "variant": {
+      "stack": false
+    },
+    "outputFile": "test/images/area/series-5-normal.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "area",
+    "variantId": "series-5-stacked",
+    "dataSelection": {
+      "seriesCount": 5
+    },
+    "variant": {
+      "stack": true
+    },
+    "outputFile": "test/images/area/series-5-stacked.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "area",
+    "variantId": "series-8-normal",
+    "dataSelection": {
+      "seriesCount": 8
+    },
+    "variant": {
+      "stack": false
+    },
+    "outputFile": "test/images/area/series-8-normal.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "area",
+    "variantId": "series-8-stacked",
+    "dataSelection": {
+      "seriesCount": 8
+    },
+    "variant": {
+      "stack": true
+    },
+    "outputFile": "test/images/area/series-8-stacked.png",
+    "width": 650,
+    "height": 360
+  },
+  {
     "chartType": "dualAxis",
     "variantId": "left-1-bar_right-1-bar_vertical",
     "dataSelection": {
@@ -1148,6 +1520,121 @@
       "rightSeriesType": "line"
     },
     "outputFile": "test/images/dualAxis/left-4-line_right-4-line_horizontal.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "scatter",
+    "variantId": "series-1",
+    "dataSelection": {
+      "seriesCount": 1
+    },
+    "variant": {},
+    "outputFile": "test/images/scatter/series-1.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "scatter",
+    "variantId": "series-2",
+    "dataSelection": {
+      "seriesCount": 2
+    },
+    "variant": {},
+    "outputFile": "test/images/scatter/series-2.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "scatter",
+    "variantId": "series-5",
+    "dataSelection": {
+      "seriesCount": 5
+    },
+    "variant": {},
+    "outputFile": "test/images/scatter/series-5.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "scatter",
+    "variantId": "series-8",
+    "dataSelection": {
+      "seriesCount": 8
+    },
+    "variant": {},
+    "outputFile": "test/images/scatter/series-8.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "pie",
+    "variantId": "pie",
+    "dataSelection": {},
+    "variant": {
+      "pieMode": "pie"
+    },
+    "outputFile": "test/images/pie/pie.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "pie",
+    "variantId": "donut",
+    "dataSelection": {},
+    "variant": {
+      "pieMode": "donut"
+    },
+    "outputFile": "test/images/pie/donut.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "pie",
+    "variantId": "rose-area",
+    "dataSelection": {},
+    "variant": {
+      "pieMode": "roseArea"
+    },
+    "outputFile": "test/images/pie/rose-area.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "pie",
+    "variantId": "rose-radius",
+    "dataSelection": {},
+    "variant": {
+      "pieMode": "roseRadius"
+    },
+    "outputFile": "test/images/pie/rose-radius.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "gauge",
+    "variantId": "default",
+    "dataSelection": {},
+    "variant": {},
+    "outputFile": "test/images/gauge/default.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "radar",
+    "variantId": "default",
+    "dataSelection": {},
+    "variant": {},
+    "outputFile": "test/images/radar/default.png",
+    "width": 650,
+    "height": 360
+  },
+  {
+    "chartType": "funnel",
+    "variantId": "default",
+    "dataSelection": {},
+    "variant": {},
+    "outputFile": "test/images/funnel/default.png",
     "width": 650,
     "height": 360
   }

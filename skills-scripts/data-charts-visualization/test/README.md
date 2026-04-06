@@ -21,6 +21,8 @@ The preview matrix uses shared helper defaults as its test inputs:
 - `skills-helpler/data-charts-visualization/shared/charts-default-data.js`
 - `skills-helpler/data-charts-visualization/shared/charts-default-config.js`
 
+Title copy belongs to the shared default data, not the shared default config.
+
 The test is intentionally black-box:
 
 - it only invokes the packaged CLI

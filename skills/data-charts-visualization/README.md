@@ -102,6 +102,7 @@ Config page addresses:
 
 The skill works well with the data shapes agents already produce:
 
+- title copy through `title.text` and `title.subtext`
 - raw `series` plus `xAxis` / `yAxis`
 - `dataset.source` plus `series.encode`
 - table-like data transformed into chart-ready payloads
