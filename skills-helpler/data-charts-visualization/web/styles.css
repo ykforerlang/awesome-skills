@@ -27,7 +27,8 @@ body {
   margin: 0;
   min-height: 100%;
   width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 body {
@@ -52,7 +53,7 @@ button {
   width: min(1440px, calc(100vw - 32px));
   margin: 0 auto;
   padding: 28px 0 40px;
-  overflow-x: hidden;
+  overflow: visible;
 }
 
 .desktop-layout,
@@ -133,12 +134,17 @@ button {
 }
 
 .mobile-preview-sticky {
+  position: -webkit-sticky;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  align-self: start;
+  padding: 0 0 10px;
+  background:
+    linear-gradient(180deg, rgba(246, 239, 228, 0.98) 0%, rgba(246, 239, 228, 0.95) 82%, rgba(246, 239, 228, 0) 100%);
   width: 100%;
   max-width: 100%;
   min-width: 0;

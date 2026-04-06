@@ -1855,12 +1855,15 @@ function renderMobileConfigPanel(preferredSectionId = "") {
   });
 }
 
-function resetMobileConfigViewport() {
+function resetMobileConfigViewport(options = {}) {
+  const { resetChartTabs = false } = options;
   const tabsScroll = $("mobile-config-tabs-scroll");
-  const chartTabsScroll = $("mobile-chart-tabs-scroll");
   const panelScroll = $("mobile-config-panel-scroll");
-  if (chartTabsScroll) {
-    chartTabsScroll.scrollLeft = 0;
+  if (resetChartTabs) {
+    const chartTabsScroll = $("mobile-chart-tabs-scroll");
+    if (chartTabsScroll) {
+      chartTabsScroll.scrollLeft = 0;
+    }
   }
   if (tabsScroll) {
     tabsScroll.scrollLeft = 0;
