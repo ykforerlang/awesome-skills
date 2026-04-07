@@ -513,12 +513,73 @@
     return placementMap[position] || placementMap["top-left"];
   }
 
+  function getRawTitleConfig(rawOption) {
+    if (Array.isArray(rawOption && rawOption.title)) {
+      return rawOption.title[0] || {};
+    }
+    return rawOption && rawOption.title || {};
+  }
+
+  function buildResolvedTitleState(commonState, rawOption) {
+    const sourceTitle = getRawTitleConfig(rawOption);
+    const resolvedText = commonState.titleShow ? (sourceTitle.text || "") : "";
+    const resolvedSubtext = commonState.subtitleShow ? (sourceTitle.subtext || "") : "";
+    return {
+      show: Boolean(resolvedText || resolvedSubtext),
+      text: resolvedText,
+      subtext: resolvedSubtext
+    };
+  }
+
+  function buildResolvedTitleBlocks(commonState, rawOption) {
+    const resolvedTitle = buildResolvedTitleState(commonState, rawOption);
+    if (!resolvedTitle.show) {
+      return [];
+    }
+
+    const blocks = [];
+    const sharedPosition = {
+      left: commonState.titleAlign
+    };
+
+    if (resolvedTitle.text) {
+      blocks.push({
+        ...sharedPosition,
+        top: 10,
+        text: resolvedTitle.text,
+        textStyle: {
+          fontSize: commonState.titleFontSize,
+          fontWeight: commonState.titleBold ? "bold" : "normal",
+          color: commonState.titleColor
+        }
+      });
+    }
+
+    if (resolvedTitle.subtext) {
+      blocks.push({
+        ...sharedPosition,
+        top: resolvedTitle.text ? 44 : 10,
+        text: resolvedTitle.subtext,
+        textStyle: {
+          fontSize: commonState.subtitleFontSize,
+          fontWeight: "normal",
+          color: commonState.subtitleColor
+        }
+      });
+    }
+
+    return blocks;
+  }
+
   function buildCommonOption(commonState, runtimeDefinition, chartType, rawOption) {
     const palette = resolveExpandedCommonPalette(commonState, chartType, rawOption);
+    const resolvedTitle = buildResolvedTitleState(commonState, rawOption);
     const option = {
       title: {
-        show: commonState.titleShow || commonState.subtitleShow,
-        left: commonState.titleAlign
+        show: resolvedTitle.show,
+        left: commonState.titleAlign,
+        text: resolvedTitle.text,
+        subtext: resolvedTitle.subtext
       },
       backgroundColor: commonState.backgroundColor,
       color: palette
@@ -546,22 +607,11 @@
 
   function buildBaseStyleConfig(commonState, runtimeDefinition, chartType, rawOption) {
     const palette = resolveExpandedCommonPalette(commonState, chartType, rawOption);
+    const resolvedTitleBlocks = buildResolvedTitleBlocks(commonState, rawOption);
     const base = {
       color: palette,
       backgroundColor: commonState.backgroundColor,
-      title: {
-        show: commonState.titleShow || commonState.subtitleShow,
-        left: commonState.titleAlign,
-        textStyle: {
-          fontSize: commonState.titleFontSize,
-          fontWeight: commonState.titleBold ? "bold" : "normal",
-          color: commonState.titleColor
-        },
-        subtextStyle: {
-          fontSize: commonState.subtitleFontSize,
-          color: commonState.subtitleColor
-        }
-      }
+      title: resolvedTitleBlocks
     };
 
     if (runtimeDefinition.supportsLegend !== false) {

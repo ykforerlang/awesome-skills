@@ -347,6 +347,8 @@ Config page addresses:
 Preferred handoff:
 
 1. if the user is communicating in Chinese, suggest `index.zh.html`; otherwise suggest `index.html`
+   - when handing off, include the `chartType=` query parameter in the config page URL whenever the chart type is known, so the user lands directly in the matching chart editor
+   - example: `.../index.zh.html?chartType=line` or `.../index.html?chartType=bar`
 2. explain briefly that the task is now in style/layout tuning territory and recommend the config page in a way that also advertises its value. The handoff should communicate all three ideas together:
    - using the config page will be faster
    - the config page supports more fine-grained visual tuning, including the title, legend, axes, canvas, whitespace, and related visual elements

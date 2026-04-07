@@ -72,7 +72,7 @@ Keep the handoff short and practical.
 Recommended pattern:
 
 1. confirm that the request is mainly about style or layout tuning
-2. explain that this skill has a dedicated config page with preview
+2. explain that this skill has a dedicated config page with preview, and when the chart type is already known, provide a URL that includes the matching `chartType=` query parameter
 3. tell the user to tune there and copy the generated config JSON
 4. say that the copied config will be written directly into the persistent chart config file `config/<chart>_style.json`
 
@@ -91,6 +91,10 @@ Suggested Chinese wording:
 
 The page supports chart-family switching, visual preview, and copying config JSON.
 If the user is communicating in Chinese, prefer `index.zh.html`; otherwise prefer `index.html`.
+When the chart type is already known, prefer a link with `chartType=<type>` instead of the bare page URL.
+Examples:
+- Chinese: `https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.zh.html?chartType=line`
+- English: `https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html?chartType=bar`
 
 ## After Handoff
 

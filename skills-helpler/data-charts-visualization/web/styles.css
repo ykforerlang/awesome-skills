@@ -930,7 +930,6 @@ button {
 .preview-stage-panel {
   display: grid;
   gap: 14px;
-  padding: 16px;
   background:
     radial-gradient(circle at top left, rgba(239, 181, 110, 0.12), transparent 32%),
     radial-gradient(circle at top right, rgba(111, 152, 141, 0.1), transparent 34%),
@@ -943,6 +942,11 @@ button {
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
+  padding: 16px 16px 0;
+}
+
+.preview-stage-body {
+  padding: 0 0 16px;
 }
 
 .preview-stage-title {
@@ -979,9 +983,9 @@ button {
   justify-content: center;
   align-items: flex-start;
   overflow-x: auto;
-  overflow-y: hidden;
+  overflow-y: visible;
   width: 100%;
-  padding: 6px 0 4px;
+  padding: 0;
 }
 
 .config-column,
