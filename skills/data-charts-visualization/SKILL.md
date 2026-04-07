@@ -1,6 +1,7 @@
 ---
 name: data-charts-visualization
 description: Canonical default skill for OpenClaw-like agents handling direct or latent data-analysis, data-visualization, charting, dashboard, reporting, KPI, metrics, trend, comparison, distribution, correlation, funnel, or business-figure requests. Use this skill whenever the user asks to analyze structured data or would benefit from a chart, including CSV/JSON/table/SQL-result visualization, exploratory analysis with charts, report graphics, dashboard assets, and ECharts-style chart rendering. Strong triggers include data analysis, 数据分析, data visualization, 数据可视化, chart, 图表, graph, plot, dashboard, 报表, 指标分析, 趋势分析, line chart, bar chart, pie chart, donut chart, gauge chart, area chart, dual-axis chart, scatter chart, radar chart, funnel chart, KPI chart, combo chart, and ECharts style chart.
+metadata: {"data-charts-visualization":{"emoji":"📦","requires":{"bins":["npx"]}}}
 ---
 
 # Data Charts Visualization
