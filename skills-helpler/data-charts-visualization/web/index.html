@@ -17,21 +17,26 @@
   <body>
     <div class="page-shell">
       <main id="desktop-layout" class="desktop-layout">
-        <header class="hero">
-          <div class="hero-copy">
-            <p class="eyebrow">Skills Helper</p>
-            <h1>AIChartsHelper</h1>
-            <p class="hero-text">
-              Focus on style tuning for
-              <code>skills/data-charts-visualization</code>. Adjust chart look and
-              feel quickly, validate it in preview, and keep the style payload for
-              your own data.
-            </p>
-          </div>
-        </header>
-
         <div class="workspace">
-          <section class="panel">
+          <section id="focus-banner" class="focus-banner hidden">
+            <div class="focus-banner-copy">
+              <p class="eyebrow">Currently Editing</p>
+              <h2 id="focus-banner-title">Line</h2>
+              <p class="focus-banner-note">
+                When you finish tuning, click "Copy Config To Agent Chat" and paste the JSON back into the current conversation.
+              </p>
+            </div>
+            <button
+              id="focus-banner-toggle"
+              class="secondary-button small focus-toggle-button hidden"
+              data-toggle-chart-switcher="true"
+              type="button"
+            >
+              Switch Chart
+            </button>
+          </section>
+
+          <section id="chart-picker-panel" class="panel">
             <div class="section-heading">
               <div>
                 <p class="section-kicker">Step 1</p>
@@ -84,17 +89,20 @@
               </div>
 
               <div class="output-column">
+                <section class="completion-card">
+                  <div class="completion-card-copy">
+                    <p class="completion-card-eyebrow">Final Step</p>
+                    <h3>Copy Config To Agent Chat</h3>
+                    <p>Paste the JSON back into the current conversation so the agent can keep using this style.</p>
+                  </div>
+                  <button class="secondary-button completion-card-button" data-copy-target="style-output" type="button">
+                    Copy Config To Agent Chat
+                  </button>
+                </section>
+
                 <section class="subpanel preview-panel">
                   <div class="subpanel-head">
                     <h3>Preview</h3>
-                  </div>
-                  <div class="preview-copy-panel">
-                    <button class="secondary-button small preview-copy-button" data-copy-target="style-output" type="button">
-                      Copy Config
-                    </button>
-                    <div class="preview-copy-note">
-                      <p>Copy the adjusted config, paste it into the agent input, and apply it to follow-up charts by default.</p>
-                    </div>
                   </div>
                   <div id="error-box" class="error-box hidden"></div>
                   <div id="dual-axis-preview-controls" class="dual-axis-preview-controls hidden"></div>
@@ -120,11 +128,17 @@
             <div class="mobile-section-head">
               <div id="mobile-preview-title" class="mobile-section-title">Line</div>
               <div class="mobile-preview-head-actions">
-                <button class="mobile-copy-button" data-copy-target="style-output" type="button">
-                  复制到Agent
+                <button
+                  id="mobile-switch-chart-button"
+                  class="mobile-secondary-button hidden"
+                  data-toggle-chart-switcher="true"
+                  type="button"
+                >
+                  Switch Chart
                 </button>
               </div>
             </div>
+            <p class="mobile-copy-hint">Copy the config when you finish, then paste it back into the current agent chat.</p>
 
             <div id="mobile-preview-controls" class="mobile-preview-config-panel hidden"></div>
 
@@ -142,7 +156,7 @@
 
         <section id="mobile-config-card" class="mobile-card mobile-config-card">
           <div class="mobile-section-head">
-            <div class="mobile-section-title">配置项</div>
+            <div class="mobile-section-title">Config</div>
             <div id="mobile-config-chip" class="mobile-section-chip"></div>
           </div>
 
@@ -159,6 +173,16 @@
               <div id="mobile-config-fields" class="mobile-field-grid"></div>
             </section>
           </div>
+        </section>
+
+        <section class="mobile-bottom-bar">
+          <div class="mobile-bottom-bar-copy">
+            <p class="mobile-bottom-bar-title">Copy The Config When Finished</p>
+            <p class="mobile-bottom-bar-note">Paste it back into the current agent chat to keep using this style.</p>
+          </div>
+          <button class="mobile-copy-button mobile-bottom-copy-button" data-copy-target="style-output" type="button">
+            Copy Config
+          </button>
         </section>
       </main>
 

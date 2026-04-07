@@ -392,24 +392,30 @@ const UI_TEXT = {
   en: {
     ready: "Ready",
     fixJson: "Fix JSON",
-    copied: "Copied",
-    copyFailed: "Copy failed",
+    copied: "Config copied. Paste it into the agent chat next.",
+    copyFailed: "Copy failed. Try again.",
     dataLabel: "Data",
     jsonInvalidPrefix: "{label} JSON is invalid: ",
     fixStyle: "// Fix JSON errors to regenerate style output.",
     specificFieldsSuffix: "fields",
     stylePayload: "Style Payload",
+    focusToggleShow: "Switch chart",
+    focusToggleHide: "Hide chart list",
+    focusBannerNote: "When you finish tuning, click \"Copy Config To Agent Chat\" and paste the JSON back into the current conversation.",
   },
   zh: {
     ready: "就绪",
     fixJson: "修复 JSON",
-    copied: "已复制",
-    copyFailed: "复制失败",
+    copied: "配置已复制，下一步回到 Agent 对话粘贴",
+    copyFailed: "复制失败，请重试",
     dataLabel: "数据",
     jsonInvalidPrefix: "{label} JSON 格式错误: ",
     fixStyle: "// 请先修复 JSON 错误，再重新生成样式配置。",
     specificFieldsSuffix: "配置",
     stylePayload: "样式配置",
+    focusToggleShow: "切换其他图表",
+    focusToggleHide: "收起图表列表",
+    focusBannerNote: "调整完成后，点击“复制配置到 Agent 对话”，再把 JSON 粘贴回当前对话继续生效。",
   },
 };
 
@@ -667,6 +673,8 @@ const appState = {
   templateId: "series",
   layoutMode: MOBILE_LAYOUT_MEDIA.matches ? "mobile" : "desktop",
   activeMobileSectionId: "",
+  focusedChartType: "",
+  showChartSwitcher: true,
   dualAxisPreviewLeftType: null,
   dualAxisPreviewRightType: null,
   previewDualAxisLeftSeriesCount: 2,
@@ -1228,6 +1236,58 @@ function isMobileLayout() {
   return getLayoutMode() === "mobile";
 }
 
+function isSupportedChartType(chartType) {
+  return Boolean(chartType && CHART_DEFINITIONS[chartType]);
+}
+
+function normalizeChartType(value) {
+  const candidate = String(value || "").trim();
+  return isSupportedChartType(candidate) ? candidate : "";
+}
+
+function resolveEntryChartTypeFromUrl() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    return normalizeChartType(params.get("chartType") || params.get("chart_type") || params.get("type"));
+  } catch (error) {
+    return "";
+  }
+}
+
+function isFocusedMode() {
+  return Boolean(appState.focusedChartType);
+}
+
+function shouldShowChartSwitcher() {
+  return !isFocusedMode() || appState.showChartSwitcher;
+}
+
+function getVisibleChartTypes() {
+  const supported = CHART_TYPE_ORDER.filter((key) => CHART_DEFINITIONS[key]);
+  if (shouldShowChartSwitcher()) {
+    return supported;
+  }
+  if (supported.includes(appState.chartType)) {
+    return [appState.chartType];
+  }
+  return supported.length ? [supported[0]] : [];
+}
+
+function syncFocusedChartTypeToUrl() {
+  if (!isFocusedMode() || typeof URL !== "function") {
+    return;
+  }
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.set("chartType", appState.chartType);
+    url.searchParams.delete("chart_type");
+    url.searchParams.delete("type");
+    window.history?.replaceState?.(null, "", url);
+  } catch (error) {
+    // ignore invalid URL environments
+  }
+}
+
 function getActivePreviewContainerId() {
   return appState.layoutMode === "mobile" ? "mobile-preview-canvas" : "preview-canvas";
 }
@@ -1391,8 +1451,7 @@ function renderPaletteField(value) {
       <textarea id="palette-input" class="palette-hidden-input" rows="3">${value || ""}</textarea>
       <div class="palette-picker">
         <div class="palette-customizer">
-          <div class="palette-customizer-head">
-            <strong>${localeText.actions.customPalette}</strong>
+          <div class="palette-customizer-head palette-customizer-head-right">
             <div class="template-actions">
               <button id="add-custom-palette" class="secondary-button small" type="button">${localeText.actions.addColor}</button>
               <button id="remove-custom-palette" class="secondary-button small" type="button">${localeText.actions.removeColor}</button>
@@ -1633,7 +1692,7 @@ function getCurrentRuntimeDefinition() {
 function buildChartCards() {
   const container = $("chart-grid");
   container.innerHTML = "";
-  CHART_TYPE_ORDER.filter((key) => CHART_DEFINITIONS[key]).forEach((key) => {
+  getVisibleChartTypes().forEach((key) => {
     const localizedDefinition = getLocalizedDefinition(key);
     const button = document.createElement("button");
     button.type = "button";
@@ -1788,7 +1847,7 @@ function renderMobileChartTabs() {
   if (!container) {
     return;
   }
-  container.innerHTML = CHART_TYPE_ORDER.filter((key) => CHART_DEFINITIONS[key]).map((key) => {
+  container.innerHTML = getVisibleChartTypes().map((key) => {
     const localizedDefinition = getLocalizedDefinition(key);
     return `
       <button type="button" class="mobile-chart-tab${key === appState.chartType ? " active" : ""}" data-chart-type="${key}">
@@ -1849,6 +1908,7 @@ function renderMobileConfigPanel(preferredSectionId = "") {
     fieldsContainer.innerHTML = activeSection.fieldIds
       .map((fieldId) => buildMobileCommonFieldCard(fieldId, activeSection.values))
       .join("");
+    applyCommonFieldValues(activeSection.values);
     return;
   }
 
@@ -2743,7 +2803,50 @@ function applyCachedValuesToRenderedForm() {
   }
 }
 
+function renderFocusModeChrome() {
+  const focused = isFocusedMode();
+  const showSwitcher = shouldShowChartSwitcher();
+
+  const focusBanner = $("focus-banner");
+  if (focusBanner) {
+    focusBanner.classList.toggle("hidden", !focused);
+  }
+
+  const focusBannerTitle = $("focus-banner-title");
+  if (focusBannerTitle) {
+    focusBannerTitle.textContent = getCurrentDefinition().label;
+  }
+
+  const focusBannerNote = document.querySelector(".focus-banner-note");
+  if (focusBannerNote) {
+    focusBannerNote.textContent = getText("focusBannerNote");
+  }
+
+  const focusToggle = $("focus-banner-toggle");
+  if (focusToggle) {
+    focusToggle.classList.toggle("hidden", !focused);
+    focusToggle.textContent = getText(showSwitcher ? "focusToggleHide" : "focusToggleShow");
+  }
+
+  const chartPickerPanel = $("chart-picker-panel");
+  if (chartPickerPanel) {
+    chartPickerPanel.classList.toggle("hidden", focused && !showSwitcher);
+  }
+
+  const mobileTabsCard = document.querySelector(".mobile-tabs-card");
+  if (mobileTabsCard) {
+    mobileTabsCard.classList.toggle("hidden", focused && !showSwitcher);
+  }
+
+  const mobileSwitchButton = $("mobile-switch-chart-button");
+  if (mobileSwitchButton) {
+    mobileSwitchButton.classList.toggle("hidden", !focused);
+    mobileSwitchButton.textContent = getText(showSwitcher ? "focusToggleHide" : "focusToggleShow");
+  }
+}
+
 function renderLayoutShell(options = {}) {
+  renderFocusModeChrome();
   const preferredSectionId = options.preferredSectionId || "";
   if (appState.layoutMode === "mobile") {
     clearDesktopInteractiveContainers();
@@ -3470,14 +3573,16 @@ async function copyText(text) {
   document.body.removeChild(area);
 }
 
-function showToast(message) {
+function showToast(message, tone = "success") {
   const toast = $("toast");
+  toast.classList.remove("toast-success", "toast-error");
   toast.textContent = message;
+  toast.classList.add(tone === "error" ? "toast-error" : "toast-success");
   toast.classList.remove("hidden");
   window.clearTimeout(showToast.timerId);
   showToast.timerId = window.setTimeout(() => {
     toast.classList.add("hidden");
-  }, 1800);
+  }, 2600);
 }
 
 function wireCopyButtons() {
@@ -3486,9 +3591,9 @@ function wireCopyButtons() {
       const target = $(button.dataset.copyTarget);
       try {
         await copyText(target.textContent);
-        showToast(getText("copied"));
+        showToast(getText("copied"), "success");
       } catch (error) {
-        showToast(getText("copyFailed"));
+        showToast(getText("copyFailed"), "error");
       }
     });
   });
@@ -3522,6 +3627,7 @@ function switchChart(chartType) {
   syncDualAxisPreviewTypesWithTemplate();
   renderLayoutShell({ preferredSectionId: "common:title" });
   applyChartBeautyDefaults(chartType);
+  syncFocusedChartTypeToUrl();
   if (appState.layoutMode === "mobile") {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
@@ -3573,6 +3679,16 @@ function wireEvents() {
   });
 
   document.addEventListener("click", (event) => {
+    const switcherToggle = event.target.closest?.("[data-toggle-chart-switcher]");
+    if (switcherToggle && isFocusedMode()) {
+      preserveCurrentFormState();
+      appState.showChartSwitcher = !appState.showChartSwitcher;
+      renderLayoutShell({
+        preferredSectionId: appState.layoutMode === "mobile" ? appState.activeMobileSectionId : "",
+      });
+      return;
+    }
+
     const chartTypeButton = event.target.closest("[data-chart-type]");
     if (chartTypeButton) {
       const nextChartType = chartTypeButton.dataset.chartType;
@@ -3724,6 +3840,19 @@ function wireEvents() {
 
 function init() {
   appState.layoutMode = getLayoutMode();
+  const entryChartType = resolveEntryChartTypeFromUrl();
+  if (entryChartType) {
+    appState.focusedChartType = entryChartType;
+    appState.showChartSwitcher = false;
+    appState.chartType = entryChartType;
+    appState.templateId = CHART_DEFINITIONS[entryChartType].templates[0].id;
+    appState.previewPieMode = entryChartType === "pie" ? "donut" : appState.previewPieMode;
+    appState.previewSeriesCount = supportsSeriesCountPreview(entryChartType) ? 2 : 1;
+    appState.previewDualAxisLeftSeriesCount = 2;
+    appState.previewDualAxisRightSeriesCount = 1;
+  } else if (isSupportedChartType(appState.chartType)) {
+    appState.templateId = CHART_DEFINITIONS[appState.chartType].templates[0].id;
+  }
   appState.commonValuesCache = { ...getCommonDefaults() };
   appState.specificValuesCache = buildSpecificDefaultState(getCurrentDefinition());
   updateLayoutVisibility();

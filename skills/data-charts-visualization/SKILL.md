@@ -358,6 +358,43 @@ Preferred handoff:
 
 If the user explicitly says to keep editing manually, the agent may continue, but should still acknowledge that the config page is now the more efficient path.
 
+### Config Return Payload Support
+
+Support a config-page return format like:
+
+```text
+/skill data-charts-visualization update-config
+type: line
+
+{ ...json... }
+```
+
+Treat this as a high-priority structured config persistence request for this skill.
+
+Default handling behavior:
+
+1. identify the chart type from `type`
+2. resolve the persistent target config file from the chart type instead of relying on a user-supplied relative path
+3. overwrite the target config file directly with the provided full JSON config
+4. tell the user the config update succeeded and that future charts of this type will use this config by default
+5. if appropriate, ask whether the user wants the chart rendered or re-rendered with the updated config
+
+Chart type to config file mapping:
+
+- `line` -> `config/line_style.json`
+- `bar` -> `config/bar_style.json`
+- `pie` -> `config/pie_style.json`
+- `gauge` -> `config/gauge_style.json`
+- `area` -> `config/area_style.json`
+- `dualAxis` -> `config/dual_axis_style.json`
+- `scatter` -> `config/scatter_style.json`
+- `radar` -> `config/radar_style.json`
+- `funnel` -> `config/funnel_style.json`
+
+All `config/...` paths are relative to the skill directory.
+
+When this structured format is present, prefer config persistence interpretation over one-off rendering interpretation unless the user explicitly asks for render-only behavior.
+
 ## Rendering Rules
 
 - preserve visual intent rather than browser interaction behavior

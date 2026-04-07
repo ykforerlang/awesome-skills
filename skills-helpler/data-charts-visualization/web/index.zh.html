@@ -17,19 +17,26 @@
   <body>
     <div class="page-shell">
       <main id="desktop-layout" class="desktop-layout">
-        <header class="hero">
-          <div class="hero-copy">
-            <p class="eyebrow">技能助手</p>
-            <h1>AI图表助手</h1>
-            <p class="hero-text">
-              聚焦 <code>skills/data-charts-visualization</code> 的样式配置。
-              快速调出你想要的图表观感，用预览确认效果，再保留样式配置去适配你自己的数据。
-            </p>
-          </div>
-        </header>
-
         <div class="workspace">
-          <section class="panel">
+          <section id="focus-banner" class="focus-banner hidden">
+            <div class="focus-banner-copy">
+              <p class="eyebrow">当前正在调整</p>
+              <h2 id="focus-banner-title">折线图</h2>
+              <p class="focus-banner-note">
+                调整完成后，点击“复制配置到 Agent 对话”，再把 JSON 粘贴回当前对话继续生效。
+              </p>
+            </div>
+            <button
+              id="focus-banner-toggle"
+              class="secondary-button small focus-toggle-button hidden"
+              data-toggle-chart-switcher="true"
+              type="button"
+            >
+              切换其他图表
+            </button>
+          </section>
+
+          <section id="chart-picker-panel" class="panel">
             <div class="section-heading">
               <div>
                 <p class="section-kicker">步骤 1</p>
@@ -81,17 +88,20 @@
               </div>
 
               <div class="output-column">
+                <section class="completion-card">
+                  <div class="completion-card-copy">
+                    <p class="completion-card-eyebrow">完成动作</p>
+                    <h3>复制配置到 Agent 对话</h3>
+                    <p>调完后把这段 JSON 粘贴回当前对话，Agent 会继续沿用这份样式。</p>
+                  </div>
+                  <button class="secondary-button completion-card-button" data-copy-target="style-output" type="button">
+                    复制配置到 Agent 对话
+                  </button>
+                </section>
+
                 <section class="subpanel preview-panel">
                   <div class="subpanel-head">
                     <h3>预览</h3>
-                  </div>
-                  <div class="preview-copy-panel">
-                    <button class="secondary-button small preview-copy-button" data-copy-target="style-output" type="button">
-                      复制配置
-                    </button>
-                    <div class="preview-copy-note">
-                      <p>复制调整后的配置，粘贴输入给 Agent，并默认生效到后续图表。</p>
-                    </div>
                   </div>
                   <div id="error-box" class="error-box hidden"></div>
                   <div id="dual-axis-preview-controls" class="dual-axis-preview-controls hidden"></div>
@@ -117,11 +127,17 @@
             <div class="mobile-section-head">
               <div id="mobile-preview-title" class="mobile-section-title">折线图</div>
               <div class="mobile-preview-head-actions">
-                <button class="mobile-copy-button" data-copy-target="style-output" type="button">
-                  复制到Agent
+                <button
+                  id="mobile-switch-chart-button"
+                  class="mobile-secondary-button hidden"
+                  data-toggle-chart-switcher="true"
+                  type="button"
+                >
+                  切换图表
                 </button>
               </div>
             </div>
+            <p class="mobile-copy-hint">调整完成后，复制配置并粘贴回当前 Agent 对话。</p>
 
             <div id="mobile-preview-controls" class="mobile-preview-config-panel hidden"></div>
 
@@ -156,6 +172,16 @@
               <div id="mobile-config-fields" class="mobile-field-grid"></div>
             </section>
           </div>
+        </section>
+
+        <section class="mobile-bottom-bar">
+          <div class="mobile-bottom-bar-copy">
+            <p class="mobile-bottom-bar-title">调完后复制配置</p>
+            <p class="mobile-bottom-bar-note">复制后粘贴回当前 Agent 对话继续生效。</p>
+          </div>
+          <button class="mobile-copy-button mobile-bottom-copy-button" data-copy-target="style-output" type="button">
+            复制配置
+          </button>
         </section>
       </main>
 
