@@ -1,28 +1,30 @@
 # CLI And Config Contract
 
-Read this file before calling `areslabs-data-charts`.
+Read this file before calling `npx -y @areslabs/data-charts-visualization`.
 
 ## Audience
 
 This document is written for OpenClaw-like agents.
-It explains the public contract of the published `areslabs-data-charts` CLI.
+It explains the public contract of the published `@areslabs/data-charts-visualization` CLI.
 
 ## One Command To Use
 
 Prefer:
 
 ```bash
-areslabs-data-charts \
+npx -y @areslabs/data-charts-visualization \
   --chart-type <chartType> \
   --config-file skills/data-charts-visualization/config/<chart>_style.json \
   --data '<json>' \
   --out <output.png>
 ```
 
+This is the default entrypoint because it does not require a global install of `areslabs-data-charts`.
+
 CLI shape:
 
 ```bash
-areslabs-data-charts --chart-type <type> (--data <json> | --data-file <file>) (--config <json> | --config-file <file>) [--variant <json>] [--width <px>] [--height <px>] [--out <dir|file>]
+npx -y @areslabs/data-charts-visualization --chart-type <type> (--data <json> | --data-file <file>) (--config <json> | --config-file <file>) [--variant <json>] [--width <px>] [--height <px>] [--out <dir|file>]
 ```
 
 ## Supported Top-Level Flags

@@ -23,7 +23,7 @@ One-off render choices such as bar layout, stack mode, pie mode, or dual-axis ty
 ## Usage
 
 ```bash
-npx --yes --package ./skills-scripts/data-charts-visualization areslabs-data-charts \
+npx -y @areslabs/data-charts-visualization \
   --chart-type line \
   --config-file skills/data-charts-visualization/config/line_style.json \
   --data-file /tmp/line_basic_single_series.json \

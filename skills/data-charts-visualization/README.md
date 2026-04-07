@@ -78,7 +78,8 @@ This skill is built for agent workflows that need chart output fast, reliably, a
 
 This skill is aimed at OpenClaw-like agents and other automation flows that need deterministic chart rendering instead of interactive BI sessions.
 
-- One CLI for all supported chart families: `areslabs-data-charts`
+- One CLI for all supported chart families: `npx -y @areslabs/data-charts-visualization`
+- No global install required; avoid documenting the bare `areslabs-data-charts` binary as the default entrypoint
 - Static image output by default, ideal for reports, dashboards, tickets, and generated assets
 - No browser dependency, which keeps environments simpler and cheaper to run
 - A small, explicit contract that makes chart generation easier to reason about than passing arbitrary raw styling blocks
@@ -94,63 +95,8 @@ This is where the skill separates itself from a thin chart wrapper.
 - Visual tuning path: when you want hands-on style exploration, use the config page and then bring the generated config back into the render flow
 
 Config page addresses:
+- addresses：`https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html`
 
-- 中文地址：`https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.zh.html`
-- 英文地址：`https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html`
-
-## What You Can Feed Into It
-
-The skill works well with the data shapes agents already produce:
-
-- title copy through `title.text` and `title.subtext`
-- raw `series` plus `xAxis` / `yAxis`
-- `dataset.source` plus `series.encode`
-- table-like data transformed into chart-ready payloads
-- pie, funnel, radar, and gauge specific raw data structures
-- one-off business-chart requests such as donut charts, horizontal stacked bars, or dual-axis bar-line combinations
-
-## Quick Start
-
-Published package:
-
-```bash
-npx -y @areslabs/data-charts-visualization \
-  --chart-type line \
-  --config-file skills/data-charts-visualization/config/line_style.json \
-  --data-file /tmp/line_basic_two_series.json \
-  --out /tmp
-```
-
-Primary CLI:
-
-```bash
-areslabs-data-charts \
-  --chart-type line \
-  --config-file skills/data-charts-visualization/config/line_style.json \
-  --data-file /tmp/line_basic_two_series.json \
-  --out /tmp
-```
-
-Inline data:
-
-```bash
-areslabs-data-charts \
-  --chart-type bar \
-  --config-file skills/data-charts-visualization/config/bar_style.json \
-  --data '{"xAxis":{"data":["Q1","Q2","Q3","Q4"]},"yAxis":{},"series":[{"type":"bar","name":"Plan","data":[120,140,150,170]},{"type":"bar","name":"Actual","data":[128,135,162,181]}]}' \
-  --out /tmp
-```
-
-One-off variant:
-
-```bash
-areslabs-data-charts \
-  --chart-type dualAxis \
-  --config-file skills/data-charts-visualization/config/dual_axis_style.json \
-  --data-file /tmp/dual_axis_two_series.json \
-  --variant '{"leftSeriesType":"bar","rightSeriesType":"line"}' \
-  --out /tmp
-```
 
 ## Best Fit
 
