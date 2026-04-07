@@ -147,6 +147,138 @@
     return parsed.length ? parsed : fallbackList;
   }
 
+  function clampNumber(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function parseHexColor(color) {
+    const source = String(color || "").trim();
+    const normalized = source.startsWith("#") ? source.slice(1) : source;
+    if (/^[0-9a-fA-F]{3}$/.test(normalized)) {
+      return {
+        red: Number.parseInt(normalized[0] + normalized[0], 16),
+        green: Number.parseInt(normalized[1] + normalized[1], 16),
+        blue: Number.parseInt(normalized[2] + normalized[2], 16)
+      };
+    }
+    if (/^[0-9a-fA-F]{6}$/.test(normalized)) {
+      return {
+        red: Number.parseInt(normalized.slice(0, 2), 16),
+        green: Number.parseInt(normalized.slice(2, 4), 16),
+        blue: Number.parseInt(normalized.slice(4, 6), 16)
+      };
+    }
+    return null;
+  }
+
+  function rgbToHsl(red, green, blue) {
+    const r = clampNumber(red, 0, 255) / 255;
+    const g = clampNumber(green, 0, 255) / 255;
+    const b = clampNumber(blue, 0, 255) / 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const lightness = (max + min) / 2;
+    if (max === min) {
+      return { hue: 0, saturation: 0, lightness };
+    }
+    const delta = max - min;
+    const saturation = lightness > 0.5
+      ? delta / (2 - max - min)
+      : delta / (max + min);
+    let hue;
+    switch (max) {
+      case r:
+        hue = ((g - b) / delta) + (g < b ? 6 : 0);
+        break;
+      case g:
+        hue = ((b - r) / delta) + 2;
+        break;
+      default:
+        hue = ((r - g) / delta) + 4;
+        break;
+    }
+    return {
+      hue: (hue * 60) % 360,
+      saturation,
+      lightness
+    };
+  }
+
+  function hueToRgb(p, q, t) {
+    let next = t;
+    if (next < 0) next += 1;
+    if (next > 1) next -= 1;
+    if (next < 1 / 6) return p + (q - p) * 6 * next;
+    if (next < 1 / 2) return q;
+    if (next < 2 / 3) return p + (q - p) * (2 / 3 - next) * 6;
+    return p;
+  }
+
+  function hslToHex(hue, saturation, lightness) {
+    const safeHue = ((Number(hue) % 360) + 360) % 360;
+    const safeSaturation = clampNumber(Number(saturation) || 0, 0, 1);
+    const safeLightness = clampNumber(Number(lightness) || 0, 0, 1);
+    let red;
+    let green;
+    let blue;
+    if (safeSaturation === 0) {
+      red = safeLightness;
+      green = safeLightness;
+      blue = safeLightness;
+    } else {
+      const q = safeLightness < 0.5
+        ? safeLightness * (1 + safeSaturation)
+        : safeLightness + safeSaturation - (safeLightness * safeSaturation);
+      const p = (2 * safeLightness) - q;
+      red = hueToRgb(p, q, safeHue / 360 + 1 / 3);
+      green = hueToRgb(p, q, safeHue / 360);
+      blue = hueToRgb(p, q, safeHue / 360 - 1 / 3);
+    }
+    const toHex = (channel) => Math.round(clampNumber(channel, 0, 1) * 255).toString(16).padStart(2, "0");
+    return `#${toHex(red)}${toHex(green)}${toHex(blue)}`;
+  }
+
+  function buildPaletteVariant(color, passIndex) {
+    if (!passIndex) {
+      return color;
+    }
+    const rgb = parseHexColor(color);
+    if (!rgb) {
+      return color;
+    }
+    const hsl = rgbToHsl(rgb.red, rgb.green, rgb.blue);
+    if (passIndex === 1) {
+      return hslToHex(
+        hsl.hue + 10,
+        clampNumber(hsl.saturation - 0.08, 0, 1),
+        clampNumber(hsl.lightness + 0.14, 0, 1)
+      );
+    }
+    return hslToHex(
+      hsl.hue - 10,
+      clampNumber(hsl.saturation + 0.06, 0, 1),
+      clampNumber(hsl.lightness - 0.12, 0, 1)
+    );
+  }
+
+  function expandPalette(basePalette, targetCount) {
+    const palette = parsePalette(basePalette);
+    if (!palette.length) {
+      return [];
+    }
+    const size = Math.max(1, Number(targetCount) || 0);
+    if (palette.length >= size) {
+      return palette.slice(0, size);
+    }
+    const expanded = [];
+    for (let index = 0; index < size; index += 1) {
+      const seedColor = palette[index % palette.length];
+      const passIndex = Math.floor(index / palette.length);
+      expanded.push(buildPaletteVariant(seedColor, passIndex));
+    }
+    return expanded;
+  }
+
   function coerceNumeric(value) {
     if (typeof value === "string" && /^-?\d+(\.\d+)?$/.test(value.trim())) {
       return Number(value);
@@ -257,6 +389,31 @@
     return Array.isArray(seriesList) ? seriesList.filter(Boolean).length : 0;
   }
 
+  function countSeriesDataItems(seriesList) {
+    if (!Array.isArray(seriesList) || !seriesList.length) {
+      return 0;
+    }
+    return seriesList.reduce((maxCount, series) => {
+      const dataCount = Array.isArray(series && series.data) ? series.data.length : 0;
+      return Math.max(maxCount, dataCount);
+    }, 0);
+  }
+
+  function resolveCommonPaletteTargetCount(chartType, rawOption) {
+    const seriesList = Array.isArray(rawOption && rawOption.series) ? rawOption.series : [];
+    if (chartType === "pie" || chartType === "funnel") {
+      return Math.max(1, countSeriesDataItems(seriesList));
+    }
+    return Math.max(1, countSeriesList(seriesList));
+  }
+
+  function resolveExpandedCommonPalette(commonState, chartType, rawOption) {
+    const basePalette = Array.isArray(commonState && commonState.palette)
+      ? commonState.palette
+      : parsePalette(commonState && commonState.palette);
+    return expandPalette(basePalette, resolveCommonPaletteTargetCount(chartType, rawOption));
+  }
+
   function applyStyleConfig(optionValue, styleValue, path) {
     const currentPath = path || [];
     if (styleValue === undefined || styleValue === null) {
@@ -356,14 +513,15 @@
     return placementMap[position] || placementMap["top-left"];
   }
 
-  function buildCommonOption(commonState, runtimeDefinition) {
+  function buildCommonOption(commonState, runtimeDefinition, chartType, rawOption) {
+    const palette = resolveExpandedCommonPalette(commonState, chartType, rawOption);
     const option = {
       title: {
         show: commonState.titleShow || commonState.subtitleShow,
         left: commonState.titleAlign
       },
       backgroundColor: commonState.backgroundColor,
-      color: Array.isArray(commonState.palette) ? commonState.palette : parsePalette(commonState.palette)
+      color: palette
     };
 
     if (runtimeDefinition.supportsLegend !== false) {
@@ -386,9 +544,10 @@
     return compactObject(option);
   }
 
-  function buildBaseStyleConfig(commonState, runtimeDefinition) {
+  function buildBaseStyleConfig(commonState, runtimeDefinition, chartType, rawOption) {
+    const palette = resolveExpandedCommonPalette(commonState, chartType, rawOption);
     const base = {
-      color: Array.isArray(commonState.palette) ? commonState.palette : parsePalette(commonState.palette),
+      color: palette,
       backgroundColor: commonState.backgroundColor,
       title: {
         show: commonState.titleShow || commonState.subtitleShow,
@@ -717,13 +876,11 @@
     return color;
   }
 
-  function resolveAreaFill(specificConfig, commonState, seriesIndex) {
+  function resolveAreaFill(specificConfig, palette, seriesIndex) {
     const nextSeriesIndex = seriesIndex || 0;
     const area = getAreaSpecificConfig(specificConfig).area;
-    const palette = Array.isArray(commonState && commonState.palette) && commonState.palette.length
-      ? commonState.palette
-      : ["#5470c6"];
-    const baseColor = palette[nextSeriesIndex % palette.length] || palette[0];
+    const availablePalette = Array.isArray(palette) && palette.length ? palette : ["#5470c6"];
+    const baseColor = availablePalette[nextSeriesIndex % availablePalette.length] || availablePalette[0];
     const topAlpha = Math.max(0, Math.min(1, numberOr(readOptionalNumber(area, "areaOpacity"), 0.24)));
     const bottomAlpha = Math.min(topAlpha, Math.max(0.02, Number((topAlpha * 0.18).toFixed(3))));
     if (readOptionalValue(area, "areaFillMode") === "gradient") {
@@ -745,6 +902,12 @@
       color: baseColor,
       opacity: readOptionalNumber(area, "areaOpacity")
     };
+  }
+
+  function resolveSeriesPaletteColor(palette, seriesIndex) {
+    const availablePalette = Array.isArray(palette) && palette.length ? palette : ["#5470c6"];
+    const nextSeriesIndex = seriesIndex || 0;
+    return availablePalette[nextSeriesIndex % availablePalette.length] || availablePalette[0];
   }
 
   function resolveLinePreviewSymbolVisibility(showSymbol, showLabel) {
@@ -947,17 +1110,18 @@
     return DUAL_AXIS_COLOR_LIST_FALLBACKS[fieldId] || ["#5470c6", "#91cc75", "#fac858"];
   }
 
-  function resolveDualAxisSeriesPalette(specificConfig, side, seriesType) {
+  function resolveDualAxisSeriesPalette(specificConfig, side, seriesType, targetCount) {
     const fieldId = `${side}${seriesType === "bar" ? "Bar" : "Line"}Colors`;
     const sideConfig = seriesType === "bar"
       ? getDualAxisBarConfig(specificConfig, side)
       : getDualAxisLineConfig(specificConfig, side);
-    return parseColorListText(readOptionalValue(sideConfig, "colors"), getDualAxisColorListFallback(fieldId));
+    const basePalette = parseColorListText(readOptionalValue(sideConfig, "colors"), getDualAxisColorListFallback(fieldId));
+    return expandPalette(basePalette, Math.max(1, Number(targetCount) || 1));
   }
 
-  function resolveDualAxisSeriesColor(specificConfig, side, seriesType, sideIndex) {
+  function resolveDualAxisSeriesColor(specificConfig, side, seriesType, sideIndex, targetCount) {
     const nextSideIndex = sideIndex || 0;
-    const palette = resolveDualAxisSeriesPalette(specificConfig, side, seriesType);
+    const palette = resolveDualAxisSeriesPalette(specificConfig, side, seriesType, targetCount);
     return palette[nextSideIndex % palette.length] || palette[0];
   }
 
@@ -966,7 +1130,7 @@
     const nextSideIndex = sideIndex || 0;
     const side = resolveDualAxisSeriesSide(series, specificConfig, nextIndex, dualAxisLayoutOverrides);
     const seriesType = side === "left" ? dualAxisTypes.leftType : dualAxisTypes.rightType;
-    const sideColor = resolveDualAxisSeriesColor(specificConfig, side, seriesType, nextSideIndex);
+    const sideColor = resolveDualAxisSeriesColor(specificConfig, side, seriesType, nextSideIndex, sideSeriesCount);
     const baseConfig = buildDualAxisSeriesConfig(specificConfig, side, dualAxisTypes, previewState, sideSeriesCount, dualAxisLayoutOverrides);
     if (seriesType === "bar") {
       return compactObject(deepMerge(baseConfig, {
@@ -1117,23 +1281,27 @@
     const dualAxisLayoutOverrides = cfg.dualAxisLayoutOverrides;
     const previewViewportSize = cfg.previewViewportSize || { width: 650, height: 360 };
     const layoutBox = buildLayoutBox(commonState);
+    const effectivePalette = resolveExpandedCommonPalette(commonState, chartType, rawOption);
 
     switch (chartType) {
       case "line":
         {
           const { line, dataLabels } = getLineSpecificConfig(specificConfig);
-          return compactObject({
-          xAxis: { type: "category" },
-          yAxis: { type: "value" },
-          series: [
-            {
+          const sourceSeries = Array.isArray(rawOption && rawOption.series) ? rawOption.series : [];
+          const styleSeries = (sourceSeries.length ? sourceSeries : [{}]).map((series, index) => {
+            const seriesColor = resolveSeriesPaletteColor(effectivePalette, index);
+            return compactObject({
               type: "line",
               symbol: readOptionalValue(line, "symbol"),
               symbolSize: resolveLinePreviewSymbolSize(readOptionalNumber(line, "symbolSize"), readOptionalBoolean(line, "showSymbol")),
               smooth: readOptionalBoolean(line, "smooth"),
               showSymbol: resolveLinePreviewSymbolVisibility(readOptionalBoolean(line, "showSymbol"), readOptionalBoolean(dataLabels, "show")),
               connectNulls: readOptionalBoolean(line, "connectNulls"),
+              itemStyle: {
+                color: seriesColor
+              },
               lineStyle: {
+                color: seriesColor,
                 width: readOptionalNumber(line, "lineWidth"),
                 type: readOptionalValue(line, "lineStyleType")
               },
@@ -1142,9 +1310,13 @@
                 fontSize: readOptionalNumber(dataLabels, "fontSize"),
                 color: readOptionalValue(dataLabels, "color")
               }
-            }
-          ]
-        });
+            });
+          });
+          return compactObject({
+            xAxis: { type: "category" },
+            yAxis: { type: "value" },
+            series: styleSeries
+          });
         }
       case "bar":
         {
@@ -1152,28 +1324,29 @@
           const sourceSeriesCount = countSeriesList(rawOption && rawOption.series);
           const isSingleBarVisual = sourceSeriesCount === 1 || Boolean(previewState.previewStackMode);
           const previewBarWidth = isSingleBarVisual ? "40%" : undefined;
+          const sourceSeries = Array.isArray(rawOption && rawOption.series) ? rawOption.series : [];
+          const styleSeries = (sourceSeries.length ? sourceSeries : [{}]).map((series, index) => compactObject({
+            type: "bar",
+            barWidth: previewBarWidth,
+            barGap: readOptionalValue(bar, "barGap"),
+            itemStyle: {
+              color: resolveSeriesPaletteColor(effectivePalette, index),
+              opacity: readOptionalNumber(bar, "itemOpacity"),
+              borderRadius: readOptionalNumber(bar, "borderRadius"),
+              borderWidth: readOptionalNumber(bar, "borderWidth"),
+              borderColor: readOptionalValue(bar, "borderColor")
+            },
+            label: {
+              show: readOptionalBoolean(dataLabels, "show"),
+              position: readOptionalValue(dataLabels, "position"),
+              fontSize: readOptionalNumber(dataLabels, "fontSize"),
+              color: readOptionalValue(dataLabels, "color")
+            }
+          }));
           return compactObject({
             xAxis: { type: "category" },
             yAxis: { type: "value" },
-            series: [
-              {
-                type: "bar",
-                barWidth: previewBarWidth,
-                barGap: readOptionalValue(bar, "barGap"),
-                itemStyle: {
-                  opacity: readOptionalNumber(bar, "itemOpacity"),
-                  borderRadius: readOptionalNumber(bar, "borderRadius"),
-                  borderWidth: readOptionalNumber(bar, "borderWidth"),
-                  borderColor: readOptionalValue(bar, "borderColor")
-                },
-                label: {
-                  show: readOptionalBoolean(dataLabels, "show"),
-                  position: readOptionalValue(dataLabels, "position"),
-                  fontSize: readOptionalNumber(dataLabels, "fontSize"),
-                  color: readOptionalValue(dataLabels, "color")
-                }
-              }
-            ]
+            series: styleSeries
           });
         }
       case "pie": {
@@ -1280,24 +1453,31 @@
         {
           const { area, dataLabels } = getAreaSpecificConfig(specificConfig);
           const sourceSeries = Array.isArray(rawOption && rawOption.series) ? rawOption.series : [];
-          const styleSeries = (sourceSeries.length ? sourceSeries : [{}]).map((series, index) => compactObject({
-            type: "line",
-            smooth: readOptionalBoolean(area, "smooth"),
-            showSymbol: resolveLinePreviewSymbolVisibility(readOptionalBoolean(area, "showSymbol"), readOptionalBoolean(dataLabels, "show")),
-            symbol: readOptionalValue(area, "symbol"),
-            symbolSize: resolveLinePreviewSymbolSize(readOptionalNumber(area, "symbolSize"), readOptionalBoolean(area, "showSymbol")),
-            connectNulls: readOptionalBoolean(area, "connectNulls"),
-            lineStyle: {
-              width: readOptionalNumber(area, "lineWidth"),
-              type: readOptionalValue(area, "lineStyleType")
-            },
-            label: {
-              show: readOptionalBoolean(dataLabels, "show"),
-              fontSize: readOptionalNumber(dataLabels, "fontSize"),
-              color: readOptionalValue(dataLabels, "color")
-            },
-            areaStyle: resolveAreaFill(specificConfig, commonState, index)
-          }));
+          const styleSeries = (sourceSeries.length ? sourceSeries : [{}]).map((series, index) => {
+            const seriesColor = resolveSeriesPaletteColor(effectivePalette, index);
+            return compactObject({
+              type: "line",
+              smooth: readOptionalBoolean(area, "smooth"),
+              showSymbol: resolveLinePreviewSymbolVisibility(readOptionalBoolean(area, "showSymbol"), readOptionalBoolean(dataLabels, "show")),
+              symbol: readOptionalValue(area, "symbol"),
+              symbolSize: resolveLinePreviewSymbolSize(readOptionalNumber(area, "symbolSize"), readOptionalBoolean(area, "showSymbol")),
+              connectNulls: readOptionalBoolean(area, "connectNulls"),
+              itemStyle: {
+                color: seriesColor
+              },
+              lineStyle: {
+                color: seriesColor,
+                width: readOptionalNumber(area, "lineWidth"),
+                type: readOptionalValue(area, "lineStyleType")
+              },
+              label: {
+                show: readOptionalBoolean(dataLabels, "show"),
+                fontSize: readOptionalNumber(dataLabels, "fontSize"),
+                color: readOptionalValue(dataLabels, "color")
+              },
+              areaStyle: resolveAreaFill(specificConfig, effectivePalette, index)
+            });
+          });
           return compactObject({
             xAxis: { type: "category" },
             yAxis: { type: "value" },
@@ -1342,26 +1522,27 @@
       case "scatter":
         {
           const { point, dataLabels } = getScatterSpecificConfig(specificConfig);
+          const sourceSeries = Array.isArray(rawOption && rawOption.series) ? rawOption.series : [];
+          const styleSeries = (sourceSeries.length ? sourceSeries : [{}]).map((series, index) => compactObject({
+            type: "scatter",
+            symbol: readOptionalValue(point, "symbol"),
+            symbolSize: numberOr(readOptionalNumber(point, "symbolSize"), 64),
+            itemStyle: {
+              color: resolveSeriesPaletteColor(effectivePalette, index),
+              opacity: readOptionalNumber(point, "itemOpacity"),
+              borderWidth: readOptionalNumber(point, "borderWidth"),
+              borderColor: readOptionalValue(point, "borderColor")
+            },
+            label: {
+              show: readOptionalBoolean(dataLabels, "show"),
+              fontSize: readOptionalNumber(dataLabels, "fontSize"),
+              color: readOptionalValue(dataLabels, "color")
+            }
+          }));
           return compactObject({
             xAxis: { type: "value" },
             yAxis: { type: "value" },
-            series: [
-              {
-                type: "scatter",
-                symbol: readOptionalValue(point, "symbol"),
-                symbolSize: numberOr(readOptionalNumber(point, "symbolSize"), 64),
-                itemStyle: {
-                  opacity: readOptionalNumber(point, "itemOpacity"),
-                  borderWidth: readOptionalNumber(point, "borderWidth"),
-                  borderColor: readOptionalValue(point, "borderColor")
-                },
-                label: {
-                  show: readOptionalBoolean(dataLabels, "show"),
-                  fontSize: readOptionalNumber(dataLabels, "fontSize"),
-                  color: readOptionalValue(dataLabels, "color")
-                }
-              }
-            ]
+            series: styleSeries
           });
         }
       case "radar":
@@ -1465,7 +1646,7 @@
     const dualAxisLayoutOverrides = isObject(params.dualAxisLayoutOverrides) ? params.dualAxisLayoutOverrides : undefined;
     const previewViewportSize = params.previewViewportSize || { width: 650, height: 360 };
 
-    const baseOption = buildCommonOption(commonState, runtimeDefinition);
+    const baseOption = buildCommonOption(commonState, runtimeDefinition, chartType, rawData);
     const structurePatch = buildStructurePatch(chartType, specificConfig, dualAxisLayoutOverrides);
     let rawOption;
 
@@ -1485,7 +1666,7 @@
         "config/base_style.json",
         `config/${runtimeDefinition.styleFile}`
       ],
-      baseStyleConfig: buildBaseStyleConfig(commonState, runtimeDefinition),
+      baseStyleConfig: buildBaseStyleConfig(commonState, runtimeDefinition, chartType, rawOption),
       chartStyleConfig: buildChartStyleConfig(chartType, specificConfig, commonState, rawOption, {
         previewState,
         dualAxisTypes,

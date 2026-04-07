@@ -37,6 +37,7 @@ const FIXED_PREVIEW_VIEWPORT = Object.freeze({
 const PREVIEW_RENDERER = "svg";
 const MOBILE_BREAKPOINT = 760;
 const MOBILE_LAYOUT_MEDIA = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+const EXPORT_COMMAND_NAME = "/skill data-charts-visualization update-config";
 
 function toNumericDefaultValue(value) {
   if (typeof value === "number" && Number.isFinite(value)) {
@@ -396,12 +397,12 @@ const UI_TEXT = {
     copyFailed: "Copy failed. Try again.",
     dataLabel: "Data",
     jsonInvalidPrefix: "{label} JSON is invalid: ",
-    fixStyle: "// Fix JSON errors to regenerate style output.",
+    fixStyle: "// Fix JSON errors to regenerate the export command.",
     specificFieldsSuffix: "fields",
     stylePayload: "Style Payload",
     focusToggleShow: "Switch chart",
     focusToggleHide: "Hide chart list",
-    focusBannerNote: "When you finish tuning, click \"Copy Config To Agent Chat\" and paste the JSON back into the current conversation.",
+    focusBannerNote: "When you finish tuning, click \"Copy Config To Agent Chat\" and paste the exported command back into the current conversation.",
   },
   zh: {
     ready: "就绪",
@@ -410,12 +411,12 @@ const UI_TEXT = {
     copyFailed: "复制失败，请重试",
     dataLabel: "数据",
     jsonInvalidPrefix: "{label} JSON 格式错误: ",
-    fixStyle: "// 请先修复 JSON 错误，再重新生成样式配置。",
+    fixStyle: "// 请先修复 JSON 错误，再重新生成导出命令。",
     specificFieldsSuffix: "配置",
     stylePayload: "样式配置",
     focusToggleShow: "切换其他图表",
     focusToggleHide: "收起图表列表",
-    focusBannerNote: "调整完成后，点击“复制配置到 Agent 对话”，再把 JSON 粘贴回当前对话继续生效。",
+    focusBannerNote: "调整完成后，点击“复制配置到 Agent 对话”，再把导出命令粘贴回当前对话继续生效。",
   },
 };
 
@@ -3503,6 +3504,15 @@ function renderPreview(option) {
   renderPreviewInto(getActivePreviewContainerId(), option);
 }
 
+function buildExportCommandText(chartType, helperConfig) {
+  return [
+    EXPORT_COMMAND_NAME,
+    `type： ${chartType}`,
+    "",
+    JSON.stringify(helperConfig, null, 2),
+  ].join("\n");
+}
+
 function updateOutputs() {
   renderFoundationVisibility();
   renderPreviewControls();
@@ -3528,7 +3538,7 @@ function updateOutputs() {
           }
         : undefined,
     });
-    const { stylePayload, resolvedOption: resolved } = sharedOptionBuilder.buildChartArtifactsFromHelperConfig({
+    const { resolvedOption: resolved } = sharedOptionBuilder.buildChartArtifactsFromHelperConfig({
       chartType: appState.chartType,
       helperConfig,
       rawData,
@@ -3546,7 +3556,7 @@ function updateOutputs() {
       previewViewportSize: getPreviewViewportSize(),
     });
 
-    setTextIfExists("style-output", JSON.stringify(stylePayload, null, 2));
+    setTextIfExists("style-output", buildExportCommandText(appState.chartType, helperConfig));
     renderPreview(resolved);
 
     hideError();
