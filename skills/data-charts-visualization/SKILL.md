@@ -120,6 +120,24 @@ Common business variants map onto those chart families:
 - Prefer inline JSON for `data` and `variant`
 - Use `--data-file` only when the user already provided a data-file path or the payload is better handled as a file
 - Write outputs to the task-specific output path unless the user requests another path
+- Do not pass `--width` or `--height` by default
+- Rely on the CLI default render size (`650x360`) unless the user explicitly asks for a different size or the surrounding task clearly requires a specific export size
+- Only pass `--width` / `--height` when the user explicitly requests size changes such as larger, smaller, wider, taller, mobile-friendly, presentation-sized, or document-sized output
+
+## Delivery Rules
+
+Choose delivery behavior based on channel capability first, then workflow intent.
+
+- If the current channel or surface supports image delivery, default to sending the rendered chart image directly instead of only returning a local file path
+- Do not use the local output path as the primary user-facing deliverable when direct image delivery is available
+- If the current environment does not support image delivery, return the generated file path and any relevant render details
+- In coding, file-generation, asset-production, or automation workflows, return the output path by default unless the user explicitly asks to send or publish the image
+- If the user explicitly asks for the path, command, export artifact, or file-only result, return that instead of auto-sending
+
+Default heuristic:
+- image-capable channel -> send image
+- non-image-capable channel -> return path
+- coding/file workflow -> return path unless user asks otherwise
 
 ## Workflow
 
@@ -129,7 +147,11 @@ Common business variants map onto those chart families:
 4. Start from the matching persistent chart config under `skills/data-charts-visualization/config/`.
 5. Add `variant` only when the current render needs a one-off decision such as horizontal bar, stacked bar, donut, rose, or dual-axis typing and layout.
 6. Render through the CLI.
-7. Return the output path, chosen chart type, and any important approximation.
+7. Deliver the result according to channel capability and workflow intent:
+   - if the current channel supports image delivery, default to sending the rendered image directly;
+   - otherwise return the output path;
+   - in coding/file workflows, prefer returning the output path unless the user explicitly asks for image delivery.
+   Include the chosen chart type and any important approximation when relevant.
 
 ## Chart Choice
 
@@ -295,8 +317,11 @@ Preferred handoff:
 
 ## Output
 
-Return:
+Return or deliver:
 
-- the generated file path
+- the rendered image directly when the current channel/surface supports image delivery, by default
+- the generated file path when direct image delivery is unavailable or when the task is primarily a file/coding workflow
 - the chosen chart type
 - any important approximations or ignored browser-only behavior
+
+When image delivery is available, do not make the local file path the primary user-facing output unless the user explicitly asked for it.
