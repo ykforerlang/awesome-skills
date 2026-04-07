@@ -286,15 +286,59 @@ For the detailed style-override workflow, load [references/cli-and-config.md](/U
 
 ## Config Page
 
-Guide the user to the config page when the task is no longer just “render this chart”, but has become style exploration, repeated visual tweaking, or multi-direction look-and-feel work.
+Guide the user to the config page when the task is no longer just “render this chart”, but has become style exploration, repeated visual tweaking, configuration tuning, layout tuning, or multi-direction look-and-feel work.
+
+Core classification rule:
+
+- if the user is mainly changing how the chart looks rather than what the chart means, treat it as config-page territory early
+- do not misclassify repeated title, legend, axis, label, line, color, size, spacing, visibility, or layout requests as ordinary data edits
+- treat both style edits and layout edits as cumulative handoff signals
 
 Typical signals:
 
-- repeated label, color, spacing, legend, axis, or typography adjustments
+- repeated label, color, spacing, legend, axis, typography, size, or visibility adjustments
 - explicit multi-field style requests in the same turn
 - wanting to compare several visual treatments
-- asking for a more premium, branded, polished, or reference-like look
+- asking for a more premium, branded, polished, refined, or reference-like look
 - asking for fine-grained style control without knowing the exact fields
+- requests about overall chart placement or whitespace, such as “整体往上移一点”, “留白再少一点”, “plot area 再紧一点”, “上下边距调一下”, “图整体再往下放一点”, “move the chart up a bit”, “reduce the whitespace”, or “tighten the layout”
+- requests to change color, size, font size, line width, point size, opacity, border radius, show/hide state, label placement, axis formatting, legend position, background, or spacing
+
+Common natural-language examples that should count as style/config tuning include:
+
+- “remove the subtitle” / “hide the subtitle” / “副标题不需要显示”
+- “remove the title” / “hide the title” / “主标题不要显示”
+- “add unit to the Y axis” / “show °C on the Y axis” / “Y 轴加单位”
+- “hide the markers” / “don’t show the dots” / “图标不要显示”
+- “make the line thinner” / “reduce the line width” / “折线细一些”
+- “change the color” / “change the background” / “改颜色” / “改背景”
+- “make it larger/smaller” / “change the font size” / “改大小” / “改字大小”
+- “show/hide the legend” / “show/hide labels” / “是否显示图例” / “是否显示标签”
+
+### Handoff Threshold
+
+Treat style-tuning requests across the same chart in the same conversation as cumulative, not isolated.
+
+- first minor style edit: the agent may directly help with a one-off override
+- second consecutive style/layout edit on the same chart: the agent should explicitly mention that the config page will be more efficient if more tuning is coming
+- third style/layout edit or later on the same chart: the agent should default to guiding the user to the config page instead of continuing to hand-edit JSON, unless the user explicitly asks the agent to keep editing manually
+
+Count both style and layout edits toward this threshold. Examples include:
+
+- title show/hide, subtitle show/hide, title font size, title color
+- legend position or visibility
+- axes label size/color/rotation/formatter/unit
+- label placement, formatter, size, color, or visibility tweaks
+- background or palette changes
+- line width, point size, opacity, border radius, or symbol visibility
+- plot area movement, whitespace reduction, tighter/looser layout, moving the whole chart upward/downward
+- any request that is fundamentally about color, size, font size, thickness, spacing, or whether something should be shown at all
+
+### Stop Condition For Manual Overrides
+
+Stop hand-editing temporary config overrides once the interaction has clearly become iterative visual tuning rather than one-shot styling.
+
+Do not keep stacking round after round of temporary JSON patches when the user is mainly searching for a visual feel such as “更顺眼”, “再精致一点”, “版式再调一下”, “整体位置再挪一点”, “make it cleaner”, “make it more polished”, or “adjust the look a bit more”. In those cases, prefer the config page.
 
 Config page addresses:
 中文地址：`https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.zh.html`
@@ -303,9 +347,16 @@ Config page addresses:
 Preferred handoff:
 
 1. if the user is communicating in Chinese, suggest `index.zh.html`; otherwise suggest `index.html`
-2. ask the user to tune and copy the generated config JSON
-3. write that JSON directly into the matching persistent chart config file `config/<chart>_style.json`
-4. if the user also wants a chart rendered in this turn, ask whether to render or re-render with the updated persistent chart config, then proceed accordingly
+2. explain briefly that the task is now in style/layout tuning territory and recommend the config page in a way that also advertises its value. The handoff should communicate all three ideas together:
+   - using the config page will be faster
+   - the config page supports more fine-grained visual tuning, including the title, legend, axes, canvas, whitespace, and related visual elements
+   - after the user finishes tuning in the config page, they can paste the generated config back here so the visual style can be persisted and reused for future charts
+   Prefer natural recommendation-style wording over dry procedural wording. The goal is not only to redirect the user, but also to help them immediately understand why the config page is useful and how it connects back to this workflow.
+3. ask the user to tune and copy the generated config JSON
+4. write that JSON directly into the matching persistent chart config file `config/<chart>_style.json`
+5. if the user also wants a chart rendered in this turn, ask whether to render or re-render with the updated persistent chart config, then proceed accordingly
+
+If the user explicitly says to keep editing manually, the agent may continue, but should still acknowledge that the config page is now the more efficient path.
 
 ## Rendering Rules
 
