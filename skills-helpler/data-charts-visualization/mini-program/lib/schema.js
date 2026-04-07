@@ -134,6 +134,7 @@
       label: "分割线",
       fields: [
         { id: "splitLineShow", label: "显示横向分割线", type: "checkbox" },
+        { id: "splitLineDisplay", label: "水平分割线显示位置", type: "select", options: [["left", "左轴"], ["right", "右轴"]] },
         { id: "splitLineColor", label: "横向分割线颜色", type: "color" },
         {
           id: "splitLineType",
@@ -369,8 +370,6 @@ const LOCALIZED_DEFINITION_TEXT = {
       tags: ["柱/线组合", "副轴", "dataset + encode"],
       fields: {
         barGap: "柱间距",
-        splitLineAxisGroup: "水平分割线",
-        horizontalSplitLineDisplay: "显示位置",
         leftAxisGroup: "左轴",
         leftAxisLabelFontSize: "左轴字号",
         leftAxisLabelColor: "左轴颜色",
@@ -435,7 +434,6 @@ const LOCALIZED_DEFINITION_TEXT = {
         rightLineLabelColor: "右线标签颜色",
       },
       fieldHelp: {
-        splitLineAxisGroup: "决定水平分割线显示在左轴、右轴，或不显示。",
         leftAxisGroup: "控制左侧数值轴的字号、颜色、刻度和轴线样式。",
         leftBarGroup: "控制左侧系列在柱状形态下的标签、配色和描边样式。",
         leftLineGroup: "控制左侧系列在折线形态下的平滑、拐点和线条样式。",
@@ -444,7 +442,6 @@ const LOCALIZED_DEFINITION_TEXT = {
         rightLineGroup: "控制右侧系列在折线形态下的平滑、拐点和线条样式。",
       },
       options: {
-        horizontalSplitLineDisplay: { left: "左轴", right: "右轴", none: "不显示" },
         leftBarLabelPosition: { top: "顶部", inside: "内部", insideTop: "内部顶部", insideRight: "内部右侧", outside: "外部" },
         rightBarLabelPosition: { top: "顶部", inside: "内部", insideTop: "内部顶部", insideRight: "内部右侧", outside: "外部" },
         leftLineStyleType: { solid: "实线", dashed: "虚线", dotted: "点线" },
@@ -998,18 +995,6 @@ const CHART_DEFINITIONS = {
     blurb: "Best for mixed two-series layouts when two units must coexist in one chart. Each side can be a bar or a line.",
     tags: ["bar/line mix", "secondary axis", "dataset + encode"],
       fields: [
-      { id: "splitLineAxisGroup", label: "Horizontal Split Lines", type: "group", help: "Choose whether horizontal split lines appear on the left axis, right axis, or stay hidden." },
-      {
-        id: "horizontalSplitLineDisplay",
-        label: "Display On",
-        type: "select",
-        default: "left",
-        options: [
-          ["left", "Left Axis"],
-          ["right", "Right Axis"],
-          ["none", "Hidden"],
-        ],
-      },
       { id: "leftAxisGroup", label: "Left Value Axis", type: "group", help: "Control the bar axis scale, labels, ticks, and line styling." },
       { id: "leftAxisLabelFontSize", label: "Left Axis Label Size", type: "number", default: 11, step: 1 },
       { id: "leftAxisLabelColor", label: "Left Axis Label Color", type: "color", default: "#9ca3af" },

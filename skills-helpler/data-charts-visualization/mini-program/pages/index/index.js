@@ -68,6 +68,7 @@ const COMMON_FIELD_LABELS = {
   yAxisLineColor: "Y 轴线颜色",
   yFormatter: "Y 轴格式",
   splitLineShow: "显示横向分割线",
+  splitLineDisplay: "横向分割线显示位置",
   splitLineColor: "横向分割线颜色",
   splitLineType: "横向分割线样式",
   splitLineWidth: "横向分割线宽度",
@@ -90,6 +91,7 @@ const COMMON_OPTION_LABELS = {
     "bottom-right": "右下"
   },
   legendOrient: { horizontal: "水平", vertical: "垂直" },
+  splitLineDisplay: { left: "左轴", right: "右轴" },
   splitLineType: { solid: "实线", dashed: "虚线", dotted: "点线" },
   xSplitLineType: { solid: "实线", dashed: "虚线", dotted: "点线" }
 };
@@ -133,8 +135,6 @@ const SPECIFIC_FIELD_LABELS = {
     labelColor: "标签颜色"
   },
   dualAxis: {
-    splitLineAxisGroup: "水平分割线",
-    horizontalSplitLineDisplay: "显示位置",
     leftAxisGroup: "左轴",
     leftAxisLabelFontSize: "左轴字号",
     leftAxisLabelColor: "左轴颜色",
@@ -317,7 +317,6 @@ const SPECIFIC_OPTION_LABELS = {
     lineStyleType: { solid: "实线", dashed: "虚线", dotted: "点线" }
   },
   dualAxis: {
-    horizontalSplitLineDisplay: { left: "左轴", right: "右轴", none: "不显示" },
     leftBarLabelPosition: { top: "顶部", inside: "内部", insideTop: "内部顶部", insideRight: "内部右侧", outside: "外部" },
     rightBarLabelPosition: { top: "顶部", inside: "内部", insideTop: "内部顶部", insideRight: "内部右侧", outside: "外部" },
     leftLineStyleType: { solid: "实线", dashed: "虚线", dotted: "点线" },
@@ -351,7 +350,6 @@ const SPECIFIC_OPTION_LABELS = {
 
 const SPECIFIC_SECTION_HELP = {
   dualAxis: {
-    splitLineAxisGroup: "选择共享分割线跟随左轴还是右轴。",
     leftAxisGroup: "控制左侧数值轴。",
     leftBarGroup: "控制左侧柱图样式。",
     leftLineGroup: "控制左侧线图样式。",
@@ -527,7 +525,9 @@ function buildCommonSections(chartType, values) {
     .map((group) => ({
       ...group,
       help: COMMON_GROUP_HELP[group.id] || "",
-      fields: group.fields.map((field) => toFieldView("common", chartType, field, values[field.id]))
+      fields: group.fields
+        .filter((field) => field.id !== "splitLineDisplay" || chartType === "dualAxis")
+        .map((field) => toFieldView("common", chartType, field, values[field.id]))
     }));
 }
 
@@ -607,7 +607,11 @@ function getTemplateDualAxisSeriesTypes() {
   seriesList.forEach((series, index) => {
     const axisIndex = horizontal ? series && series.xAxisIndex : series && series.yAxisIndex;
     const side = axisIndex === 1 ? "right" : (axisIndex === 0 ? "left" : (index === 1 ? "right" : "left"));
-    const type = series && series.type === "line" ? "line" : "bar";
+    const type = series && series.type === "line"
+      ? "line"
+      : series && series.type === "bar"
+        ? "bar"
+        : (side === "right" ? "line" : "bar");
     if (side === "left" && !leftType) {
       leftType = type;
     }

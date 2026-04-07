@@ -3,7 +3,7 @@
     "source": "skills-helpler/data-charts-visualization/shared/charts-default-config.js",
     "exportedBy": "skills-helpler/data-charts-visualization/scripts/export_default_configs.js",
     "chartType": "dualAxis",
-    "exportedAt": "2026-04-06T12:38:29.159Z",
+    "exportedAt": "2026-04-06T13:14:04.223Z",
     "note": "Default dual-axis helper config exported from shared defaults.",
     "combo": "bar-line"
   },
@@ -70,7 +70,8 @@
         "show": true,
         "color": "#e5e7eb",
         "type": "dashed",
-        "width": 0.6
+        "width": 0.6,
+        "display": "left"
       },
       "vertical": {
         "show": false,
@@ -81,9 +82,6 @@
     }
   },
   "specific": {
-    "layout": {
-      "horizontalSplitLineDisplay": "left"
-    },
     "leftAxis": {
       "labelFontSize": 12,
       "labelColor": "#9ca3af",

@@ -205,6 +205,7 @@
     if ("formatter" in yAxis) nextState.yFormatter = yAxis.formatter;
 
     if ("show" in horizontalSplit) nextState.splitLineShow = Boolean(horizontalSplit.show);
+    if ("display" in horizontalSplit) nextState.splitLineDisplay = horizontalSplit.display;
     if ("color" in horizontalSplit) nextState.splitLineColor = horizontalSplit.color;
     if ("type" in horizontalSplit) nextState.splitLineType = horizontalSplit.type;
     if ("width" in horizontalSplit) nextState.splitLineWidth = coerceNumeric(horizontalSplit.width);
@@ -505,19 +506,11 @@
   }
 
   function getDualAxisLayoutConfig(specificConfig, layoutOverrides) {
-    const layout = isObject(specificConfig && specificConfig.layout) ? specificConfig.layout : {};
+    const layout = {};
     if (!isObject(layoutOverrides)) {
       return layout;
     }
-    return { ...layout, ...layoutOverrides };
-  }
-
-  function resolveDualAxisHorizontalSplitLineDisplay(layout) {
-    const explicitDisplay = readOptionalValue(layout, "horizontalSplitLineDisplay");
-    if (explicitDisplay === "left" || explicitDisplay === "right" || explicitDisplay === "none") {
-      return explicitDisplay;
-    }
-    return "left";
+    return { ...layoutOverrides };
   }
 
   function isDualAxisHorizontal(specificConfig, layoutOverrides) {
@@ -771,22 +764,19 @@
 
   function buildDualAxisValueAxisConfig(commonState, specificConfig, side, dualAxisLayoutOverrides) {
     const axisConfig = getDualAxisAxisConfig(specificConfig, side);
-    const layout = getDualAxisLayoutConfig(specificConfig, dualAxisLayoutOverrides);
     const formatter = readOptionalValue(axisConfig, "formatter");
     const labelFontSize = readOptionalNumber(axisConfig, "labelFontSize");
     const labelColor = readOptionalValue(axisConfig, "labelColor");
     const axisLineShow = readOptionalBoolean(axisConfig, "lineShow");
     const axisLineColor = readOptionalValue(axisConfig, "lineColor");
     const axisTickShow = readOptionalBoolean(axisConfig, "tickShow");
-    const horizontalSplitLineDisplay = resolveDualAxisHorizontalSplitLineDisplay(layout);
     const horizontal = isDualAxisHorizontal(specificConfig, dualAxisLayoutOverrides);
     const sharedSplitLineShow = horizontal ? commonState.xSplitLineShow : commonState.splitLineShow;
+    const sharedSplitLineDisplay = commonState.splitLineDisplay === "right" ? "right" : "left";
     const sharedSplitLineColor = horizontal ? commonState.xSplitLineColor : commonState.splitLineColor;
     const sharedSplitLineType = normalizeStrokeType(horizontal ? commonState.xSplitLineType : commonState.splitLineType);
     const sharedSplitLineWidth = horizontal ? commonState.xSplitLineWidth : commonState.splitLineWidth;
-    const effectiveSplitLineShow = horizontalSplitLineDisplay === "none"
-      ? false
-      : side === horizontalSplitLineDisplay ? sharedSplitLineShow : false;
+    const effectiveSplitLineShow = sharedSplitLineShow ? side === sharedSplitLineDisplay : false;
 
     return compactObject({
       type: "value",

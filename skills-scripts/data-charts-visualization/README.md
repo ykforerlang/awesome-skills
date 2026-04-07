@@ -585,7 +585,7 @@ Precedence:
 - `variant` does not replace `config`.
 - `variant` only affects temporary render strategy fields.
 - For `dualAxis`, `layout`, `leftSeriesType`, and `rightSeriesType` in `variant` override the base dual-axis render strategy for this render only.
-- For `dualAxis`, horizontal split-line display stays in persisted `config.specific.layout.horizontalSplitLineDisplay`; supported values are `left`, `right`, and `none`.
+- For `dualAxis`, horizontal split-line side stays in persisted `config.common.splitLines.horizontal.display`; supported values are `left` and `right`. Use `config.common.splitLines.horizontal.show = false` to hide them.
 - For bar layout and stack preview behavior, `variant` is applied at render time and does not mutate the saved helper config.
 
 ## Output

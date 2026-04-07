@@ -32,7 +32,7 @@ Manual CLI rendering still requires an explicit helper config, either through `-
 Use `--data` for inline JSON and `--data-file` for file input.
 One-off render strategy should go through CLI `--variant`, not through config files.
 For dual-axis charts, horizontal layout and left/right series typing should go through `--variant`.
-Dual-axis horizontal split-line display belongs to persisted config through `specific.layout.horizontalSplitLineDisplay`.
+Dual-axis horizontal split-line side belongs to persisted config through `common.splitLines.horizontal.display`. Set `common.splitLines.horizontal.show` to `false` when you want no horizontal split line.
 
 Example repo-local invocation with a skill config file:
 

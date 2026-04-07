@@ -123,6 +123,7 @@
       yAxisLineColor: "#9ca3af",
       yFormatter: "{value}",
       splitLineShow: true,
+      splitLineDisplay: "left",
       splitLineColor: "#e5e7eb",
       splitLineType: "dashed",
       splitLineWidth: 0.6,
@@ -165,6 +166,7 @@
       yAxisLineColor: "#9ca3af",
       yFormatter: "{value}",
       splitLineShow: true,
+      splitLineDisplay: "left",
       splitLineColor: "#e5e7eb",
       splitLineType: "dashed",
       splitLineWidth: 0.6,
@@ -308,6 +310,7 @@
         legendPosition: "bottom-center",
         legendOrient: "horizontal",
         splitLineShow: true,
+        splitLineDisplay: "left",
         splitLineType: "dashed",
         xSplitLineShow: false,
         gridLeft: "12%",
@@ -316,7 +319,6 @@
         gridBottom: "15%",
       },
       specific: {
-        horizontalSplitLineDisplay: "left",
         leftBarGap: "10%",
         leftLineSmooth: true,
         leftLineArea: false,
@@ -449,7 +451,6 @@
       labelColor: "#334155",
     },
     dualAxis: {
-      horizontalSplitLineDisplay: "left",
       leftAxisLabelFontSize: 12,
       leftAxisLabelColor: "#9ca3af",
       leftAxisLineShow: true,
@@ -642,7 +643,7 @@
   function buildRawHelperConfig(chartType, commonState, specificState, options) {
     return {
       chartType,
-      common: buildHelperCommonState(commonState),
+      common: buildHelperCommonState(chartType, commonState),
       specific: buildHelperSpecificState(chartType, specificState),
     };
   }
@@ -661,6 +662,9 @@
       delete nextConfig.common.axes;
       delete nextConfig.common.splitLines;
     }
+    if (chartType !== "dualAxis" && isObject(nextConfig.common.splitLines) && isObject(nextConfig.common.splitLines.horizontal)) {
+      delete nextConfig.common.splitLines.horizontal.display;
+    }
 
     nextConfig.common = compactObject(nextConfig.common);
     return compactObject(nextConfig);
@@ -673,8 +677,17 @@
     );
   }
 
-  function buildHelperCommonState(commonState) {
+  function buildHelperCommonState(chartType, commonState) {
     const source = deepClone(commonState || {});
+    const horizontalSplitLine = {
+      show: source.splitLineShow,
+      color: source.splitLineColor,
+      type: source.splitLineType,
+      width: source.splitLineWidth,
+    };
+    if (chartType === "dualAxis") {
+      horizontalSplitLine.display = source.splitLineDisplay;
+    }
     return {
       title: {
         main: {
@@ -727,12 +740,7 @@
         },
       },
       splitLines: {
-        horizontal: {
-          show: source.splitLineShow,
-          color: source.splitLineColor,
-          type: source.splitLineType,
-          width: source.splitLineWidth,
-        },
+        horizontal: horizontalSplitLine,
         vertical: {
           show: source.xSplitLineShow,
           color: source.xSplitLineColor,
@@ -800,9 +808,6 @@
         };
       case "dualAxis":
         return {
-          layout: {
-            horizontalSplitLineDisplay: source.horizontalSplitLineDisplay,
-          },
           leftAxis: {
             labelFontSize: source.leftAxisLabelFontSize,
             labelColor: source.leftAxisLabelColor,

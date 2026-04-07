@@ -230,9 +230,11 @@ function buildPreviewCases(chartType) {
           layout: "vertical",
         },
         configPatch: {
-          specific: {
-            layout: {
-              horizontalSplitLineDisplay: "right"
+          common: {
+            splitLines: {
+              horizontal: {
+                display: "right"
+              }
             }
           }
         }
@@ -247,9 +249,11 @@ function buildPreviewCases(chartType) {
           layout: "vertical",
         },
         configPatch: {
-          specific: {
-            layout: {
-              horizontalSplitLineDisplay: "none"
+          common: {
+            splitLines: {
+              horizontal: {
+                show: false
+              }
             }
           }
         }

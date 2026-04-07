@@ -459,6 +459,7 @@ const COMMON_FIELD_DOM_IDS = {
   yAxisLineColor: "y-axis-line-color",
   yFormatter: "y-formatter",
   splitLineShow: "split-line-show",
+  splitLineDisplay: "split-line-display",
   splitLineColor: "split-line-color",
   splitLineType: "split-line-type",
   splitLineWidth: "split-line-width",
@@ -490,6 +491,7 @@ const COMMON_FIELD_WRAPPER_IDS = {
   xSplitLineColor: "x-split-line-color-field",
   xSplitLineType: "x-split-line-type-field",
   xSplitLineWidth: "x-split-line-width-field",
+  splitLineDisplay: "split-line-display-field",
 };
 
 const COMMON_GROUP_FIELD_IDS = {
@@ -555,6 +557,7 @@ const COMMON_GROUP_RENDER_TEXT = {
       yAxisLineColor: "Y 轴线颜色",
       yFormatter: "Y 轴格式",
       splitLineShow: "显示水平分割线",
+      splitLineDisplay: "水平分割线显示位置",
       splitLineColor: "水平分割线颜色",
       splitLineType: "水平分割线样式",
       splitLineWidth: "水平分割线宽度",
@@ -576,6 +579,7 @@ const COMMON_GROUP_RENDER_TEXT = {
         "bottom-right": "右下",
       },
       legendOrient: { horizontal: "水平", vertical: "垂直" },
+      splitLineDisplay: { left: "左轴", right: "右轴" },
       splitLineType: { solid: "实线", dashed: "虚线", dotted: "点线" },
       xSplitLineType: { solid: "实线", dashed: "虚线", dotted: "点线" },
     },
@@ -638,6 +642,7 @@ const COMMON_GROUP_RENDER_TEXT = {
       yAxisLineColor: "Y Axis Line Color",
       yFormatter: "Y Formatter",
       splitLineShow: "Show Horizontal Split Lines",
+      splitLineDisplay: "Horizontal Split Line Side",
       splitLineColor: "Horizontal Split Line Color",
       splitLineType: "Horizontal Split Line Style",
       splitLineWidth: "Horizontal Split Line Width",
@@ -646,7 +651,9 @@ const COMMON_GROUP_RENDER_TEXT = {
       xSplitLineType: "Vertical Split Line Style",
       xSplitLineWidth: "Vertical Split Line Width",
     },
-    options: {},
+    options: {
+      splitLineDisplay: { left: "Left Axis", right: "Right Axis" },
+    },
     actions: {
       customPalette: "Custom Palette",
       addColor: "Add Color",
@@ -987,7 +994,6 @@ const CHART_BEAUTY_DEFAULTS = {
     },
     specific: {
       horizontal: false,
-      horizontalSplitLineDisplay: "left",
       leftBarGap: "10%",
       leftLineSmooth: true,
       leftLineArea: false,
@@ -2243,7 +2249,6 @@ function renderPreviewControls() {
 }
 
 const DUAL_AXIS_FOUNDATION_AXIS_FIELD_IDS = new Set([
-  "horizontalSplitLineDisplay",
   "leftAxisLabelFontSize",
   "leftAxisLabelColor",
   "leftAxisLineShow",
@@ -2258,7 +2263,7 @@ const DUAL_AXIS_FOUNDATION_AXIS_FIELD_IDS = new Set([
   "rightAxisFormatter",
 ]);
 
-const DUAL_AXIS_FOUNDATION_AXIS_GROUP_IDS = new Set(["splitLineAxisGroup", "leftAxisGroup", "rightAxisGroup"]);
+const DUAL_AXIS_FOUNDATION_AXIS_GROUP_IDS = new Set(["leftAxisGroup", "rightAxisGroup"]);
 
 function getLabelSectionConfig(chartType) {
   const text = {
@@ -2401,9 +2406,6 @@ function buildSpecificDefaultState(definition) {
 }
 
 function isDualAxisSpecificGroupVisible(groupId, state) {
-  if (groupId === "splitLineAxisGroup") {
-    return true;
-  }
   if (groupId === "leftBarGroup") {
     return true;
   }
@@ -2532,10 +2534,6 @@ function renderDualAxisFoundationAxes(snapshot) {
   const definition = getCurrentDefinition();
   const fieldsById = new Map(definition.fields.map((field) => [field.id, field]));
   const groups = [
-    {
-      id: "splitLineAxisGroup",
-      fields: ["horizontalSplitLineDisplay"],
-    },
     {
       id: "leftAxisGroup",
       fields: [
@@ -2942,7 +2940,11 @@ function getTemplateDualAxisSeriesTypes() {
   seriesList.forEach((series, index) => {
     const axisIndex = horizontal ? series?.xAxisIndex : series?.yAxisIndex;
     const side = axisIndex === 1 ? "right" : (axisIndex === 0 ? "left" : (index === 1 ? "right" : "left"));
-    const type = series?.type === "line" ? "line" : "bar";
+    const type = series?.type === "line"
+      ? "line"
+      : series?.type === "bar"
+        ? "bar"
+        : (side === "right" ? "line" : "bar");
     if (side === "left" && !leftType) {
       leftType = type;
     }
@@ -2969,6 +2971,15 @@ function resolveDualAxisSeriesTypesFromState() {
   return resolveDualAxisSeriesTypes();
 }
 
+function getDualAxisPreviewLayoutOverrides() {
+  if (appState.chartType !== "dualAxis") {
+    return undefined;
+  }
+  return {
+    horizontal: Boolean(appState.previewBarHorizontal),
+  };
+}
+
 function syncDualAxisPreviewTypesWithTemplate() {
   if (appState.chartType !== "dualAxis") {
     appState.dualAxisPreviewLeftType = null;
@@ -2984,6 +2995,7 @@ function renderFoundationVisibility() {
   const runtimeDefinition = getCurrentRuntimeDefinition() || {};
   const axesGroup = $("axes-group");
   const splitLinesGroup = $("split-lines-group");
+  const splitLineDisplayField = $("split-line-display-field");
   const xSplitLineShowField = $("x-split-line-show-field");
   const xSplitLineColorField = $("x-split-line-color-field");
   const xSplitLineTypeField = $("x-split-line-type-field");
@@ -3001,7 +3013,7 @@ function renderFoundationVisibility() {
   const showLegend = runtimeDefinition.supportsLegend !== false;
   const showLayoutSpacing = runtimeDefinition.usesGrid !== false || runtimeDefinition.supportsPlotArea === true;
   const isDualAxis = appState.chartType === "dualAxis";
-  const dualAxisHorizontal = readBooleanControl(document.querySelector('[data-specific-field="horizontal"]'));
+  const dualAxisHorizontal = isDualAxis ? Boolean(appState.previewBarHorizontal) : false;
   if (axesGroup) {
     axesGroup.classList.toggle("hidden", !showCartesian);
   }
@@ -3012,6 +3024,7 @@ function renderFoundationVisibility() {
   if (xSplitLineColorField) xSplitLineColorField.classList.remove("hidden");
   if (xSplitLineTypeField) xSplitLineTypeField.classList.remove("hidden");
   if (xSplitLineWidthField) xSplitLineWidthField.classList.remove("hidden");
+  if (splitLineDisplayField) splitLineDisplayField.classList.toggle("hidden", !isDualAxis);
   if (legendGroup) {
     legendGroup.classList.toggle("hidden", !showLegend);
   }
@@ -3416,6 +3429,7 @@ function updateOutputs() {
       chartType: appState.chartType,
       helperConfig,
       rawData,
+      dualAxisLayoutOverrides: getDualAxisPreviewLayoutOverrides(),
       previewState: {
         previewStackMode: appState.previewStackMode,
         previewBarHorizontal: appState.previewBarHorizontal,
