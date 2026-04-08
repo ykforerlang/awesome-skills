@@ -1,6 +1,6 @@
 {
   "name": "@areslabs/data-charts-visualization",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "ECharts SSR chart rendering CLI",
   "bin": {
     "areslabs-data-charts": "./dist/cli.js"
