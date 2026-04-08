@@ -458,6 +458,7 @@
       leftAxisLineShow: true,
       leftAxisLineColor: "#9ca3af",
       leftAxisTickShow: true,
+      leftAxisScale: false,
       leftAxisFormatter: "{value}",
       leftBarShowLabel: true,
       leftBarLabelPosition: "top",
@@ -486,6 +487,7 @@
       rightAxisLineShow: true,
       rightAxisLineColor: "#9ca3af",
       rightAxisTickShow: true,
+      rightAxisScale: false,
       rightAxisFormatter: "{value}",
       rightBarShowLabel: true,
       rightBarLabelPosition: "top",
@@ -682,6 +684,7 @@
 
   function buildHelperCommonState(chartType, commonState) {
     const source = deepClone(commonState || {});
+    const includeCommonYAxis = chartType !== "dualAxis";
     const horizontalSplitLine = {
       show: source.splitLineShow,
       color: source.splitLineColor,
@@ -733,7 +736,7 @@
           lineColor: source.xAxisLineColor,
           formatter: source.xFormatter,
         },
-        y: {
+        y: includeCommonYAxis ? {
           lineShow: source.yAxisLineShow,
           tickShow: source.yAxisTickShow,
           labelFontSize: source.yAxisLabelFontSize,
@@ -741,7 +744,7 @@
           lineColor: source.yAxisLineColor,
           scale: source.yAxisScale,
           formatter: source.yFormatter,
-        },
+        } : undefined,
       },
       splitLines: {
         horizontal: horizontalSplitLine,
@@ -819,6 +822,7 @@
             lineShow: source.leftAxisLineShow,
             lineColor: source.leftAxisLineColor,
             tickShow: source.leftAxisTickShow,
+            scale: source.leftAxisScale,
             formatter: source.leftAxisFormatter,
           },
           rightAxis: {
@@ -827,6 +831,7 @@
             lineShow: source.rightAxisLineShow,
             lineColor: source.rightAxisLineColor,
             tickShow: source.rightAxisTickShow,
+            scale: source.rightAxisScale,
             formatter: source.rightAxisFormatter,
           },
           leftBar: {

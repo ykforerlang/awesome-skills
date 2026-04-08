@@ -1021,6 +1021,7 @@
     const axisLineShow = readOptionalBoolean(axisConfig, "lineShow");
     const axisLineColor = readOptionalValue(axisConfig, "lineColor");
     const axisTickShow = readOptionalBoolean(axisConfig, "tickShow");
+    const axisScale = readOptionalBoolean(axisConfig, "scale");
     const horizontal = isDualAxisHorizontal(specificConfig, dualAxisLayoutOverrides);
     const sharedSplitLineShow = horizontal ? commonState.xSplitLineShow : commonState.splitLineShow;
     const sharedSplitLineDisplay = commonState.splitLineDisplay === "right" ? "right" : "left";
@@ -1031,7 +1032,7 @@
 
     return compactObject({
       type: "value",
-      scale: horizontal ? undefined : commonState.yAxisScale,
+      scale: horizontal ? undefined : axisScale,
       axisLabel: {
         formatter: formatter || undefined,
         fontSize: labelFontSize,

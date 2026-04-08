@@ -217,12 +217,14 @@ Base shape:
 - `specific.leftAxis.lineShow`
 - `specific.leftAxis.lineColor`
 - `specific.leftAxis.tickShow`
+- `specific.leftAxis.scale`
 - `specific.leftAxis.formatter`
 - `specific.rightAxis.labelFontSize`
 - `specific.rightAxis.labelColor`
 - `specific.rightAxis.lineShow`
 - `specific.rightAxis.lineColor`
 - `specific.rightAxis.tickShow`
+- `specific.rightAxis.scale`
 - `specific.rightAxis.formatter`
 - `specific.leftBar.showLabel`
 - `specific.leftBar.labelPosition`
