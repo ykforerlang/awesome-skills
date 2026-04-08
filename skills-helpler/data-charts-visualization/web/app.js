@@ -1058,7 +1058,7 @@ const CHART_BEAUTY_DEFAULTS = {
     specific: {
       shape: "polygon",
       splitNumber: 5,
-      showSymbol: false,
+      showSymbol: true,
       showLabel: false,
       labelFontSize: 6,
       labelFormatter: "{b}: {c}",
@@ -2806,12 +2806,16 @@ function renderSpecificFields(options = {}) {
           groupLabel = CURRENT_LOCALE === "zh" ? "指针与圆心" : "Pointer And Anchor";
         }
       } else if (appState.chartType === "radar") {
-        if (field.id === "radarFoundationGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "基础" : "Foundation";
-        } else if (field.id === "radarGridGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "网格与轴线" : "Grid And Axis Lines";
-        } else if (field.id === "radarSeriesGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "数据面样式" : "Series Style";
+        if (field.id === "radarStructureGroup") {
+          groupLabel = CURRENT_LOCALE === "zh" ? "结构" : "Structure";
+        } else if (field.id === "radarGridLinesGroup") {
+          groupLabel = CURRENT_LOCALE === "zh" ? "网格线" : "Grid Lines";
+        } else if (field.id === "radarAxisNameGroup") {
+          groupLabel = CURRENT_LOCALE === "zh" ? "维度名" : "Axis Names";
+        } else if (field.id === "radarAreaLineGroup") {
+          groupLabel = CURRENT_LOCALE === "zh" ? "数据面与轮廓" : "Area And Outline";
+        } else if (field.id === "radarPointLabelGroup") {
+          groupLabel = CURRENT_LOCALE === "zh" ? "拐点与标签" : "Points And Labels";
         }
       }
       const group = document.createElement("div");

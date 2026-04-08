@@ -610,6 +610,14 @@
     return normalizedFallback;
   }
 
+  function resolveRadarSymbol(specificConfig) {
+    const showSymbol = readOptionalBoolean(specificConfig, "showSymbol");
+    if (showSymbol === false) {
+      return "none";
+    }
+    return readOptionalValue(specificConfig, "symbol");
+  }
+
   function buildStructurePatch(chartType, specificConfig, dualAxisLayoutOverrides) {
     switch (chartType) {
       case "line":
@@ -1453,8 +1461,7 @@
           series: [
             {
               type: "radar",
-              symbol: readOptionalValue(specificConfig, "symbol"),
-              showSymbol: readOptionalBoolean(specificConfig, "showSymbol"),
+              symbol: resolveRadarSymbol(specificConfig),
               symbolSize: readOptionalNumber(specificConfig, "symbolSize"),
               label: {
                 show: readOptionalBoolean(specificConfig, "showLabel"),

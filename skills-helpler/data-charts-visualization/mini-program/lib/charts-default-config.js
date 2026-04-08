@@ -378,7 +378,7 @@
       specific: {
         shape: "polygon",
         splitNumber: 5,
-        showSymbol: false,
+        showSymbol: true,
         showLabel: false,
         labelFontSize: 12,
         labelFormatter: "{b}: {c}",
@@ -572,7 +572,7 @@
     radar: {
       shape: "polygon",
       splitNumber: 5,
-      showSymbol: false,
+      showSymbol: true,
       showLabel: false,
       labelFormatter: "{b}: {c}",
       areaOpacity: 0.2,
