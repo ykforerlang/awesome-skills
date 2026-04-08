@@ -2339,118 +2339,147 @@ const DUAL_AXIS_FOUNDATION_AXIS_FIELD_IDS = new Set([
 ]);
 
 const DUAL_AXIS_FOUNDATION_AXIS_GROUP_IDS = new Set(["leftAxisGroup", "rightAxisGroup"]);
+const SPECIFIC_FIELD_ORDER_OVERRIDES = {
+  line: {
+    default: [
+      "smooth",
+      "connectNulls",
+      "lineStyleType",
+      "lineWidth",
+      "showSymbol",
+      "symbol",
+      "symbolSize",
+      "showLabel",
+      "labelFontSize",
+      "labelColor",
+    ],
+  },
+  bar: {
+    default: [
+      "barGap",
+      "itemOpacity",
+      "borderRadius",
+      "borderWidth",
+      "borderColor",
+      "showLabel",
+      "labelPosition",
+      "labelFontSize",
+      "labelColor",
+    ],
+  },
+  area: {
+    default: [
+      "smooth",
+      "connectNulls",
+      "lineStyleType",
+      "lineWidth",
+      "showSymbol",
+      "symbol",
+      "symbolSize",
+      "showLabel",
+      "labelFontSize",
+      "labelColor",
+      "areaOpacity",
+      "areaFillMode",
+    ],
+  },
+  dualAxis: {
+    leftBarGroup: [
+      "leftBarOpacity",
+      "leftBarGap",
+      "leftBarBorderRadius",
+      "leftBarBorderWidth",
+      "leftBarBorderColor",
+      "leftBarShowLabel",
+      "leftBarLabelPosition",
+      "leftBarLabelFontSize",
+      "leftBarLabelColor",
+      "leftBarColors",
+    ],
+    rightBarGroup: [
+      "rightBarOpacity",
+      "rightBarGap",
+      "rightBarBorderRadius",
+      "rightBarBorderWidth",
+      "rightBarBorderColor",
+      "rightBarShowLabel",
+      "rightBarLabelPosition",
+      "rightBarLabelFontSize",
+      "rightBarLabelColor",
+      "rightBarColors",
+    ],
+    leftLineGroup: [
+      "leftLineSmooth",
+      "leftLineArea",
+      "leftLineConnectNulls",
+      "leftLineStyleType",
+      "leftLineWidth",
+      "leftLineShowSymbol",
+      "leftLineSymbol",
+      "leftLineSymbolSize",
+      "leftLineShowLabel",
+      "leftLineLabelFontSize",
+      "leftLineLabelColor",
+      "leftLineColors",
+    ],
+    rightLineGroup: [
+      "rightLineSmooth",
+      "rightLineArea",
+      "rightLineConnectNulls",
+      "rightLineStyleType",
+      "rightLineWidth",
+      "rightLineShowSymbol",
+      "rightLineSymbol",
+      "rightLineSymbolSize",
+      "rightLineShowLabel",
+      "rightLineLabelFontSize",
+      "rightLineLabelColor",
+      "rightLineColors",
+    ],
+  },
+  scatter: {
+    default: [
+      "symbol",
+      "symbolSize",
+      "itemOpacity",
+      "borderWidth",
+      "borderColor",
+      "showLabel",
+      "labelFontSize",
+      "labelColor",
+    ],
+  },
+};
 
-function getLabelSectionConfig(chartType) {
-  const text = {
-    zh: {
-      title: "标签",
-      description: "这里集中当前图表的标签相关配置；不同图表会显示各自合适的标签能力。",
-      line: [{ id: "lineLabels", title: "数据标签", help: "控制折线数据标签是否显示以及文字样式。", fields: ["showLabel", "labelFontSize", "labelColor"] }],
-      bar: [{ id: "barLabels", title: "数据标签", help: "控制柱标签显示、位置和文字样式。", fields: ["showLabel", "labelPosition", "labelFontSize", "labelColor"] }],
-      pie: [{ id: "pieLabels", title: "扇区标签", help: "控制饼图标签、格式，以及外侧标签引导线。", fields: ["showLabel", "labelPosition", "labelFormatter", "labelFontSize", "labelColor", "labelLineShow", "labelLineColor", "labelLineWidth"] }],
-      area: [{ id: "areaLabels", title: "数据标签", help: "控制面积图数据标签是否显示以及文字样式。", fields: ["showLabel", "labelFontSize", "labelColor"] }],
-      scatter: [{ id: "scatterLabels", title: "点标签", help: "控制散点标签是否显示以及文字样式。", fields: ["showLabel", "labelFontSize", "labelColor"] }],
-      radar: [
-        { id: "radarSeriesLabels", title: "数据标签", help: "控制雷达图数据标签是否显示、格式和文字样式。", fields: ["showLabel", "labelFormatter", "labelFontSize", "labelColor"] },
-        { id: "radarAxisNames", title: "维度名", help: "控制雷达图外圈维度名的文字样式。", fields: ["axisNameFontSize", "axisNameColor", "axisNameBold"] },
-      ],
-      funnel: [{ id: "funnelLabels", title: "阶段标签", help: "控制漏斗标签显示、位置、formatter 和文字样式。", fields: ["showLabel", "labelPosition", "labelFormatter", "labelFontSize", "labelColor"] }],
-      dualAxis: [
-        { id: "leftBarLabels", title: "左侧柱标签", help: "控制左侧系列作为柱时的标签显示、位置和文字样式。", fields: ["leftBarShowLabel", "leftBarLabelPosition", "leftBarLabelFontSize", "leftBarLabelColor"] },
-        { id: "leftLineLabels", title: "左侧线标签", help: "控制左侧系列作为线时的标签显示和文字样式。", fields: ["leftLineShowLabel", "leftLineLabelFontSize", "leftLineLabelColor"] },
-        { id: "rightBarLabels", title: "右侧柱标签", help: "控制右侧系列作为柱时的标签显示、位置和文字样式。", fields: ["rightBarShowLabel", "rightBarLabelPosition", "rightBarLabelFontSize", "rightBarLabelColor"] },
-        { id: "rightLineLabels", title: "右侧线标签", help: "控制右侧系列作为线时的标签显示和文字样式。", fields: ["rightLineShowLabel", "rightLineLabelFontSize", "rightLineLabelColor"] },
-      ],
-    },
-    en: {
-      title: "Labels",
-      description: "This section keeps chart-specific label controls together. Different chart types expose different label capabilities here.",
-      line: [{ id: "lineLabels", title: "Data Labels", help: "Control whether line labels show and how the text is styled.", fields: ["showLabel", "labelFontSize", "labelColor"] }],
-      bar: [{ id: "barLabels", title: "Data Labels", help: "Control bar label visibility, position, and text styling.", fields: ["showLabel", "labelPosition", "labelFontSize", "labelColor"] }],
-      pie: [{ id: "pieLabels", title: "Slice Labels", help: "Control pie labels, formatter, and outside label guide lines.", fields: ["showLabel", "labelPosition", "labelFormatter", "labelFontSize", "labelColor", "labelLineShow", "labelLineColor", "labelLineWidth"] }],
-      area: [{ id: "areaLabels", title: "Data Labels", help: "Control whether area-chart labels show and how the text is styled.", fields: ["showLabel", "labelFontSize", "labelColor"] }],
-      scatter: [{ id: "scatterLabels", title: "Point Labels", help: "Control scatter label visibility and text styling.", fields: ["showLabel", "labelFontSize", "labelColor"] }],
-      radar: [
-        { id: "radarSeriesLabels", title: "Data Labels", help: "Control radar data-label visibility, formatter, and text styling.", fields: ["showLabel", "labelFormatter", "labelFontSize", "labelColor"] },
-        { id: "radarAxisNames", title: "Indicator Names", help: "Control the text styling of radar indicator names around the outside.", fields: ["axisNameFontSize", "axisNameColor", "axisNameBold"] },
-      ],
-      funnel: [{ id: "funnelLabels", title: "Stage Labels", help: "Control funnel label visibility, position, formatter, and text styling.", fields: ["showLabel", "labelPosition", "labelFormatter", "labelFontSize", "labelColor"] }],
-      dualAxis: [
-        { id: "leftBarLabels", title: "Left Bar Labels", help: "Control labels when the left series is rendered as bars.", fields: ["leftBarShowLabel", "leftBarLabelPosition", "leftBarLabelFontSize", "leftBarLabelColor"] },
-        { id: "leftLineLabels", title: "Left Line Labels", help: "Control labels when the left series is rendered as a line.", fields: ["leftLineShowLabel", "leftLineLabelFontSize", "leftLineLabelColor"] },
-        { id: "rightBarLabels", title: "Right Bar Labels", help: "Control labels when the right series is rendered as bars.", fields: ["rightBarShowLabel", "rightBarLabelPosition", "rightBarLabelFontSize", "rightBarLabelColor"] },
-        { id: "rightLineLabels", title: "Right Line Labels", help: "Control labels when the right series is rendered as a line.", fields: ["rightLineShowLabel", "rightLineLabelFontSize", "rightLineLabelColor"] },
-      ],
-    },
-  };
-  const localeText = text[CURRENT_LOCALE] || text.en;
-  return {
-    title: localeText.title,
-    groups: localeText[chartType] || [],
-  };
+function getSpecificFieldOrder(chartType, groupId = "") {
+  const chartOverrides = SPECIFIC_FIELD_ORDER_OVERRIDES[chartType];
+  if (!chartOverrides) {
+    return [];
+  }
+  if (groupId && Array.isArray(chartOverrides[groupId])) {
+    return chartOverrides[groupId];
+  }
+  return Array.isArray(chartOverrides.default) ? chartOverrides.default : [];
 }
 
-function isLabelFieldForChart(chartType, fieldId) {
-  const config = getLabelSectionConfig(chartType);
-  return config.groups.some((group) => group.fields.includes(fieldId));
-}
-
-function renderLabelSection(snapshot) {
-  const section = $("labels-group");
-  const content = $("labels-group-content");
-  const title = $("labels-group-title");
-  if (!section || !content || !title) {
-    return;
+function sortSpecificFieldsForDisplay(chartType, fields, groupId = "") {
+  const order = getSpecificFieldOrder(chartType, groupId);
+  if (!Array.isArray(fields) || fields.length <= 1 || !order.length) {
+    return fields;
   }
 
-  const config = getLabelSectionConfig(appState.chartType);
-  title.textContent = config.title;
-  content.innerHTML = "";
-
-  if (!config.groups.length) {
-    section.classList.add("hidden");
-    return;
-  }
-
-  const definition = getCurrentDefinition();
-  const fieldsById = new Map(definition.fields.map((field) => [field.id, field]));
-  const needsSubgroups = appState.chartType === "dualAxis" || appState.chartType === "radar";
-  if (!needsSubgroups && config.groups.length === 1) {
-    const flatGrid = document.createElement("div");
-    flatGrid.className = "field-grid";
-    config.groups[0].fields.forEach((fieldId) => {
-      const field = fieldsById.get(fieldId);
-      if (field) {
-        flatGrid.appendChild(buildSpecificFieldControl(field, snapshot[field.id]));
+  const orderIndex = new Map(order.map((fieldId, index) => [fieldId, index]));
+  return fields
+    .map((field, originalIndex) => ({ field, originalIndex }))
+    .sort((left, right) => {
+      const leftRank = orderIndex.has(left.field.id) ? orderIndex.get(left.field.id) : Number.MAX_SAFE_INTEGER;
+      const rightRank = orderIndex.has(right.field.id) ? orderIndex.get(right.field.id) : Number.MAX_SAFE_INTEGER;
+      if (leftRank !== rightRank) {
+        return leftRank - rightRank;
       }
-    });
-    if (flatGrid.childElementCount) {
-      content.appendChild(flatGrid);
-    }
-    section.classList.toggle("hidden", !content.childElementCount);
-    return;
-  }
-  config.groups.forEach((groupConfig) => {
-    const subgroup = document.createElement("div");
-    subgroup.className = "foundation-subgroup";
-    subgroup.innerHTML = `
-      <div class="foundation-subgroup-head">${groupConfig.title}</div>
-    `;
-    const grid = document.createElement("div");
-    grid.className = "field-grid";
-    groupConfig.fields.forEach((fieldId) => {
-      const field = fieldsById.get(fieldId);
-      if (field) {
-        grid.appendChild(buildSpecificFieldControl(field, snapshot[field.id]));
-      }
-    });
-    if (grid.childElementCount) {
-      subgroup.appendChild(grid);
-      content.appendChild(subgroup);
-    }
-  });
-
-  section.classList.toggle("hidden", !content.childElementCount);
+      return left.originalIndex - right.originalIndex;
+    })
+    .map((entry) => entry.field);
 }
 
 function captureSpecificFieldState(definition) {
@@ -2693,9 +2722,6 @@ function renderSpecificFields(options = {}) {
         return;
       }
     }
-    if (isLabelFieldForChart(appState.chartType, field.id)) {
-      return;
-    }
     if (field.type === "group") {
       if (appState.chartType === "dualAxis" && !isDualAxisSpecificGroupVisible(field.id, snapshot)) {
         return;
@@ -2749,6 +2775,7 @@ function renderSpecificFields(options = {}) {
       `;
       activeGroupGrid = document.createElement("div");
       activeGroupGrid.className = "field-grid specific-subgroup-grid";
+      activeGroupGrid.dataset.specificGroupFields = field.id;
       group.appendChild(activeGroupGrid);
       container.appendChild(group);
       return;
@@ -2757,18 +2784,38 @@ function renderSpecificFields(options = {}) {
       return;
     }
     const targetGrid = activeGroupGrid || ensureUngroupedGrid();
-    targetGrid.appendChild(buildSpecificFieldControl(field, snapshot[field.id]));
+    if (!targetGrid.__specificFields) {
+      targetGrid.__specificFields = [];
+    }
+    targetGrid.__specificFields.push({ field, value: snapshot[field.id] });
+  });
+
+  Array.from(container.querySelectorAll(".specific-subgroup-grid, .specific-ungrouped-grid")).forEach((grid) => {
+    const fieldEntries = Array.isArray(grid.__specificFields) ? grid.__specificFields : [];
+    if (!fieldEntries.length) {
+      return;
+    }
+    const groupId = grid.dataset.specificGroupFields || "";
+    const sortedFields = sortSpecificFieldsForDisplay(
+      appState.chartType,
+      fieldEntries.map((entry) => entry.field),
+      groupId
+    );
+    const valuesById = new Map(fieldEntries.map((entry) => [entry.field.id, entry.value]));
+    grid.innerHTML = "";
+    sortedFields.forEach((field) => {
+      grid.appendChild(buildSpecificFieldControl(field, valuesById.get(field.id)));
+    });
+    delete grid.__specificFields;
   });
 
   renderDualAxisFoundationAxes(snapshot);
-  renderLabelSection(snapshot);
 }
 
 function clearDesktopInteractiveContainers() {
   [
     "title-group",
     "legend-group",
-    "labels-group-content",
     "layout-group",
     "axes-group",
     "split-lines-group",

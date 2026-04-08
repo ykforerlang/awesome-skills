@@ -531,6 +531,24 @@
     };
   }
 
+  function buildResolvedTitleConfig(commonState, rawOption) {
+    const sourceTitle = getRawTitleConfig(rawOption);
+    const resolvedTitle = buildResolvedTitleState(commonState, rawOption);
+    return compactObject({
+      ...sourceTitle,
+      show: resolvedTitle.show,
+      left: commonState.titleAlign,
+      text: resolvedTitle.text || undefined,
+      subtext: resolvedTitle.subtext || undefined
+    });
+  }
+
+  function applyResolvedTitleConfig(optionValue, commonState) {
+    const nextOption = deepClone(optionValue || {});
+    nextOption.title = buildResolvedTitleConfig(commonState, nextOption);
+    return compactObject(nextOption);
+  }
+
   function buildResolvedTitleBlocks(commonState, rawOption) {
     const resolvedTitle = buildResolvedTitleState(commonState, rawOption);
     if (!resolvedTitle.show) {
@@ -573,14 +591,8 @@
 
   function buildCommonOption(commonState, runtimeDefinition, chartType, rawOption) {
     const palette = resolveExpandedCommonPalette(commonState, chartType, rawOption);
-    const resolvedTitle = buildResolvedTitleState(commonState, rawOption);
     const option = {
-      title: {
-        show: resolvedTitle.show,
-        left: commonState.titleAlign,
-        text: resolvedTitle.text,
-        subtext: resolvedTitle.subtext
-      },
+      title: buildResolvedTitleConfig(commonState, rawOption),
       backgroundColor: commonState.backgroundColor,
       color: palette
     };
@@ -960,14 +972,6 @@
     return availablePalette[nextSeriesIndex % availablePalette.length] || availablePalette[0];
   }
 
-  function resolveLinePreviewSymbolVisibility(showSymbol, showLabel) {
-    return showSymbol || showLabel;
-  }
-
-  function resolveLinePreviewSymbolSize(symbolSize, showSymbol) {
-    return showSymbol ? symbolSize : 0.01;
-  }
-
   function deriveDualAxisTypesFromRawData(rawData, previewState) {
     return {
       leftType: (previewState && previewState.dualAxisPreviewLeftType) || "bar",
@@ -1133,19 +1137,18 @@
     }
     const showLineLabel = readOptionalBoolean(lineConfig, "showLabel");
     const showLineSymbol = readOptionalBoolean(lineConfig, "showSymbol");
-    const effectiveLineSymbolVisibility = resolveLinePreviewSymbolVisibility(showLineSymbol, showLineLabel);
     return compactObject({
       type: "line",
       ...axisRef,
       smooth: readOptionalBoolean(lineConfig, "smooth"),
-      showSymbol: effectiveLineSymbolVisibility,
+      showSymbol: showLineSymbol,
       connectNulls: readOptionalBoolean(lineConfig, "connectNulls"),
       lineStyle: {
         width: readOptionalNumber(lineConfig, "lineWidth"),
         type: readOptionalValue(lineConfig, "lineStyleType")
       },
       symbol: readOptionalValue(lineConfig, "symbol"),
-      symbolSize: resolveLinePreviewSymbolSize(readOptionalNumber(lineConfig, "symbolSize"), showLineSymbol),
+      symbolSize: readOptionalNumber(lineConfig, "symbolSize"),
       label: {
         show: showLineLabel,
         position: "top",
@@ -1347,9 +1350,9 @@
             return compactObject({
               type: "line",
               symbol: readOptionalValue(line, "symbol"),
-              symbolSize: resolveLinePreviewSymbolSize(readOptionalNumber(line, "symbolSize"), readOptionalBoolean(line, "showSymbol")),
+              symbolSize: readOptionalNumber(line, "symbolSize"),
               smooth: readOptionalBoolean(line, "smooth"),
-              showSymbol: resolveLinePreviewSymbolVisibility(readOptionalBoolean(line, "showSymbol"), readOptionalBoolean(dataLabels, "show")),
+              showSymbol: readOptionalBoolean(line, "showSymbol"),
               connectNulls: readOptionalBoolean(line, "connectNulls"),
               itemStyle: {
                 color: seriesColor
@@ -1512,9 +1515,9 @@
             return compactObject({
               type: "line",
               smooth: readOptionalBoolean(area, "smooth"),
-              showSymbol: resolveLinePreviewSymbolVisibility(readOptionalBoolean(area, "showSymbol"), readOptionalBoolean(dataLabels, "show")),
+              showSymbol: readOptionalBoolean(area, "showSymbol"),
               symbol: readOptionalValue(area, "symbol"),
-              symbolSize: resolveLinePreviewSymbolSize(readOptionalNumber(area, "symbolSize"), readOptionalBoolean(area, "showSymbol")),
+              symbolSize: readOptionalNumber(area, "symbolSize"),
               connectNulls: readOptionalBoolean(area, "connectNulls"),
               itemStyle: {
                 color: seriesColor
@@ -1714,6 +1717,7 @@
     } else {
       rawOption = compactObject(deepMerge(deepMerge(baseOption, structurePatch), rawData));
     }
+    rawOption = applyResolvedTitleConfig(rawOption, commonState);
 
     const stylePayload = {
       recommendedStyleFiles: [

@@ -356,12 +356,45 @@
     return placementMap[position] || placementMap["top-left"];
   }
 
-  function buildCommonOption(commonState, runtimeDefinition) {
+  function getRawTitleConfig(rawOption) {
+    if (Array.isArray(rawOption && rawOption.title)) {
+      return rawOption.title[0] || {};
+    }
+    return rawOption && rawOption.title || {};
+  }
+
+  function buildResolvedTitleState(commonState, rawOption) {
+    const sourceTitle = getRawTitleConfig(rawOption);
+    const resolvedText = commonState.titleShow ? (sourceTitle.text || "") : "";
+    const resolvedSubtext = commonState.subtitleShow ? (sourceTitle.subtext || "") : "";
+    return {
+      show: Boolean(resolvedText || resolvedSubtext),
+      text: resolvedText,
+      subtext: resolvedSubtext
+    };
+  }
+
+  function buildResolvedTitleConfig(commonState, rawOption) {
+    const sourceTitle = getRawTitleConfig(rawOption);
+    const resolvedTitle = buildResolvedTitleState(commonState, rawOption);
+    return compactObject({
+      ...sourceTitle,
+      show: resolvedTitle.show,
+      left: commonState.titleAlign,
+      text: resolvedTitle.text || undefined,
+      subtext: resolvedTitle.subtext || undefined
+    });
+  }
+
+  function applyResolvedTitleConfig(optionValue, commonState) {
+    const nextOption = deepClone(optionValue || {});
+    nextOption.title = buildResolvedTitleConfig(commonState, nextOption);
+    return compactObject(nextOption);
+  }
+
+  function buildCommonOption(commonState, runtimeDefinition, rawOption) {
     const option = {
-      title: {
-        show: commonState.titleShow || commonState.subtitleShow,
-        left: commonState.titleAlign
-      },
+      title: buildResolvedTitleConfig(commonState, rawOption),
       backgroundColor: commonState.backgroundColor,
       color: Array.isArray(commonState.palette) ? commonState.palette : parsePalette(commonState.palette)
     };
@@ -747,14 +780,6 @@
     };
   }
 
-  function resolveLinePreviewSymbolVisibility(showSymbol, showLabel) {
-    return showSymbol || showLabel;
-  }
-
-  function resolveLinePreviewSymbolSize(symbolSize, showSymbol) {
-    return showSymbol ? symbolSize : 0.01;
-  }
-
   function deriveDualAxisTypesFromRawData(rawData, previewState) {
     return {
       leftType: (previewState && previewState.dualAxisPreviewLeftType) || "bar",
@@ -920,19 +945,18 @@
     }
     const showLineLabel = readOptionalBoolean(lineConfig, "showLabel");
     const showLineSymbol = readOptionalBoolean(lineConfig, "showSymbol");
-    const effectiveLineSymbolVisibility = resolveLinePreviewSymbolVisibility(showLineSymbol, showLineLabel);
     return compactObject({
       type: "line",
       ...axisRef,
       smooth: readOptionalBoolean(lineConfig, "smooth"),
-      showSymbol: effectiveLineSymbolVisibility,
+      showSymbol: showLineSymbol,
       connectNulls: readOptionalBoolean(lineConfig, "connectNulls"),
       lineStyle: {
         width: readOptionalNumber(lineConfig, "lineWidth"),
         type: readOptionalValue(lineConfig, "lineStyleType")
       },
       symbol: readOptionalValue(lineConfig, "symbol"),
-      symbolSize: resolveLinePreviewSymbolSize(readOptionalNumber(lineConfig, "symbolSize"), showLineSymbol),
+      symbolSize: readOptionalNumber(lineConfig, "symbolSize"),
       label: {
         show: showLineLabel,
         position: "top",
@@ -1133,9 +1157,9 @@
             {
               type: "line",
               symbol: readOptionalValue(line, "symbol"),
-              symbolSize: resolveLinePreviewSymbolSize(readOptionalNumber(line, "symbolSize"), readOptionalBoolean(line, "showSymbol")),
+              symbolSize: readOptionalNumber(line, "symbolSize"),
               smooth: readOptionalBoolean(line, "smooth"),
-              showSymbol: resolveLinePreviewSymbolVisibility(readOptionalBoolean(line, "showSymbol"), readOptionalBoolean(dataLabels, "show")),
+              showSymbol: readOptionalBoolean(line, "showSymbol"),
               connectNulls: readOptionalBoolean(line, "connectNulls"),
               lineStyle: {
                 width: readOptionalNumber(line, "lineWidth"),
@@ -1287,9 +1311,9 @@
           const styleSeries = (sourceSeries.length ? sourceSeries : [{}]).map((series, index) => compactObject({
             type: "line",
             smooth: readOptionalBoolean(area, "smooth"),
-            showSymbol: resolveLinePreviewSymbolVisibility(readOptionalBoolean(area, "showSymbol"), readOptionalBoolean(dataLabels, "show")),
+            showSymbol: readOptionalBoolean(area, "showSymbol"),
             symbol: readOptionalValue(area, "symbol"),
-            symbolSize: resolveLinePreviewSymbolSize(readOptionalNumber(area, "symbolSize"), readOptionalBoolean(area, "showSymbol")),
+            symbolSize: readOptionalNumber(area, "symbolSize"),
             connectNulls: readOptionalBoolean(area, "connectNulls"),
             lineStyle: {
               width: readOptionalNumber(area, "lineWidth"),
@@ -1469,7 +1493,7 @@
     const dualAxisLayoutOverrides = isObject(params.dualAxisLayoutOverrides) ? params.dualAxisLayoutOverrides : undefined;
     const previewViewportSize = params.previewViewportSize || { width: 650, height: 360 };
 
-    const baseOption = buildCommonOption(commonState, runtimeDefinition);
+    const baseOption = buildCommonOption(commonState, runtimeDefinition, rawData);
     const structurePatch = buildStructurePatch(chartType, specificConfig, dualAxisLayoutOverrides);
     let rawOption;
 
@@ -1483,6 +1507,7 @@
     } else {
       rawOption = compactObject(deepMerge(deepMerge(baseOption, structurePatch), rawData));
     }
+    rawOption = applyResolvedTitleConfig(rawOption, commonState);
 
     const stylePayload = {
       recommendedStyleFiles: [
