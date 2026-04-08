@@ -335,6 +335,7 @@
     if ("labelColor" in yAxis) nextState.yAxisLabelColor = yAxis.labelColor;
     if ("lineColor" in yAxis) nextState.yAxisLineColor = yAxis.lineColor;
     if ("formatter" in yAxis) nextState.yFormatter = yAxis.formatter;
+    if ("scale" in yAxis) nextState.yAxisScale = Boolean(yAxis.scale);
 
     if ("show" in horizontalSplit) nextState.splitLineShow = Boolean(horizontalSplit.show);
     if ("display" in horizontalSplit) nextState.splitLineDisplay = horizontalSplit.display;
@@ -401,7 +402,7 @@
 
   function resolveCommonPaletteTargetCount(chartType, rawOption) {
     const seriesList = Array.isArray(rawOption && rawOption.series) ? rawOption.series : [];
-    if (chartType === "pie" || chartType === "funnel") {
+    if (chartType === "pie" || chartType === "funnel" || chartType === "radar") {
       return Math.max(1, countSeriesDataItems(seriesList));
     }
     return Math.max(1, countSeriesList(seriesList));
@@ -674,6 +675,7 @@
         }
       };
       base.yAxis = {
+        scale: commonState.yAxisScale,
         axisLabel: {
           fontSize: commonState.yAxisLabelFontSize,
           color: commonState.yAxisLabelColor,
@@ -770,6 +772,30 @@
       return undefined;
     }
     return config[fieldName];
+  }
+
+  function normalizeFunnelSizeValue(value, fallback) {
+    const normalizedFallback = typeof fallback === "string" && fallback.trim()
+      ? fallback.trim()
+      : undefined;
+    if (typeof value === "string") {
+      const trimmed = value.trim();
+      if (!trimmed) {
+        return normalizedFallback;
+      }
+      const percentMatch = trimmed.match(/^(-?\d+(?:\.\d+)?)\s*%$/);
+      if (percentMatch) {
+        return `${percentMatch[1]}%`;
+      }
+      if (/^-?\d+(?:\.\d+)?$/.test(trimmed)) {
+        return `${trimmed}%`;
+      }
+      return normalizedFallback;
+    }
+    if (typeof value === "number" && Number.isFinite(value)) {
+      return `${value}%`;
+    }
+    return normalizedFallback;
   }
 
   function buildStructurePatch(chartType, specificConfig, dualAxisLayoutOverrides) {
@@ -997,6 +1023,7 @@
 
     return compactObject({
       type: "value",
+      scale: horizontal ? undefined : commonState.yAxisScale,
       axisLabel: {
         formatter: formatter || undefined,
         fontSize: labelFontSize,
@@ -1592,6 +1619,7 @@
             },
             label: {
               show: readOptionalBoolean(dataLabels, "show"),
+              formatter: readOptionalValue(dataLabels, "formatter"),
               fontSize: readOptionalNumber(dataLabels, "fontSize"),
               color: readOptionalValue(dataLabels, "color")
             }
@@ -1653,33 +1681,43 @@
           ]
         });
       case "funnel":
-        return compactObject({
-          series: [
-            {
-              type: "funnel",
-              left: `${Math.round(layoutBox.left)}%`,
-              top: `${Math.round(layoutBox.top)}%`,
-              width: `${Math.round(layoutBox.width)}%`,
-              height: `${Math.round(layoutBox.height)}%`,
-              sort: readOptionalValue(specificConfig, "sort"),
-              gap: readOptionalNumber(specificConfig, "gap"),
-              minSize: readOptionalValue(specificConfig, "minSize"),
-              maxSize: readOptionalValue(specificConfig, "maxSize"),
-              label: {
-                show: readOptionalBoolean(specificConfig, "showLabel"),
-                position: readOptionalValue(specificConfig, "labelPosition"),
-                formatter: readOptionalValue(specificConfig, "labelFormatter"),
-                fontSize: readOptionalNumber(specificConfig, "labelFontSize"),
-                color: readOptionalValue(specificConfig, "labelColor")
-              },
-              itemStyle: {
-                opacity: readOptionalNumber(specificConfig, "itemOpacity"),
-                borderColor: readOptionalValue(specificConfig, "borderColor"),
-                borderWidth: readOptionalNumber(specificConfig, "borderWidth")
+        {
+          const minSize = normalizeFunnelSizeValue(
+            readOptionalValue(specificConfig, "minSize"),
+            "12%"
+          );
+          const maxSize = normalizeFunnelSizeValue(
+            readOptionalValue(specificConfig, "maxSize"),
+            "88%"
+          );
+          return compactObject({
+            series: [
+              {
+                type: "funnel",
+                left: `${Math.round(layoutBox.left)}%`,
+                top: `${Math.round(layoutBox.top)}%`,
+                width: `${Math.round(layoutBox.width)}%`,
+                height: `${Math.round(layoutBox.height)}%`,
+                sort: readOptionalValue(specificConfig, "sort"),
+                gap: readOptionalNumber(specificConfig, "gap"),
+                minSize,
+                maxSize,
+                label: {
+                  show: readOptionalBoolean(specificConfig, "showLabel"),
+                  position: readOptionalValue(specificConfig, "labelPosition"),
+                  formatter: readOptionalValue(specificConfig, "labelFormatter"),
+                  fontSize: readOptionalNumber(specificConfig, "labelFontSize"),
+                  color: readOptionalValue(specificConfig, "labelColor")
+                },
+                itemStyle: {
+                  opacity: readOptionalNumber(specificConfig, "itemOpacity"),
+                  borderColor: readOptionalValue(specificConfig, "borderColor"),
+                  borderWidth: readOptionalNumber(specificConfig, "borderWidth")
+                }
               }
-            }
-          ]
-        });
+            ]
+          });
+        }
       default:
         return {};
     }

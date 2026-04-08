@@ -123,6 +123,7 @@
         { id: "xFormatter", label: "X Formatter", type: "text" },
         { id: "yAxisLineShow", label: "显示 Y 轴线", type: "checkbox" },
         { id: "yAxisTickShow", label: "显示 Y 轴刻度", type: "checkbox" },
+        { id: "yAxisScale", label: "按数据缩放Y轴", type: "checkbox" },
         { id: "yAxisLabelFontSize", label: "Y 标签字号", type: "select", options: FONT_SIZE_OPTIONS.map((value) => [value, value]) },
         { id: "yAxisLabelColor", label: "Y 标签颜色", type: "color" },
         { id: "yAxisLineColor", label: "Y 轴线颜色", type: "color" },
@@ -474,6 +475,7 @@ const LOCALIZED_DEFINITION_TEXT = {
       tags: ["散点", "数值轴", "dataset + encode"],
       fields: {
         showLabel: "显示标签",
+        labelFormatter: "标签格式",
         symbolSize: "默认点大小",
         symbol: "点形状",
         itemOpacity: "点透明度",
@@ -1199,6 +1201,7 @@ const CHART_DEFINITIONS = {
     tags: ["scatter", "value axes", "dataset + encode"],
     fields: [
       { id: "showLabel", label: "Show Labels", type: "checkbox", default: false },
+      { id: "labelFormatter", label: "Label Formatter", type: "text", default: "{a}" },
       {
         id: "symbolSize",
         label: "Default Symbol Size",
@@ -1281,7 +1284,6 @@ const CHART_DEFINITIONS = {
         ],
       },
       { id: "splitNumber", label: "Split Number", type: "number", default: 5 },
-      { id: "showSymbol", label: "Show Symbols", type: "checkbox", default: true },
       { id: "showLabel", label: "Show Labels", type: "checkbox", default: false },
       { id: "labelFormatter", label: "Label Formatter", type: "text", default: "{b}: {c}" },
       { id: "areaOpacity", label: "Area Opacity", type: "number", default: 0.18, step: 0.05 },
@@ -1316,6 +1318,7 @@ const CHART_DEFINITIONS = {
       { id: "axisNameColor", label: "Axis Name Color", type: "color", default: "#334155" },
       { id: "axisNameBold", label: "Bold Axis Names", type: "checkbox", default: true },
       { id: "radarSeriesGroup", label: "Series Style", type: "group", help: "Control symbol and outline style for radar series." },
+      { id: "showSymbol", label: "Show Symbols", type: "checkbox", default: true },
       {
         id: "symbol",
         label: "Symbol",

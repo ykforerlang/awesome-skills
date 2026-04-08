@@ -1,17 +1,14 @@
 {
   "title": {
-    "show": true,
-    "left": "center",
     "text": "Revenue Trend",
-    "subtext": "Generated from test data"
+    "subtext": "Generated from test data",
+    "show": true,
+    "left": "center"
   },
   "backgroundColor": "#fafafa",
   "color": [
     "#2563eb",
-    "#14b8a6",
-    "#f59e0b",
-    "#ef4444",
-    "#8b5cf6"
+    "#14b8a6"
   ],
   "legend": {
     "show": true,

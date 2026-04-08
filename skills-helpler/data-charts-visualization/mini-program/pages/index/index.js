@@ -63,6 +63,7 @@ const COMMON_FIELD_LABELS = {
   xFormatter: "X 轴格式",
   yAxisLineShow: "显示 Y 轴线",
   yAxisTickShow: "显示 Y 轴刻度",
+  yAxisScale: "按数据缩放Y轴",
   yAxisLabelFontSize: "Y 标签字号",
   yAxisLabelColor: "Y 标签颜色",
   yAxisLineColor: "Y 轴线颜色",
@@ -200,6 +201,7 @@ const SPECIFIC_FIELD_LABELS = {
   },
   scatter: {
     showLabel: "显示标签",
+    labelFormatter: "标签格式",
     symbolSize: "默认点大小",
     symbol: "点形状",
     itemOpacity: "点透明度",

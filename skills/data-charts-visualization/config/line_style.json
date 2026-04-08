@@ -3,7 +3,7 @@
     "source": "skills-helpler/data-charts-visualization/shared/charts-default-config.js",
     "exportedBy": "skills-helpler/data-charts-visualization/scripts/export_default_configs.js",
     "chartType": "line",
-    "exportedAt": "2026-04-06T13:14:04.216Z",
+    "exportedAt": "2026-04-08T14:44:16.398Z",
     "note": "Default helper config exported from shared defaults."
   },
   "chartType": "line",
@@ -61,6 +61,7 @@
         "labelFontSize": 12,
         "labelColor": "#4b5563",
         "lineColor": "#9ca3af",
+        "scale": false,
         "formatter": "{value}"
       }
     },

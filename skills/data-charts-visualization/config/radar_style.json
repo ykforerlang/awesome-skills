@@ -1,11 +1,4 @@
 {
-  "_meta": {
-    "source": "skills-helpler/data-charts-visualization/shared/charts-default-config.js",
-    "exportedBy": "skills-helpler/data-charts-visualization/scripts/export_default_configs.js",
-    "chartType": "radar",
-    "exportedAt": "2026-04-06T13:14:04.223Z",
-    "note": "Default helper config exported from shared defaults."
-  },
   "chartType": "radar",
   "common": {
     "title": {
@@ -25,11 +18,11 @@
     "canvas": {
       "backgroundColor": "#ffffff",
       "palette": [
-        "#2563eb",
-        "#14b8a6",
-        "#f59e0b",
-        "#ef4444",
-        "#8b5cf6"
+        "#d2d6df",
+        "#aadfd9",
+        "#7f7462",
+        "#3e2e2e",
+        "#4c4a4f"
       ],
       "plotArea": {
         "left": "30%",
@@ -49,23 +42,23 @@
   "specific": {
     "shape": "polygon",
     "splitNumber": 5,
-    "showSymbol": false,
     "showLabel": false,
     "labelFormatter": "{b}: {c}",
-    "areaOpacity": 0.2,
-    "splitLineColor": "#d0d7de",
+    "areaOpacity": 0.1,
+    "splitLineColor": "#2d87e1",
     "splitLineWidth": 0.5,
     "splitLineType": "solid",
-    "axisLineColor": "#94a3b8",
+    "axisLineColor": "#176ade",
     "axisLineWidth": 0.6,
     "axisLineType": "solid",
-    "axisNameFontSize": 12,
-    "axisNameColor": "#334155",
-    "axisNameBold": true,
+    "axisNameFontSize": 24,
+    "axisNameColor": "#3e6cac",
+    "axisNameBold": false,
+    "showSymbol": true,
     "symbol": "circle",
-    "symbolSize": 6,
+    "symbolSize": 10,
     "lineStyleType": "solid",
-    "lineWidth": 3,
+    "lineWidth": 4.6,
     "labelFontSize": 12,
     "labelColor": "#334155"
   }

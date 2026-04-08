@@ -267,6 +267,7 @@ CLI 输入由三部分组成：
     "y": {
       "lineShow": true,
       "tickShow": true,
+      "scale": false,
       "labelFontSize": 12,
       "labelColor": "#374151",
       "lineColor": "#9ca3af",
@@ -329,6 +330,7 @@ CLI 输入由三部分组成：
 
 - `lineShow`
 - `tickShow`
+- `scale`：仅 y 轴使用，默认 `false`
 - `rotate`：仅 x 轴使用
 - `labelFontSize`
 - `labelColor`
@@ -394,6 +396,7 @@ CLI 输入由三部分组成：
 - `point.borderWidth`
 - `point.borderColor`
 - `dataLabels.show`
+- `dataLabels.formatter`
 - `dataLabels.fontSize`
 - `dataLabels.color`
 

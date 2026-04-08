@@ -229,6 +229,7 @@ Put these in `config`:
 - background
 - legend position and typography
 - axis styling
+- Y-axis scale behavior such as whether to scale the Y axis to the data range
 - label styling
 - line width, area opacity, radar grid styling, gauge text styling, and other long-lived presentation rules
 

@@ -121,6 +121,7 @@
       yAxisLineShow: false,
       yAxisTickShow: true,
       yAxisLineColor: "#9ca3af",
+      yAxisScale: false,
       yFormatter: "{value}",
       splitLineShow: true,
       splitLineDisplay: "left",
@@ -164,6 +165,7 @@
       yAxisLineShow: false,
       yAxisTickShow: true,
       yAxisLineColor: "#9ca3af",
+      yAxisScale: false,
       yFormatter: "{value}",
       splitLineShow: true,
       splitLineDisplay: "left",
@@ -510,6 +512,7 @@
     },
     scatter: {
       showLabel: false,
+      labelFormatter: "{a}",
       symbolSize: 64,
       symbol: "circle",
       itemOpacity: 0.92,
@@ -736,6 +739,7 @@
           labelFontSize: source.yAxisLabelFontSize,
           labelColor: source.yAxisLabelColor,
           lineColor: source.yAxisLineColor,
+          scale: source.yAxisScale,
           formatter: source.yFormatter,
         },
       },
@@ -767,6 +771,7 @@
           },
           dataLabels: {
             show: source.showLabel,
+            formatter: source.labelFormatter,
             fontSize: source.labelFontSize,
             color: source.labelColor,
           },
@@ -888,6 +893,7 @@
           },
           dataLabels: {
             show: source.showLabel,
+            formatter: source.labelFormatter,
             fontSize: source.labelFontSize,
             color: source.labelColor,
           },

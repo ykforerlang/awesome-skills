@@ -7,6 +7,7 @@ They should be treated as complete helper config payloads for CLI rendering, not
 Title copy does not live here. Put chart title text in the data payload, for example `data.title.text` and `data.title.subtext`.
 
 One-off render choices such as bar layout, stack mode, pie mode, or dual-axis type selection should not be stored here. Pass those through CLI `--variant` instead.
+Long-lived axis behavior such as `common.axes.y.scale` belongs in config.
 
 ## Files
 

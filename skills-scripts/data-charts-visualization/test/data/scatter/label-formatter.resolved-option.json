@@ -24,7 +24,7 @@
   "backgroundColor": "#fafafa",
   "color": [
     "#2563eb",
-    "#06b6d4"
+    "#14b8a6"
   ],
   "legend": {
     "show": true,
@@ -43,13 +43,8 @@
     "bottom": "15%"
   },
   "xAxis": {
-    "type": "category",
-    "data": [
-      "Q1",
-      "Q2",
-      "Q3",
-      "Q4"
-    ],
+    "type": "value",
+    "name": "Spend",
     "axisLabel": {
       "rotate": 0,
       "fontSize": 12,
@@ -66,7 +61,7 @@
       }
     },
     "splitLine": {
-      "show": false,
+      "show": true,
       "lineStyle": {
         "color": "#e5e7eb",
         "type": "dashed",
@@ -76,6 +71,7 @@
   },
   "yAxis": {
     "type": "value",
+    "name": "Revenue",
     "axisLabel": {
       "fontSize": 12,
       "color": "#4b5563",
@@ -101,56 +97,76 @@
   },
   "series": [
     {
-      "type": "bar",
-      "name": "Revenue",
+      "type": "scatter",
+      "name": "North",
       "data": [
-        320,
-        410,
-        505,
-        620
+        [
+          10,
+          18
+        ],
+        [
+          14,
+          22
+        ],
+        [
+          18,
+          28
+        ],
+        [
+          22,
+          34
+        ]
       ],
-      "barWidth": "40%",
-      "barGap": "10%",
+      "symbol": "circle",
+      "symbolSize": 64,
       "itemStyle": {
         "color": "#2563eb",
         "opacity": 0.92,
-        "borderRadius": 0,
         "borderWidth": 0,
         "borderColor": "#ffffff"
       },
       "label": {
         "show": true,
-        "position": "top",
+        "formatter": "{a}: ({c})",
         "fontSize": 12,
         "color": "#334155"
-      },
-      "stack": "preview-stack"
+      }
     },
     {
-      "type": "bar",
-      "name": "Cost",
+      "type": "scatter",
+      "name": "South",
       "data": [
-        180,
-        240,
-        290,
-        330
+        [
+          9,
+          12
+        ],
+        [
+          13,
+          17
+        ],
+        [
+          20,
+          25
+        ],
+        [
+          26,
+          31
+        ]
       ],
-      "barWidth": "40%",
-      "barGap": "10%",
+      "symbol": "circle",
+      "symbolSize": 64,
       "itemStyle": {
-        "color": "#06b6d4",
+        "color": "#14b8a6",
         "opacity": 0.92,
-        "borderRadius": 0,
         "borderWidth": 0,
         "borderColor": "#ffffff"
       },
       "label": {
         "show": true,
-        "position": "top",
+        "formatter": "{a}: ({c})",
         "fontSize": 12,
         "color": "#334155"
-      },
-      "stack": "preview-stack"
+      }
     }
   ]
 }

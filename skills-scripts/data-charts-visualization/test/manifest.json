@@ -1621,6 +1621,17 @@
     "height": 360
   },
   {
+    "chartType": "scatter",
+    "variantId": "label-formatter",
+    "dataSelection": {
+      "seriesCount": 2
+    },
+    "variant": {},
+    "outputFile": "test/images/scatter/label-formatter.png",
+    "width": 650,
+    "height": 360
+  },
+  {
     "chartType": "pie",
     "variantId": "pie",
     "dataSelection": {},

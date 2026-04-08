@@ -125,6 +125,7 @@ Base shape:
 - `axes.x.formatter`
 - `axes.y.lineShow`
 - `axes.y.tickShow`
+- `axes.y.scale`
 - `axes.y.labelFontSize`
 - `axes.y.labelColor`
 - `axes.y.lineColor`

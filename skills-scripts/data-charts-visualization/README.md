@@ -269,6 +269,7 @@ Rules:
     "y": {
       "lineShow": true,
       "tickShow": true,
+      "scale": false,
       "labelFontSize": 12,
       "labelColor": "#374151",
       "lineColor": "#9ca3af",
@@ -331,6 +332,7 @@ Title copy does not belong in `config.common.title`. Put it in `data.title.text`
 
 - `lineShow`
 - `tickShow`
+- `scale`: y-axis only, default `false`
 - `rotate`: x-axis only
 - `labelFontSize`
 - `labelColor`
@@ -396,6 +398,7 @@ Title copy does not belong in `config.common.title`. Put it in `data.title.text`
 - `point.borderWidth`
 - `point.borderColor`
 - `dataLabels.show`
+- `dataLabels.formatter`
 - `dataLabels.fontSize`
 - `dataLabels.color`
 

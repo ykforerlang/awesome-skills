@@ -334,6 +334,7 @@ const COMMON_DEFAULTS = {
     yAxisLabelColor: "#4b5563",
     yAxisLineShow: false,
     yAxisTickShow: true,
+    yAxisScale: false,
     yAxisLineColor: "#9ca3af",
     yFormatter: "{value}",
     splitLineShow: true,
@@ -376,6 +377,7 @@ const COMMON_DEFAULTS = {
     yAxisLabelColor: "#4b5563",
     yAxisLineShow: false,
     yAxisTickShow: true,
+    yAxisScale: false,
     yAxisLineColor: "#9ca3af",
     yFormatter: "{value}",
     splitLineShow: true,
@@ -463,6 +465,7 @@ const COMMON_FIELD_DOM_IDS = {
   yAxisLabelColor: "y-axis-label-color",
   yAxisLineShow: "y-axis-line-show",
   yAxisTickShow: "y-axis-tick-show",
+  yAxisScale: "y-axis-scale",
   yAxisLineColor: "y-axis-line-color",
   yFormatter: "y-formatter",
   splitLineShow: "split-line-show",
@@ -486,6 +489,7 @@ const COMMON_FIELD_LABEL_DOM_IDS = {
   xFormatter: "x-formatter-label",
   yAxisLineShow: "y-axis-line-show-label",
   yAxisTickShow: "y-axis-tick-show-label",
+  yAxisScale: "y-axis-scale-label",
   yAxisLabelFontSize: "y-axis-label-font-size-label",
   yAxisLabelColor: "y-axis-label-color-label",
   yAxisLineColor: "y-axis-line-color-label",
@@ -507,7 +511,7 @@ const COMMON_GROUP_FIELD_IDS = {
   canvasStyle: ["backgroundColor", "palette"],
   canvasSpacing: ["gridLeft", "gridRight", "gridTop", "gridBottom"],
   axesX: ["xAxisLineShow", "xAxisTickShow", "xRotate", "xAxisLabelFontSize", "xAxisLabelColor", "xAxisLineColor", "xFormatter"],
-  axesY: ["yAxisLineShow", "yAxisTickShow", "yAxisLabelFontSize", "yAxisLabelColor", "yFormatter", "yAxisLineColor"],
+  axesY: ["yAxisLineShow", "yAxisTickShow", "yAxisScale", "yAxisLabelFontSize", "yAxisLabelColor", "yFormatter", "yAxisLineColor"],
 };
 
 const COMMON_GROUP_RENDER_TEXT = {
@@ -559,6 +563,7 @@ const COMMON_GROUP_RENDER_TEXT = {
       xFormatter: "X 轴格式",
       yAxisLineShow: "显示 Y 轴线",
       yAxisTickShow: "显示 Y 轴刻度",
+      yAxisScale: "按数据缩放Y轴",
       yAxisLabelFontSize: "Y 轴标签字号",
       yAxisLabelColor: "Y 轴标签颜色",
       yAxisLineColor: "Y 轴线颜色",
@@ -644,6 +649,7 @@ const COMMON_GROUP_RENDER_TEXT = {
       xFormatter: "X Formatter",
       yAxisLineShow: "Show Y Axis Line",
       yAxisTickShow: "Show Y Ticks",
+      yAxisScale: "Scale Y Axis To Data",
       yAxisLabelFontSize: "Y Label Size",
       yAxisLabelColor: "Y Label Color",
       yAxisLineColor: "Y Axis Line Color",
@@ -1034,7 +1040,7 @@ const CHART_BEAUTY_DEFAULTS = {
       gridTop: "21%",
       gridBottom: "15%",
     },
-    specific: { showLabel: false, symbolSize: 64 },
+    specific: { showLabel: false, labelFormatter: "{a}", symbolSize: 64 },
   },
   radar: {
     common: {
@@ -1352,6 +1358,40 @@ function normalizeGridPercentValue(value, fallback = "10%") {
   return fallback;
 }
 
+function normalizeFunnelSizeValue(value, fallback = "12%") {
+  const normalizedFallback = typeof fallback === "string" && fallback.trim() ? fallback.trim() : "12%";
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (!trimmed) {
+      return normalizedFallback;
+    }
+    const percentMatch = trimmed.match(/^(-?\d+(?:\.\d+)?)\s*%$/);
+    if (percentMatch) {
+      return `${percentMatch[1]}%`;
+    }
+    const numericMatch = trimmed.match(/^-?\d+(?:\.\d+)?$/);
+    if (numericMatch) {
+      return `${trimmed}%`;
+    }
+    return normalizedFallback;
+  }
+  if (typeof value === "number" && Number.isFinite(value)) {
+    return `${value}%`;
+  }
+  return normalizedFallback;
+}
+
+function getSpecificFieldFallbackValue(field, cachedValues) {
+  const cachedValue = cachedValues[field.id];
+  if (appState.chartType === "funnel" && (field.id === "minSize" || field.id === "maxSize")) {
+    const fallback = typeof cachedValue === "string" && cachedValue.trim()
+      ? cachedValue
+      : field.default;
+    return normalizeFunnelSizeValue(fallback, field.default);
+  }
+  return cachedValue !== undefined ? cachedValue : field.default;
+}
+
 function getCommonRenderText() {
   return COMMON_GROUP_RENDER_TEXT[CURRENT_LOCALE] || COMMON_GROUP_RENDER_TEXT.en;
 }
@@ -1600,7 +1640,9 @@ function applySpecificFieldValues(values) {
         node.checked = Boolean(value);
       }
     } else {
-      node.value = value;
+      node.value = appState.chartType === "funnel" && (key === "minSize" || key === "maxSize")
+        ? normalizeFunnelSizeValue(value, key === "minSize" ? "12%" : "88%")
+        : value;
     }
   });
 }
@@ -2445,6 +2487,7 @@ const SPECIFIC_FIELD_ORDER_OVERRIDES = {
       "borderWidth",
       "borderColor",
       "showLabel",
+      "labelFormatter",
       "labelFontSize",
       "labelColor",
     ],
@@ -2484,16 +2527,20 @@ function sortSpecificFieldsForDisplay(chartType, fields, groupId = "") {
 
 function captureSpecificFieldState(definition) {
   const snapshot = {};
+  const cachedValues = appState.specificValuesCache || {};
   definition.fields.forEach((field) => {
+    const fallbackValue = getSpecificFieldFallbackValue(field, cachedValues);
     const input = document.querySelector(`[data-specific-field="${field.id}"]`);
     if (!input) {
-      snapshot[field.id] = field.default;
+      snapshot[field.id] = fallbackValue;
       return;
     }
     if (field.type === "checkbox") {
       snapshot[field.id] = readBooleanControl(input, Boolean(field.default));
     } else if (field.type === "number") {
       snapshot[field.id] = input.value === "" ? field.default : numberOr(input.value, field.default);
+    } else if (appState.chartType === "funnel" && (field.id === "minSize" || field.id === "maxSize")) {
+      snapshot[field.id] = normalizeFunnelSizeValue(input.value, fallbackValue);
     } else {
       snapshot[field.id] = input.value;
     }
@@ -3338,6 +3385,7 @@ function resetCommonFields() {
   setValueIfExists("y-axis-label-color", defaults.yAxisLabelColor);
   setValueIfExists("y-axis-line-show", defaults.yAxisLineShow);
   setValueIfExists("y-axis-tick-show", defaults.yAxisTickShow);
+  setValueIfExists("y-axis-scale", defaults.yAxisScale);
   setValueIfExists("y-axis-line-color", defaults.yAxisLineColor);
   setValueIfExists("y-formatter", defaults.yFormatter);
   setValueIfExists("split-line-show", defaults.splitLineShow);
@@ -3387,6 +3435,7 @@ function getCommonState() {
     yAxisLabelColor: $("y-axis-label-color") ? $("y-axis-label-color").value : defaults.yAxisLabelColor,
     yAxisLineShow: readBooleanControl($("y-axis-line-show"), defaults.yAxisLineShow),
     yAxisTickShow: readBooleanControl($("y-axis-tick-show"), defaults.yAxisTickShow),
+    yAxisScale: readBooleanControl($("y-axis-scale"), defaults.yAxisScale),
     yAxisLineColor: $("y-axis-line-color") ? $("y-axis-line-color").value : defaults.yAxisLineColor,
     yFormatter: ($("y-formatter") ? $("y-formatter").value.trim() : defaults.yFormatter) || "{value}",
     splitLineShow: readBooleanControl($("split-line-show"), defaults.splitLineShow),
@@ -3408,15 +3457,18 @@ function getSpecificState() {
     if (field.type === "group") {
       return;
     }
+    const fallbackValue = getSpecificFieldFallbackValue(field, cachedValues);
     const input = document.querySelector(`[data-specific-field="${field.id}"]`);
     if (!input) {
-      state[field.id] = cachedValues[field.id] !== undefined ? cachedValues[field.id] : field.default;
+      state[field.id] = fallbackValue;
       return;
     }
     if (field.type === "checkbox") {
-      state[field.id] = readBooleanControl(input, cachedValues[field.id] !== undefined ? Boolean(cachedValues[field.id]) : Boolean(field.default));
+      state[field.id] = readBooleanControl(input, Boolean(fallbackValue));
     } else if (field.type === "number") {
-      state[field.id] = numberOr(input.value, cachedValues[field.id] !== undefined ? cachedValues[field.id] : field.default);
+      state[field.id] = numberOr(input.value, fallbackValue);
+    } else if (appState.chartType === "funnel" && (field.id === "minSize" || field.id === "maxSize")) {
+      state[field.id] = normalizeFunnelSizeValue(input.value, fallbackValue);
     } else {
       state[field.id] = input.value;
     }

@@ -3,7 +3,7 @@
     "source": "skills-helpler/data-charts-visualization/shared/charts-default-config.js",
     "exportedBy": "skills-helpler/data-charts-visualization/scripts/export_default_configs.js",
     "chartType": "scatter",
-    "exportedAt": "2026-04-06T13:14:04.223Z",
+    "exportedAt": "2026-04-08T14:44:16.406Z",
     "note": "Default helper config exported from shared defaults."
   },
   "chartType": "scatter",
@@ -61,6 +61,7 @@
         "labelFontSize": 12,
         "labelColor": "#4b5563",
         "lineColor": "#9ca3af",
+        "scale": false,
         "formatter": "{value}"
       }
     },
@@ -89,6 +90,7 @@
     },
     "dataLabels": {
       "show": false,
+      "formatter": "{a}",
       "fontSize": 12,
       "color": "#334155"
     }

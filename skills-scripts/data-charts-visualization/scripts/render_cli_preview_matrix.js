@@ -162,10 +162,24 @@ function buildPreviewCases(chartType) {
         }
       ];
     case "scatter":
-      return SERIES_COUNT_OPTIONS.map((count) => ({
-        variantId: `series-${count}`,
-        dataSelection: { seriesCount: count },
-      }));
+      return [
+        ...SERIES_COUNT_OPTIONS.map((count) => ({
+          variantId: `series-${count}`,
+          dataSelection: { seriesCount: count },
+        })),
+        {
+          variantId: "label-formatter",
+          dataSelection: { seriesCount: 2 },
+          configPatch: {
+            specific: {
+              dataLabels: {
+                show: true,
+                formatter: "{a}: ({c})"
+              }
+            }
+          }
+        }
+      ];
     case "bar": {
       const cases = [];
       for (const count of SERIES_COUNT_OPTIONS) {
