@@ -1,6 +1,6 @@
 # CLI And Config Contract
 
-Read this file before calling `npx -y @areslabs/data-charts-visualization`.
+Read this file before calling `npx -y @areslabs/data-charts-visualization@1.0.1`.
 
 ## Audience
 
@@ -12,7 +12,7 @@ It explains the public contract of the published `@areslabs/data-charts-visualiz
 Prefer:
 
 ```bash
-npx -y @areslabs/data-charts-visualization \
+npx -y @areslabs/data-charts-visualization@1.0.1 \
   --chart-type <chartType> \
   --config-file skills/data-charts-visualization/config/<chart>_style.json \
   --data '<json>' \
@@ -24,7 +24,7 @@ This is the default entrypoint because it does not require a global install of `
 CLI shape:
 
 ```bash
-npx -y @areslabs/data-charts-visualization --chart-type <type> (--data <json> | --data-file <file>) (--config <json> | --config-file <file>) [--variant <json>] [--width <px>] [--height <px>] [--out <dir|file>]
+npx -y @areslabs/data-charts-visualization@1.0.1 --chart-type <type> (--data <json> | --data-file <file>) (--config <json> | --config-file <file>) [--variant <json>] [--width <px>] [--height <px>] [--out <dir|file>]
 ```
 
 ## Supported Top-Level Flags

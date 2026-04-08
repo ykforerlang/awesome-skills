@@ -7,7 +7,7 @@ CLI for rendering ECharts charts to PNG or SVG in a Node.js environment.
 Use the published package directly:
 
 ```bash
-npx -y @areslabs/data-charts-visualization --help
+npx -y @areslabs/data-charts-visualization@1.0.1 --help
 ```
 
 After installation, the exposed bin is:
@@ -602,7 +602,7 @@ Precedence:
 Render from JSON files:
 
 ```bash
-npx -y @areslabs/data-charts-visualization \
+npx -y @areslabs/data-charts-visualization@1.0.1 \
   --chart-type line \
   --data-file ./data/line.json \
   --config-file ./config/line_style.json \
@@ -612,7 +612,7 @@ npx -y @areslabs/data-charts-visualization \
 Render from inline JSON:
 
 ```bash
-npx -y @areslabs/data-charts-visualization \
+npx -y @areslabs/data-charts-visualization@1.0.1 \
   --chart-type pie \
   --data '{"series":[{"type":"pie","data":[{"name":"A","value":40},{"name":"B","value":60}]}]}' \
   --config '{"common":{"title":{"main":{"show":true,"text":"Pie Demo","align":"center","fontSize":18,"color":"#111827","bold":true},"subtitle":{"show":false,"text":"","fontSize":12,"color":"#6b7280"}},"canvas":{"backgroundColor":"#ffffff","palette":["#5470c6","#91cc75"],"plotArea":{"left":"6%","right":"6%","top":"12%","bottom":"6%"}},"legend":{"show":true,"position":"bottom-center","orient":"horizontal","fontSize":12,"color":"#374151"},"axes":{"x":{},"y":{}},"splitLines":{"horizontal":{},"vertical":{}}},"specific":{"labelPosition":"outside","startAngle":90,"showLabel":true,"labelFontSize":11,"labelColor":"#334155","labelFormatter":"{b} {d}%","labelLineShow":true,"labelLineColor":"#94a3b8","labelLineWidth":1,"itemOpacity":0.96,"borderWidth":0,"borderColor":"#ffffff"}}' \
@@ -622,7 +622,7 @@ npx -y @areslabs/data-charts-visualization \
 Render with one-off variant:
 
 ```bash
-npx -y @areslabs/data-charts-visualization \
+npx -y @areslabs/data-charts-visualization@1.0.1 \
   --chart-type bar \
   --data-file ./data/bar.json \
   --config-file ./config/bar_style.json \
@@ -633,7 +633,7 @@ npx -y @areslabs/data-charts-visualization \
 Dual-axis type override:
 
 ```bash
-npx -y @areslabs/data-charts-visualization \
+npx -y @areslabs/data-charts-visualization@1.0.1 \
   --chart-type dualAxis \
   --data-file ./data/dual-axis.json \
   --config-file ./config/dual_axis_style.json \

@@ -20,7 +20,7 @@ If the request could reasonably be handled as either plain analysis or analysis 
 
 ## Operating Model
 
-This skill renders charts through `npx -y @areslabs/data-charts-visualization`.
+This skill renders charts through `npx -y @areslabs/data-charts-visualization@1.0.1`.
 
 The most important mental model is the three-way split:
 
@@ -113,7 +113,7 @@ Common business variants map onto those chart families:
 
 ## Execution Rules
 
-- Use `npx -y @areslabs/data-charts-visualization`
+- Use `npx -y @areslabs/data-charts-visualization@1.0.1`
 - Do not assume the user has globally installed `areslabs-data-charts`
 - Prefer `.png` unless the user explicitly asks for `.svg`
 - Prefer `--config-file` for the base chart config

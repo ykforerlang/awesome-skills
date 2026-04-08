@@ -7,7 +7,7 @@
 发布后推荐直接通过 `npx` 调用：
 
 ```bash
-npx -y @areslabs/data-charts-visualization --help
+npx -y @areslabs/data-charts-visualization@1.0.1 --help
 ```
 
 包暴露的 bin 名称为：
@@ -600,7 +600,7 @@ CLI 输入由三部分组成：
 使用数据文件和配置文件渲染：
 
 ```bash
-npx -y @areslabs/data-charts-visualization \
+npx -y @areslabs/data-charts-visualization@1.0.1 \
   --chart-type line \
   --data-file ./data/line.json \
   --config-file ./config/line_style.json \
@@ -610,7 +610,7 @@ npx -y @areslabs/data-charts-visualization \
 使用内联 JSON 渲染：
 
 ```bash
-npx -y @areslabs/data-charts-visualization \
+npx -y @areslabs/data-charts-visualization@1.0.1 \
   --chart-type pie \
   --data '{"series":[{"type":"pie","data":[{"name":"A","value":40},{"name":"B","value":60}]}]}' \
   --config '{"common":{"title":{"main":{"show":true,"text":"Pie Demo","align":"center","fontSize":18,"color":"#111827","bold":true},"subtitle":{"show":false,"text":"","fontSize":12,"color":"#6b7280"}},"canvas":{"backgroundColor":"#ffffff","palette":["#5470c6","#91cc75"],"plotArea":{"left":"6%","right":"6%","top":"12%","bottom":"6%"}},"legend":{"show":true,"position":"bottom-center","orient":"horizontal","fontSize":12,"color":"#374151"},"axes":{"x":{},"y":{}},"splitLines":{"horizontal":{},"vertical":{}}},"specific":{"labelPosition":"outside","startAngle":90,"showLabel":true,"labelFontSize":11,"labelColor":"#334155","labelFormatter":"{b} {d}%","labelLineShow":true,"labelLineColor":"#94a3b8","labelLineWidth":1,"itemOpacity":0.96,"borderWidth":0,"borderColor":"#ffffff"}}' \
@@ -620,7 +620,7 @@ npx -y @areslabs/data-charts-visualization \
 带一次性 variant 的渲染：
 
 ```bash
-npx -y @areslabs/data-charts-visualization \
+npx -y @areslabs/data-charts-visualization@1.0.1 \
   --chart-type bar \
   --data-file ./data/bar.json \
   --config-file ./config/bar_style.json \
@@ -631,7 +631,7 @@ npx -y @areslabs/data-charts-visualization \
 双轴图临时指定左右系列类型：
 
 ```bash
-npx -y @areslabs/data-charts-visualization \
+npx -y @areslabs/data-charts-visualization@1.0.1 \
   --chart-type dualAxis \
   --data-file ./data/dual-axis.json \
   --config-file ./config/dual_axis_style.json \
