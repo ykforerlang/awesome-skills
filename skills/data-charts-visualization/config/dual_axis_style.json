@@ -1,12 +1,4 @@
 {
-  "_meta": {
-    "source": "skills-helpler/data-charts-visualization/shared/charts-default-config.js",
-    "exportedBy": "skills-helpler/data-charts-visualization/scripts/export_default_configs.js",
-    "chartType": "dualAxis",
-    "exportedAt": "2026-04-08T14:44:16.405Z",
-    "note": "Default dual-axis helper config exported from shared defaults.",
-    "combo": "bar-line"
-  },
   "chartType": "dualAxis",
   "common": {
     "title": {
@@ -55,15 +47,6 @@
         "labelColor": "#4b5563",
         "lineColor": "#9ca3af",
         "formatter": "{value}"
-      },
-      "y": {
-        "lineShow": false,
-        "tickShow": true,
-        "labelFontSize": 12,
-        "labelColor": "#4b5563",
-        "lineColor": "#9ca3af",
-        "scale": false,
-        "formatter": "{value}"
       }
     },
     "splitLines": {
@@ -89,6 +72,7 @@
       "lineShow": true,
       "lineColor": "#9ca3af",
       "tickShow": true,
+      "scale": false,
       "formatter": "{value}"
     },
     "rightAxis": {
@@ -97,6 +81,7 @@
       "lineShow": true,
       "lineColor": "#9ca3af",
       "tickShow": true,
+      "scale": false,
       "formatter": "{value}"
     },
     "leftBar": {

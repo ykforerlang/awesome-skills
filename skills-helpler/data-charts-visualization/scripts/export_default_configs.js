@@ -46,35 +46,13 @@ function parseArgs(argv) {
   return args;
 }
 
-function buildMeta(chartType) {
-  const meta = {
-    source: "skills-helpler/data-charts-visualization/shared/charts-default-config.js",
-    exportedBy: "skills-helpler/data-charts-visualization/scripts/export_default_configs.js",
-    chartType,
-    exportedAt: new Date().toISOString(),
-    note: chartType === "dualAxis"
-      ? "Default dual-axis helper config exported from shared defaults."
-      : "Default helper config exported from shared defaults.",
-  };
-
-  if (chartType === "dualAxis") {
-    meta.combo = "bar-line";
-  }
-
-  return meta;
-}
-
 async function exportConfig(chartType) {
   const outputName = OUTPUT_FILE_NAMES[chartType];
   if (!outputName) {
     throw new Error(`Unsupported chart type: ${chartType}`);
   }
 
-  const helperConfig = defaultConfigModule.getDefaultHelperConfig(chartType, DEFAULT_LOCALE);
-  const payload = {
-    _meta: buildMeta(chartType),
-    ...helperConfig,
-  };
+  const payload = defaultConfigModule.getDefaultHelperConfig(chartType, DEFAULT_LOCALE);
   const outputPath = path.join(SKILL_CONFIG_DIR, outputName);
   await fs.writeFile(outputPath, `${JSON.stringify(payload, null, 2)}\n`, "utf-8");
   return outputPath;

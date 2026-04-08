@@ -1,11 +1,4 @@
 {
-  "_meta": {
-    "source": "skills-helpler/data-charts-visualization/shared/charts-default-config.js",
-    "exportedBy": "skills-helpler/data-charts-visualization/scripts/export_default_configs.js",
-    "chartType": "line",
-    "exportedAt": "2026-04-08T14:44:16.398Z",
-    "note": "Default helper config exported from shared defaults."
-  },
   "chartType": "line",
   "common": {
     "title": {
