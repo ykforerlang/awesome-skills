@@ -674,6 +674,7 @@ const appState = {
   templateId: "series",
   layoutMode: MOBILE_LAYOUT_MEDIA.matches ? "mobile" : "desktop",
   activeMobileSectionId: "",
+  mobilePreviewControlsScrollLeft: 0,
   focusedChartType: "",
   showChartSwitcher: true,
   dualAxisPreviewLeftType: null,
@@ -2262,6 +2263,9 @@ function renderMobilePreviewControls() {
   const model = getPreviewControlGroupsModel();
   const toolbarTitle = CURRENT_LOCALE === "zh" ? "预览配置" : "Preview Controls";
   const toolbarNote = CURRENT_LOCALE === "zh" ? "仅预览" : "Preview Only";
+  const previousScrollLeft = container?.querySelector(".mobile-preview-config-scroll")?.scrollLeft
+    ?? appState.mobilePreviewControlsScrollLeft
+    ?? 0;
   if (!container) {
     return;
   }
@@ -2302,6 +2306,16 @@ function renderMobilePreviewControls() {
     </div>
   `;
   container.classList.remove("hidden");
+  appState.mobilePreviewControlsScrollLeft = previousScrollLeft;
+  if (previousScrollLeft > 0) {
+    const nextScrollContainer = container.querySelector(".mobile-preview-config-scroll");
+    if (nextScrollContainer) {
+      nextScrollContainer.scrollLeft = previousScrollLeft;
+      requestAnimationFrame(() => {
+        nextScrollContainer.scrollLeft = previousScrollLeft;
+      });
+    }
+  }
 }
 
 function renderPreviewControls() {
@@ -3280,6 +3294,7 @@ function resetCommonFields() {
   setValueIfExists("y-axis-line-color", defaults.yAxisLineColor);
   setValueIfExists("y-formatter", defaults.yFormatter);
   setValueIfExists("split-line-show", defaults.splitLineShow);
+  setValueIfExists("split-line-display", defaults.splitLineDisplay);
   setValueIfExists("split-line-color", defaults.splitLineColor);
   setValueIfExists("split-line-type", defaults.splitLineType);
   setValueIfExists("split-line-width", defaults.splitLineWidth);
@@ -3328,6 +3343,7 @@ function getCommonState() {
     yAxisLineColor: $("y-axis-line-color") ? $("y-axis-line-color").value : defaults.yAxisLineColor,
     yFormatter: ($("y-formatter") ? $("y-formatter").value.trim() : defaults.yFormatter) || "{value}",
     splitLineShow: readBooleanControl($("split-line-show"), defaults.splitLineShow),
+    splitLineDisplay: $("split-line-display") ? $("split-line-display").value : defaults.splitLineDisplay,
     splitLineColor: $("split-line-color") ? $("split-line-color").value : defaults.splitLineColor,
     splitLineType: normalizeStrokeType($("split-line-type") ? $("split-line-type").value : defaults.splitLineType),
     splitLineWidth: numberOr($("split-line-width")?.value, defaults.splitLineWidth),
@@ -3789,7 +3805,6 @@ function wireEvents() {
     const previewStackButton = event.target.closest("[data-preview-stack-mode]");
     if (previewStackButton && (appState.chartType === "bar" || appState.chartType === "area")) {
       appState.previewStackMode = previewStackButton.dataset.previewStackMode === "stacked";
-      renderPreviewControls();
       updateOutputs();
       return;
     }
@@ -3797,7 +3812,6 @@ function wireEvents() {
     const previewSeriesCountButton = event.target.closest("[data-preview-series-count]");
     if (previewSeriesCountButton && supportsSeriesCountPreview(appState.chartType)) {
       appState.previewSeriesCount = Number(previewSeriesCountButton.dataset.previewSeriesCount) || 2;
-      renderPreviewControls();
       updateOutputs();
       return;
     }
@@ -3811,7 +3825,6 @@ function wireEvents() {
       } else if (side === "right") {
         appState.previewDualAxisRightSeriesCount = count;
       }
-      renderPreviewControls();
       updateOutputs();
       return;
     }
@@ -3819,7 +3832,6 @@ function wireEvents() {
     const previewBarLayoutButton = event.target.closest("[data-preview-bar-layout]");
     if (previewBarLayoutButton && (appState.chartType === "bar" || appState.chartType === "dualAxis")) {
       appState.previewBarHorizontal = previewBarLayoutButton.dataset.previewBarLayout === "horizontal";
-      renderPreviewControls();
       updateOutputs();
       return;
     }
@@ -3827,7 +3839,6 @@ function wireEvents() {
     const previewPieModeButton = event.target.closest("[data-preview-pie-mode]");
     if (previewPieModeButton && appState.chartType === "pie") {
       appState.previewPieMode = previewPieModeButton.dataset.previewPieMode || "donut";
-      renderPreviewControls();
       updateOutputs();
       return;
     }
@@ -3843,7 +3854,6 @@ function wireEvents() {
     } else if (side === "right") {
       appState.dualAxisPreviewRightType = type;
     }
-    renderPreviewControls();
     updateOutputs();
   });
 }

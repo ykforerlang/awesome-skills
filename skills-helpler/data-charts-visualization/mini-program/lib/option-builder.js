@@ -918,20 +918,24 @@
         }
       });
     }
+    const showLineLabel = readOptionalBoolean(lineConfig, "showLabel");
+    const showLineSymbol = readOptionalBoolean(lineConfig, "showSymbol");
+    const effectiveLineSymbolVisibility = resolveLinePreviewSymbolVisibility(showLineSymbol, showLineLabel);
     return compactObject({
       type: "line",
       ...axisRef,
       smooth: readOptionalBoolean(lineConfig, "smooth"),
-      showSymbol: readOptionalBoolean(lineConfig, "showSymbol"),
+      showSymbol: effectiveLineSymbolVisibility,
       connectNulls: readOptionalBoolean(lineConfig, "connectNulls"),
       lineStyle: {
         width: readOptionalNumber(lineConfig, "lineWidth"),
         type: readOptionalValue(lineConfig, "lineStyleType")
       },
       symbol: readOptionalValue(lineConfig, "symbol"),
-      symbolSize: readOptionalNumber(lineConfig, "symbolSize"),
+      symbolSize: resolveLinePreviewSymbolSize(readOptionalNumber(lineConfig, "symbolSize"), showLineSymbol),
       label: {
-        show: readOptionalBoolean(lineConfig, "showLabel"),
+        show: showLineLabel,
+        position: "top",
         fontSize: readOptionalNumber(lineConfig, "labelFontSize"),
         color: readOptionalValue(lineConfig, "labelColor")
       },

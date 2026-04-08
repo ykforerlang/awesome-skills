@@ -320,8 +320,13 @@ Common natural-language examples that should count as style/config tuning includ
 Treat style-tuning requests across the same chart in the same conversation as cumulative, not isolated.
 
 - first minor style edit: the agent may directly help with a one-off override
-- second consecutive style/layout edit on the same chart: the agent should explicitly mention that the config page will be more efficient if more tuning is coming
-- third style/layout edit or later on the same chart: the agent should default to guiding the user to the config page instead of continuing to hand-edit JSON, unless the user explicitly asks the agent to keep editing manually
+- second consecutive style/layout edit on the same chart: explicitly mention that the config page will likely be faster if tuning continues
+- third style/layout edit or later on the same chart: default to recommending the config page unless the user explicitly asks to keep editing manually
+
+Treat repeated use of the same underlying data with changing config/style requests as an equally strong signal.
+
+- second config-focused revision on the same data: explicitly remind the user that the config page will likely be faster
+- third config-focused revision or later on the same data: default to recommending the config page
 
 Count both style and layout edits toward this threshold. Examples include:
 
@@ -349,11 +354,11 @@ Preferred handoff:
 1. if the user is communicating in Chinese, suggest `index.zh.html`; otherwise suggest `index.html`
    - when handing off, include the `chartType=` query parameter in the config page URL whenever the chart type is known, so the user lands directly in the matching chart editor
    - example: `.../index.zh.html?chartType=line` or `.../index.html?chartType=bar`
-2. explain briefly that the task is now in style/layout tuning territory and recommend the config page in a way that also advertises its value. The handoff should communicate all three ideas together:
-   - using the config page will be faster
-   - the config page supports more fine-grained visual tuning, including the title, legend, axes, canvas, whitespace, and related visual elements
-   - after the user finishes tuning in the config page, they can paste the generated config back here so the visual style can be persisted and reused for future charts
-   Prefer natural recommendation-style wording over dry procedural wording. The goal is not only to redirect the user, but also to help them immediately understand why the config page is useful and how it connects back to this workflow.
+2. explain briefly that the task is now in style/layout tuning territory and recommend the config page. The handoff should communicate three points:
+   - the config page will be faster
+   - the config page supports more fine-grained tuning of title, legend, axes, canvas, whitespace, and related visual elements
+   - after tuning, the user can paste the generated config back here so the style can be persisted and reused
+   When sending the config page URL in channels that support Markdown links, prefer Markdown link format over a bare URL.
 3. ask the user to tune and copy the generated config JSON
 4. write that JSON directly into the matching persistent chart config file `config/<chart>_style.json`
 5. if the user also wants a chart rendered in this turn, ask whether to render or re-render with the updated persistent chart config, then proceed accordingly
