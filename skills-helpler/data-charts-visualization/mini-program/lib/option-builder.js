@@ -646,6 +646,12 @@
           xAxis: { type: "value" },
           yAxis: { type: "value" }
         };
+      case "radar":
+        return {
+          radar: {
+            splitNumber: normalizeRadarSplitNumber(readOptionalNumber(specificConfig, "splitNumber"), 5)
+          }
+        };
       default:
         return {};
     }
@@ -688,6 +694,14 @@
   function parsePercentValue(value, fallback) {
     const parsed = Number.parseFloat(String(value).replace("%", ""));
     return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  function normalizeRadarSplitNumber(value, fallback) {
+    const numeric = Math.round(Number(value));
+    if (Number.isFinite(numeric) && numeric > 0) {
+      return numeric;
+    }
+    return fallback;
   }
 
   function resolveLayoutCenterValues(layoutBox, centerX, centerY) {
@@ -1433,7 +1447,7 @@
         return compactObject({
           radar: {
             shape: readOptionalValue(specificConfig, "shape"),
-            splitNumber: readOptionalNumber(specificConfig, "splitNumber"),
+            splitNumber: normalizeRadarSplitNumber(readOptionalNumber(specificConfig, "splitNumber"), 5),
             center: resolveLayoutCenter(layoutBox, "auto", "auto"),
             radius: resolveRadarRadius(layoutBox, previewViewportSize),
             axisName: {

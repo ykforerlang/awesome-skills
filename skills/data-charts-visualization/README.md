@@ -78,7 +78,7 @@ This skill is built for agent workflows that need chart output fast, reliably, a
 
 This skill is aimed at OpenClaw-like agents and other automation flows that need deterministic chart rendering instead of interactive BI sessions.
 
-- One CLI for all supported chart families: `npx -y @areslabs/data-charts-visualization@1.0.1`
+- One CLI for all supported chart families: `npx -y @areslabs/data-charts-visualization@1.0.2`
 - No global install required; avoid documenting the bare `areslabs-data-charts` binary as the default entrypoint
 - Static image output by default, ideal for reports, dashboards, tickets, and generated assets
 - No browser dependency, which keeps environments simpler and cheaper to run

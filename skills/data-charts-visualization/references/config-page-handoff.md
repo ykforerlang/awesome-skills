@@ -60,7 +60,7 @@ Treat requests like the following as style/config tuning, not as data editing:
 Use this simple operating rule:
 
 - first minor style edit: direct manual adjustment is fine
-- second consecutive style/layout edit: explicitly mention that the config page will be more efficient if more tuning is coming
+- second consecutive style/layout edit: start proactively recommending the config page as the more efficient path if more tuning is likely
 - third style/layout edit or later: default to guiding the user to the config page instead of continuing to hand-edit JSON
 
 Only continue manual editing beyond that point when the user explicitly asks the agent to keep doing it by hand.
@@ -75,14 +75,15 @@ Recommended pattern:
 2. explain that this skill has a dedicated config page with preview, and when the chart type is already known, provide a URL that includes the matching `chartType=` query parameter
 3. tell the user to tune there and copy the generated config JSON
 4. say that the copied config will be written directly into the persistent chart config file `config/<chart>_style.json`
+5. keep the recommendation friendly and suggestion-oriented; do not tell the user “this is already the second/third style change”
 
 Example wording:
 
-> We are already in style/layout tuning territory. It will be faster and more controllable to adjust this in the config page than to keep hand-editing JSON here. Open `https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html`, pick the chart type, tune the title, legend, axes, labels, spacing, and chart-specific styles, then send me the copied config JSON. I will write it into the matching persistent chart config file. If you also want a chart rendered with it, I can use the updated config to render or re-render your data.
+> This charting skill also provides a dedicated config page. For fine-grained style tuning, adjusting it there will be faster and more convenient. Open `https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html`, tune the chart, then send me the copied config JSON. I will write it into the matching persistent chart config file and can also re-render the chart with the updated config.
 
 Suggested Chinese wording:
 
-> 我们现在已经进入样式 / 版式微调阶段了。继续让我一轮轮手改也可以，但效率会越来越低。这个 skill 有专门的配置页，你直接在里面调标题、图例、坐标轴、标签、留白和边距会更快。你调完把 config JSON 发我，我帮你写回对应的 `config/<chart>_style.json`。如果你还想顺手重出图，我也可以直接用新配置渲染。
+> 图表能力还提供了专属的属性配置页，微调样式建议在配置页调整，会更加便捷。打开 `https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.zh.html` 调整后，把生成的 config JSON 发我，我帮你写回对应的持久化配置文件；如果需要，我也可以直接用新配置重出图。
 
 ## Config Page URLs
 

@@ -24,7 +24,7 @@ Long-lived axis behavior such as `common.axes.y.scale` belongs in config.
 ## Usage
 
 ```bash
-npx -y @areslabs/data-charts-visualization@1.0.1 \
+npx -y @areslabs/data-charts-visualization@1.0.2 \
   --chart-type line \
   --config-file skills/data-charts-visualization/config/line_style.json \
   --data-file /tmp/line_basic_single_series.json \

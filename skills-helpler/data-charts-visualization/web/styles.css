@@ -1451,6 +1451,11 @@ button {
     backdrop-filter: blur(18px);
   }
 
+  html[lang^="en"] .mobile-bottom-bar {
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
   .mobile-bottom-bar-copy {
     display: grid;
     gap: 2px;
@@ -1478,6 +1483,13 @@ button {
     min-height: 44px;
     padding: 10px 16px;
     box-shadow: 0 10px 22px rgba(191, 95, 47, 0.22);
+  }
+
+  html[lang^="en"] .mobile-bottom-copy-button {
+    min-height: 38px;
+    padding: 8px 14px;
+    font-size: 0.76rem;
+    box-shadow: 0 8px 18px rgba(191, 95, 47, 0.18);
   }
 
   .toast {

@@ -1789,6 +1789,89 @@ function shouldShowMobileCommonGroup(groupId, definition) {
   return true;
 }
 
+function shouldShowMobileCommonField(fieldId) {
+  const runtimeDefinition = CHART_RUNTIME_DEFINITIONS[appState.chartType] || {};
+  const showLayoutSpacing = runtimeDefinition.usesGrid !== false || runtimeDefinition.supportsPlotArea === true;
+  const isDualAxis = appState.chartType === "dualAxis";
+  const dualAxisHorizontal = isDualAxis ? Boolean(appState.previewBarHorizontal) : false;
+
+  if (fieldId === "palette") {
+    return appState.chartType !== "gauge" && appState.chartType !== "dualAxis";
+  }
+
+  if (["gridLeft", "gridRight", "gridTop", "gridBottom"].includes(fieldId)) {
+    return showLayoutSpacing;
+  }
+
+  if (fieldId === "splitLineDisplay") {
+    return isDualAxis;
+  }
+
+  if (isDualAxis) {
+    if (dualAxisHorizontal && COMMON_GROUP_FIELD_IDS.axesX.includes(fieldId)) {
+      return false;
+    }
+    if (!dualAxisHorizontal && COMMON_GROUP_FIELD_IDS.axesY.includes(fieldId)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+function resolveSpecificGroupPresentation(field) {
+  const groupId = field?.id || "";
+  let title = field?.label || "";
+
+  if (appState.chartType === "dualAxis") {
+    if (groupId === "leftBarGroup") {
+      title = CURRENT_LOCALE === "zh" ? "左侧柱配置" : "Left Bar Style";
+    } else if (groupId === "leftLineGroup") {
+      title = CURRENT_LOCALE === "zh" ? "左侧线配置" : "Left Line Style";
+    } else if (groupId === "rightBarGroup") {
+      title = CURRENT_LOCALE === "zh" ? "右侧柱配置" : "Right Bar Style";
+    } else if (groupId === "rightLineGroup") {
+      title = CURRENT_LOCALE === "zh" ? "右侧线配置" : "Right Line Style";
+    }
+  } else if (appState.chartType === "funnel") {
+    if (groupId === "funnelBaseGroup") {
+      title = CURRENT_LOCALE === "zh" ? "基础" : "Foundation";
+    } else if (groupId === "funnelLabelGroup") {
+      title = CURRENT_LOCALE === "zh" ? "标签" : "Labels";
+    }
+  } else if (appState.chartType === "gauge") {
+    if (groupId === "gaugeFoundationGroup") {
+      title = CURRENT_LOCALE === "zh" ? "基础" : "Foundation";
+    } else if (groupId === "gaugeTitleGroup") {
+      title = CURRENT_LOCALE === "zh" ? "标题" : "Title";
+    } else if (groupId === "gaugeDetailGroup") {
+      title = CURRENT_LOCALE === "zh" ? "明细" : "Detail";
+    } else if (groupId === "gaugeTicksGroup") {
+      title = CURRENT_LOCALE === "zh" ? "刻度线" : "Ticks";
+    } else if (groupId === "gaugePointerGroup") {
+      title = CURRENT_LOCALE === "zh" ? "指针与圆心" : "Pointer And Anchor";
+    }
+  } else if (appState.chartType === "radar") {
+    if (groupId === "radarStructureGroup") {
+      title = CURRENT_LOCALE === "zh" ? "结构" : "Structure";
+    } else if (groupId === "radarGridLinesGroup") {
+      title = CURRENT_LOCALE === "zh" ? "网格线" : "Grid Lines";
+    } else if (groupId === "radarAxisNameGroup") {
+      title = CURRENT_LOCALE === "zh" ? "维度名" : "Axis Names";
+    } else if (groupId === "radarAreaLineGroup") {
+      title = CURRENT_LOCALE === "zh" ? "数据面与轮廓" : "Area And Outline";
+    } else if (groupId === "radarPointLabelGroup") {
+      title = CURRENT_LOCALE === "zh" ? "拐点与标签" : "Points And Labels";
+    }
+  }
+
+  return {
+    id: groupId,
+    title,
+    help: field?.help || "",
+  };
+}
+
 function buildMobileCommonSections(values) {
   const definition = getCurrentDefinition();
   const localeText = getCommonRenderText();
@@ -1800,7 +1883,7 @@ function buildMobileCommonSections(values) {
       tabLabel: localeText.groups[group.id]?.title || group.label,
       panelTitle: localeText.groups[group.id]?.title || group.label,
       help: localeText.groups[group.id]?.help || "",
-      fieldIds: (group.fields || []).map((field) => field.id),
+      fieldIds: (group.fields || []).map((field) => field.id).filter((fieldId) => shouldShowMobileCommonField(fieldId)),
       values,
     }))
     .filter((section) => section.fieldIds.length);
@@ -1808,6 +1891,7 @@ function buildMobileCommonSections(values) {
 
 function buildMobileSpecificSections(values) {
   const definition = getCurrentDefinition();
+  const fieldsById = new Map(definition.fields.filter((field) => field.type !== "group").map((field) => [field.id, field]));
   const groups = [];
   let currentGroup = {
     id: "specific:default",
@@ -1822,9 +1906,7 @@ function buildMobileSpecificSections(values) {
         groups.push(currentGroup);
       }
       currentGroup = {
-        id: field.id,
-        title: field.label || "",
-        help: field.help || "",
+        ...resolveSpecificGroupPresentation(field),
         fieldIds: [],
       };
       return;
@@ -1842,7 +1924,19 @@ function buildMobileSpecificSections(values) {
     tabLabel: CURRENT_LOCALE === "zh" ? "专属样式" : "Specific Style",
     panelTitle: CURRENT_LOCALE === "zh" ? "图表专属样式" : "Chart-Specific Style",
     help: definition.blurb || "",
-    groups,
+    groups: groups
+      .map((group) => {
+        const sortedFields = sortSpecificFieldsForDisplay(
+          appState.chartType,
+          (group.fieldIds || []).map((fieldId) => fieldsById.get(fieldId)).filter(Boolean),
+          group.id === "specific:default" ? "" : group.id,
+        );
+        return {
+          ...group,
+          fieldIds: sortedFields.map((field) => field.id),
+        };
+      })
+      .filter((group) => group.fieldIds.length),
     values,
   }];
 }
@@ -2640,8 +2734,7 @@ function buildSpecificFieldControl(field, value = field.default) {
       </span>
       <input data-specific-field="${field.id}" class="palette-hidden-input" type="text" value="${paletteToText(colors)}" />
       <div class="palette-customizer gauge-band-editor">
-        <div class="palette-customizer-head">
-          <strong>${CURRENT_LOCALE === "zh" ? "自定义颜色" : "Custom Colors"}</strong>
+        <div class="palette-customizer-head palette-customizer-head-right">
           <div class="template-actions">
             <button data-color-list-add="${field.id}" class="secondary-button small" type="button">
               ${CURRENT_LOCALE === "zh" ? "添加颜色" : "Add Color"}
@@ -2725,9 +2818,9 @@ function renderDualAxisFoundationAxes(snapshot) {
     group.className = "foundation-subgroup";
     const resolvedTitle =
       groupConfig.id === "leftAxisGroup"
-        ? (CURRENT_LOCALE === "zh" ? "左轴" : "Left Axis")
+        ? (CURRENT_LOCALE === "zh" ? "左轴" : "Left Y Axis")
         : groupConfig.id === "rightAxisGroup"
-          ? (CURRENT_LOCALE === "zh" ? "右轴" : "Right Axis")
+          ? (CURRENT_LOCALE === "zh" ? "右轴" : "Right Y Axis")
           : groupField.label;
     group.innerHTML = `
       <div class="foundation-subgroup-head">${resolvedTitle}</div>
@@ -2782,53 +2875,12 @@ function renderSpecificFields(options = {}) {
       if (appState.chartType === "funnel" && field.id === "funnelLabelGroup") {
         return;
       }
-      let groupLabel = field.label;
-      if (appState.chartType === "dualAxis") {
-        if (field.id === "leftBarGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "左侧柱配置" : "Left Bar Style";
-        } else if (field.id === "leftLineGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "左侧线配置" : "Left Line Style";
-        } else if (field.id === "rightBarGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "右侧柱配置" : "Right Bar Style";
-        } else if (field.id === "rightLineGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "右侧线配置" : "Right Line Style";
-        }
-      } else if (appState.chartType === "funnel") {
-        if (field.id === "funnelBaseGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "基础" : "Foundation";
-        } else if (field.id === "funnelLabelGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "标签" : "Labels";
-        }
-      } else if (appState.chartType === "gauge") {
-        if (field.id === "gaugeFoundationGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "基础" : "Foundation";
-        } else if (field.id === "gaugeTitleGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "标题" : "Title";
-        } else if (field.id === "gaugeDetailGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "明细" : "Detail";
-        } else if (field.id === "gaugeTicksGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "刻度线" : "Ticks";
-        } else if (field.id === "gaugePointerGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "指针与圆心" : "Pointer And Anchor";
-        }
-      } else if (appState.chartType === "radar") {
-        if (field.id === "radarStructureGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "结构" : "Structure";
-        } else if (field.id === "radarGridLinesGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "网格线" : "Grid Lines";
-        } else if (field.id === "radarAxisNameGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "维度名" : "Axis Names";
-        } else if (field.id === "radarAreaLineGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "数据面与轮廓" : "Area And Outline";
-        } else if (field.id === "radarPointLabelGroup") {
-          groupLabel = CURRENT_LOCALE === "zh" ? "拐点与标签" : "Points And Labels";
-        }
-      }
+      const groupPresentation = resolveSpecificGroupPresentation(field);
       const group = document.createElement("div");
       group.className = "specific-subgroup";
       group.dataset.specificGroup = field.id;
       group.innerHTML = `
-        <div class="specific-group-title">${groupLabel}</div>
+        <div class="specific-group-title">${groupPresentation.title}</div>
       `;
       activeGroupGrid = document.createElement("div");
       activeGroupGrid.className = "field-grid specific-subgroup-grid";
@@ -3280,13 +3332,13 @@ function renderFoundationVisibility() {
           formatter: "Y 轴格式",
         },
         category: {
-          lineShow: "显示类目轴线",
-          tickShow: "显示类目轴刻度",
-          rotate: "类目标签旋转",
-          labelSize: "类目标签字号",
-          labelColor: "类目标签颜色",
-          lineColor: "类目轴线颜色",
-          formatter: "类目格式",
+          lineShow: "显示 X 轴线",
+          tickShow: "显示 X 轴刻度",
+          rotate: "X 轴标签旋转",
+          labelSize: "X 轴标签字号",
+          labelColor: "X 轴标签颜色",
+          lineColor: "X 轴线颜色",
+          formatter: "X 轴格式",
         },
       }
     : {
@@ -3308,13 +3360,13 @@ function renderFoundationVisibility() {
           formatter: "Y Formatter",
         },
         category: {
-          lineShow: "Show Category Axis Line",
-          tickShow: "Show Category Ticks",
-          rotate: "Category Label Rotate",
-          labelSize: "Category Label Size",
-          labelColor: "Category Label Color",
-          lineColor: "Category Axis Line Color",
-          formatter: "Category Formatter",
+          lineShow: "Show X Axis Line",
+          tickShow: "Show X Ticks",
+          rotate: "X Label Rotate",
+          labelSize: "X Label Size",
+          labelColor: "X Label Color",
+          lineColor: "X Axis Line Color",
+          formatter: "X Formatter",
         },
       };
 
@@ -3340,13 +3392,13 @@ function renderFoundationVisibility() {
       if (xAxisSubgroup) xAxisSubgroup.classList.add("hidden");
       if (yAxisSubgroup) yAxisSubgroup.classList.remove("hidden");
       if (yAxisSubgroupHead) {
-        yAxisSubgroupHead.textContent = CURRENT_LOCALE === "zh" ? "类目轴" : "Category Axis";
+        yAxisSubgroupHead.textContent = CURRENT_LOCALE === "zh" ? "X 轴" : "X Axis";
       }
     } else {
       if (xAxisSubgroup) xAxisSubgroup.classList.remove("hidden");
       if (yAxisSubgroup) yAxisSubgroup.classList.add("hidden");
       if (xAxisSubgroupHead) {
-        xAxisSubgroupHead.textContent = CURRENT_LOCALE === "zh" ? "类目轴" : "Category Axis";
+        xAxisSubgroupHead.textContent = CURRENT_LOCALE === "zh" ? "X 轴" : "X Axis";
       }
     }
     return;
@@ -3941,6 +3993,9 @@ function wireEvents() {
     const previewBarLayoutButton = event.target.closest("[data-preview-bar-layout]");
     if (previewBarLayoutButton && (appState.chartType === "bar" || appState.chartType === "dualAxis")) {
       appState.previewBarHorizontal = previewBarLayoutButton.dataset.previewBarLayout === "horizontal";
+      if (appState.layoutMode === "mobile") {
+        renderMobileConfigPanel(appState.activeMobileSectionId);
+      }
       updateOutputs();
       return;
     }

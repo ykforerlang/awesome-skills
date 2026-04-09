@@ -400,10 +400,17 @@
     }, 0);
   }
 
+  function countRadarVisualGroups(seriesList) {
+    return Math.max(countSeriesList(seriesList), countSeriesDataItems(seriesList));
+  }
+
   function resolveCommonPaletteTargetCount(chartType, rawOption) {
     const seriesList = Array.isArray(rawOption && rawOption.series) ? rawOption.series : [];
-    if (chartType === "pie" || chartType === "funnel" || chartType === "radar") {
+    if (chartType === "pie" || chartType === "funnel") {
       return Math.max(1, countSeriesDataItems(seriesList));
+    }
+    if (chartType === "radar") {
+      return Math.max(1, countRadarVisualGroups(seriesList));
     }
     return Math.max(1, countSeriesList(seriesList));
   }
@@ -834,6 +841,12 @@
           xAxis: { type: "value" },
           yAxis: { type: "value" }
         };
+      case "radar":
+        return {
+          radar: {
+            splitNumber: normalizeRadarSplitNumber(readOptionalNumber(specificConfig, "splitNumber"), 5)
+          }
+        };
       default:
         return {};
     }
@@ -876,6 +889,14 @@
   function parsePercentValue(value, fallback) {
     const parsed = Number.parseFloat(String(value).replace("%", ""));
     return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  function normalizeRadarSplitNumber(value, fallback) {
+    const numeric = Math.round(Number(value));
+    if (Number.isFinite(numeric) && numeric > 0) {
+      return numeric;
+    }
+    return fallback;
   }
 
   function resolveLayoutCenterValues(layoutBox, centerX, centerY) {
@@ -1643,7 +1664,7 @@
         return compactObject({
           radar: {
             shape: readOptionalValue(specificConfig, "shape"),
-            splitNumber: readOptionalNumber(specificConfig, "splitNumber"),
+            splitNumber: normalizeRadarSplitNumber(readOptionalNumber(specificConfig, "splitNumber"), 5),
             center: resolveLayoutCenter(layoutBox, "auto", "auto"),
             radius: resolveRadarRadius(layoutBox, previewViewportSize),
             axisName: {

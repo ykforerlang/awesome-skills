@@ -514,8 +514,8 @@ const LOCALIZED_DEFINITION_TEXT = {
       fields: {
         radarStructureGroup: "结构",
         shape: "形状",
-        splitNumber: "分割段数",
         radarGridLinesGroup: "网格线",
+        splitNumber: "分割段数",
         splitLineColor: "分割线颜色",
         splitLineWidth: "分割线宽度",
         splitLineType: "分割线样式",
@@ -540,8 +540,8 @@ const LOCALIZED_DEFINITION_TEXT = {
         labelColor: "标签颜色",
       },
       fieldHelp: {
-        radarStructureGroup: "控制雷达图的基础结构。",
-        radarGridLinesGroup: "控制雷达图的分割线与轴线样式。",
+        radarStructureGroup: "控制雷达图的基础形状。",
+        radarGridLinesGroup: "控制分割段数、分割线与轴线样式。",
         radarAxisNameGroup: "控制维度名的文字样式。",
         radarAreaLineGroup: "控制数据面的填充透明度与轮廓线样式。",
         radarPointLabelGroup: "控制拐点显示以及数据标签样式。",
@@ -1280,7 +1280,7 @@ const CHART_DEFINITIONS = {
     blurb: "Best for multi-dimension scoring, balanced comparisons, and capability profiles.",
     tags: ["shape", "split area", "labels", "area fill"],
     fields: [
-      { id: "radarStructureGroup", label: "Structure", type: "group", help: "Control radar shape and split count." },
+      { id: "radarStructureGroup", label: "Structure", type: "group", help: "Control radar shape." },
       {
         id: "shape",
         label: "Shape",
@@ -1291,8 +1291,8 @@ const CHART_DEFINITIONS = {
           ["circle", "Circle"],
         ],
       },
+      { id: "radarGridLinesGroup", label: "Grid Lines", type: "group", help: "Control split count, split lines, and axis lines." },
       { id: "splitNumber", label: "Split Number", type: "number", default: 5 },
-      { id: "radarGridLinesGroup", label: "Grid Lines", type: "group", help: "Control split lines and axis lines." },
       { id: "splitLineColor", label: "Split Line Color", type: "color", default: "#d0d7de" },
       { id: "splitLineWidth", label: "Split Line Width", type: "number", default: 0.8, step: 0.1 },
       {

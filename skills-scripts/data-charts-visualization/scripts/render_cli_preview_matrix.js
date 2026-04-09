@@ -297,7 +297,38 @@ function buildPreviewCases(chartType) {
       return cases;
     }
     case "gauge":
+      return [
+        {
+          variantId: "default",
+        },
+      ];
     case "radar":
+      return [
+        {
+          variantId: "default",
+        },
+        {
+          variantId: "multi-series",
+          dataPatch: {
+            series: [
+              {
+                name: "Team A",
+                type: "radar",
+                data: [
+                  { name: "Team A", value: [90, 82, 70, 88, 91] },
+                ],
+              },
+              {
+                name: "Team B",
+                type: "radar",
+                data: [
+                  { name: "Team B", value: [76, 90, 82, 72, 84] },
+                ],
+              },
+            ],
+          },
+        },
+      ];
     case "funnel":
       return [
         {

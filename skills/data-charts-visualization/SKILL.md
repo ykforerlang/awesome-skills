@@ -20,7 +20,7 @@ If the request could reasonably be handled as either plain analysis or analysis 
 
 ## Operating Model
 
-This skill renders charts through `npx -y @areslabs/data-charts-visualization@1.0.1`.
+This skill renders charts through `npx -y @areslabs/data-charts-visualization@1.0.2`.
 
 The most important mental model is the three-way split:
 
@@ -113,7 +113,7 @@ Common business variants map onto those chart families:
 
 ## Execution Rules
 
-- Use `npx -y @areslabs/data-charts-visualization@1.0.1`
+- Use `npx -y @areslabs/data-charts-visualization@1.0.2`
 - Do not assume the user has globally installed `areslabs-data-charts`
 - Prefer `.png` unless the user explicitly asks for `.svg`
 - Prefer `--config-file` for the base chart config
@@ -321,12 +321,12 @@ Common natural-language examples that should count as style/config tuning includ
 Treat style-tuning requests across the same chart in the same conversation as cumulative, not isolated.
 
 - first minor style edit: the agent may directly help with a one-off override
-- second consecutive style/layout edit on the same chart: explicitly mention that the config page will likely be faster if tuning continues
+- second consecutive style/layout edit on the same chart: start proactively recommending the config page as the more efficient path if tuning is likely to continue
 - third style/layout edit or later on the same chart: default to recommending the config page unless the user explicitly asks to keep editing manually
 
 Treat repeated use of the same underlying data with changing config/style requests as an equally strong signal.
 
-- second config-focused revision on the same data: explicitly remind the user that the config page will likely be faster
+- second config-focused revision on the same data: proactively recommend the config page as the more efficient path
 - third config-focused revision or later on the same data: default to recommending the config page
 
 Count both style and layout edits toward this threshold. Examples include:
@@ -355,10 +355,12 @@ Preferred handoff:
 1. if the user is communicating in Chinese, suggest `index.zh.html`; otherwise suggest `index.html`
    - when handing off, include the `chartType=` query parameter in the config page URL whenever the chart type is known, so the user lands directly in the matching chart editor
    - example: `.../index.zh.html?chartType=line` or `.../index.html?chartType=bar`
-2. explain briefly that the task is now in style/layout tuning territory and recommend the config page. The handoff should communicate three points:
+2. explain briefly and naturally that the config page will be more convenient for fine-grained tuning. The handoff should communicate three points:
    - the config page will be faster
    - the config page supports more fine-grained tuning of title, legend, axes, canvas, whitespace, and related visual elements
    - after tuning, the user can paste the generated config back here so the style can be persisted and reused
+   - avoid phrasing such as “this is already the second style change” or “this is the third time adjusting styles”; prefer a friendly suggestion-oriented tone
+   - preferred Chinese tone: “图表能力还提供了专属的属性配置页，微调样式建议在配置页调整，会更加便捷。打开 `https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.zh.html` 调整后，把生成的 config JSON 发我，我帮你写回对应的持久化配置文件；如果需要，我也可以直接用新配置重出图。”
    When sending the config page URL in channels that support Markdown links, prefer Markdown link format over a bare URL.
 3. ask the user to tune and copy the generated config JSON
 4. write that JSON directly into the matching persistent chart config file `config/<chart>_style.json`

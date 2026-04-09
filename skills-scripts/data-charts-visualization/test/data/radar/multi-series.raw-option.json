@@ -49,6 +49,7 @@
   },
   "series": [
     {
+      "name": "Team A",
       "type": "radar",
       "data": [
         {
@@ -60,7 +61,13 @@
             88,
             91
           ]
-        },
+        }
+      ]
+    },
+    {
+      "name": "Team B",
+      "type": "radar",
+      "data": [
         {
           "name": "Team B",
           "value": [

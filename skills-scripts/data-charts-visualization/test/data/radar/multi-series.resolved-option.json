@@ -97,6 +97,7 @@
   },
   "series": [
     {
+      "name": "Team A",
       "type": "radar",
       "data": [
         {
@@ -108,7 +109,28 @@
             88,
             91
           ]
-        },
+        }
+      ],
+      "symbol": "circle",
+      "symbolSize": 6,
+      "label": {
+        "show": false,
+        "formatter": "{b}: {c}",
+        "fontSize": 12,
+        "color": "#334155"
+      },
+      "lineStyle": {
+        "width": 3,
+        "type": "solid"
+      },
+      "areaStyle": {
+        "opacity": 0.2
+      }
+    },
+    {
+      "name": "Team B",
+      "type": "radar",
+      "data": [
         {
           "name": "Team B",
           "value": [
