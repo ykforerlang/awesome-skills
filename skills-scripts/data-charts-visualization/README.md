@@ -7,7 +7,7 @@ CLI for rendering ECharts charts to PNG or SVG in a Node.js environment.
 Use the published package directly:
 
 ```bash
-npx -y @areslabs/data-charts-visualization@1.0.1 --help
+npx -y @areslabs/data-charts-visualization --help
 ```
 
 After installation, the exposed bin is:
