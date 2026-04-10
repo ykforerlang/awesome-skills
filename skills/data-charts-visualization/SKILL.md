@@ -5,6 +5,7 @@ metadata: {"data-charts-visualization":{"emoji":"📦","requires":{"bins":["npx"
 ---
 
 # Data Charts Visualization
+A lightweight charting skill that aligns with ECharts visual styles and outputs images directly. It is browser-independent and supports a rich set of chart types: line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, and funnel. It also provides convenient configuration capabilities for chart styling.
 
 ## Role
 
@@ -17,6 +18,9 @@ Use it whenever:
 - the input already uses charting terms, ECharts-like fragments, or BI-style semantics
 
 If the request could reasonably be handled as either plain analysis or analysis with visualization, choose this skill.
+
+## Showcase
+![case](https://raw.githubusercontent.com/ykforerlang/awesome-skills/main/static/data-charts-visualization/all.png)
 
 ## Operating Model
 
