@@ -107,3 +107,7 @@ Use this skill when you want to:
 - standardize report visuals through persistent chart presets
 - support both quick default rendering and deep style customization
 - cover most business chart requests with one consistent toolchain
+
+## License
+
+MIT-0. See `LICENSE`.
