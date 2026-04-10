@@ -423,8 +423,3 @@ Return or deliver:
 - any important approximations or ignored browser-only behavior
 
 When image delivery is available, do not make the local file path the primary user-facing output unless the user explicitly asked for it.
-
-## License
-
-This skill is licensed under the MIT-0 License. See [LICENSE](/Users/bytedance/IdeaProjects/awesome-skills/skills/data-charts-visualization/LICENSE).
-

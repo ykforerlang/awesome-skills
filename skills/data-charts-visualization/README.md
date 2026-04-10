@@ -109,5 +109,4 @@ Use this skill when you want to:
 - cover most business chart requests with one consistent toolchain
 
 ## License
-
-MIT-0. See `LICENSE`.
+MIT-0

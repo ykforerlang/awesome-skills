@@ -2,6 +2,67 @@
 
 CLI for rendering ECharts charts to PNG or SVG in a Node.js environment.
 
+## Showcase
+
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <strong>Line</strong><br/>
+      <img src="../../static/data-charts-visualization/line-series-2.png" alt="Two-series line chart" width="260"/>
+    </td>
+    <td align="center" width="33%">
+      <strong>Bar</strong><br/>
+      <img src="../../static/data-charts-visualization/bar-series-2.png" alt="Two-series bar chart" width="260"/>
+    </td>
+    <td align="center" width="33%">
+      <strong>Area</strong><br/>
+      <img src="../../static/data-charts-visualization/area-series-2.png" alt="Two-series area chart" width="260"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Dual-Axis</strong><br/>
+      <img src="../../static/data-charts-visualization/dual-axis-series-2.png" alt="Two-series dual-axis bar-line chart" width="260"/>
+    </td>
+    <td align="center">
+      <strong>Dual-Axis Horizontal Style</strong><br/>
+      <img src="../../static/data-charts-visualization/dual-axis-horizontal-style.png" alt="Two-series horizontal-style dual-axis bar-line chart" width="260"/>
+    </td>
+    <td align="center">
+      <strong>Scatter</strong><br/>
+      <img src="../../static/data-charts-visualization/scatter-series-2.png" alt="Two-series scatter chart" width="260"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Pie</strong><br/>
+      <img src="../../static/data-charts-visualization/pie-showcase.png" alt="Pie chart" width="260"/>
+    </td>
+    <td align="center">
+      <strong>Donut</strong><br/>
+      <img src="../../static/data-charts-visualization/donut-showcase.png" alt="Donut chart" width="260"/>
+    </td>
+    <td align="center">
+      <strong>Rose</strong><br/>
+      <img src="../../static/data-charts-visualization/rose-showcase.png" alt="Rose chart" width="260"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <strong>Gauge</strong><br/>
+      <img src="../../static/data-charts-visualization/gauge-showcase.png" alt="Gauge chart" width="260"/>
+    </td>
+    <td align="center">
+      <strong>Radar</strong><br/>
+      <img src="../../static/data-charts-visualization/radar-showcase.png" alt="Radar chart" width="260"/>
+    </td>
+    <td align="center">
+      <strong>Funnel</strong><br/>
+      <img src="../../static/data-charts-visualization/funnel-showcase.png" alt="Funnel chart" width="260"/>
+    </td>
+  </tr>
+</table>
+
 ## Install
 
 Use the published package directly:
