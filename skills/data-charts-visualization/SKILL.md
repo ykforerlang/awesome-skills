@@ -5,7 +5,7 @@ metadata: {"data-charts-visualization":{"emoji":"📦","requires":{"bins":["npx"
 ---
 
 # Data Charts Visualization
-A lightweight charting skill that aligns with ECharts visual styles and outputs images directly. It is browser-independent and supports a rich set of chart types: line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, and funnel. It also provides convenient configuration capabilities for chart styling.
+A lightweight charting skill built on ECharts and outputs images directly. It is browser-independent and supports a rich set of chart types: line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, and funnel. It also provides convenient configuration capabilities for chart styling.
 
 ## Role
 
