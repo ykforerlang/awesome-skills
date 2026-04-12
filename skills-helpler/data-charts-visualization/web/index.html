@@ -81,17 +81,6 @@
               </div>
 
               <div class="output-column">
-                <section class="completion-card">
-                  <div class="completion-card-copy">
-                    <p class="completion-card-eyebrow">Final Step</p>
-                    <h3>Copy Config To Agent Chat</h3>
-                    <p>Paste the exported command back into the current conversation so the agent can keep using this style.</p>
-                  </div>
-                  <button class="secondary-button completion-card-button" data-copy-target="style-output" type="button">
-                    Copy Config To Agent Chat
-                  </button>
-                </section>
-
                 <section class="subpanel preview-panel">
                   <div class="subpanel-head">
                     <h3>Preview</h3>
@@ -116,6 +105,16 @@
         </div>
       </main>
 
+      <section class="desktop-bottom-bar">
+        <div class="desktop-bottom-bar-copy">
+          <p class="desktop-bottom-bar-title">Copy Config To Agent Chat</p>
+          <p class="desktop-bottom-bar-note">Finish tuning, then paste it back into the current chat.</p>
+        </div>
+        <button class="secondary-button desktop-bottom-copy-button" data-copy-target="style-output" type="button">
+          Copy Config To Agent Chat
+        </button>
+      </section>
+
       <main id="mobile-layout" class="mobile-layout hidden">
         <div id="mobile-preview-sticky" class="mobile-preview-sticky">
           <section class="mobile-card mobile-preview-card">
@@ -132,7 +131,7 @@
                 </button>
               </div>
             </div>
-            <p class="mobile-copy-hint">Copy the exported command when you finish, then paste it back into the current agent chat.</p>
+            <p class="mobile-copy-hint">Finish tuning, then copy it back to chat.</p>
 
             <div id="mobile-preview-controls" class="mobile-preview-config-panel hidden"></div>
 
@@ -171,8 +170,8 @@
 
         <section class="mobile-bottom-bar">
           <div class="mobile-bottom-bar-copy">
-            <p class="mobile-bottom-bar-title">Copy The Config When Finished</p>
-            <p class="mobile-bottom-bar-note">Paste the exported command back into the current agent chat to keep using this style.</p>
+            <p class="mobile-bottom-bar-title">Copy Config</p>
+            <p class="mobile-bottom-bar-note">Paste it back into the current chat.</p>
           </div>
           <button class="mobile-copy-button mobile-bottom-copy-button" data-copy-target="style-output" type="button">
             Copy Config

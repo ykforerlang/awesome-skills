@@ -35,8 +35,6 @@ const FIXED_PREVIEW_VIEWPORT = Object.freeze({
   height: 360,
 });
 const PREVIEW_RENDERER = "svg";
-const MOBILE_BREAKPOINT = 760;
-const MOBILE_LAYOUT_MEDIA = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT}px)`);
 const EXPORT_COMMAND_NAME = "/skill data-charts-visualization update-config";
 
 function toNumericDefaultValue(value) {
@@ -678,7 +676,7 @@ const COMMON_GROUP_RENDER_TEXT = {
 const appState = {
   chartType: "line",
   templateId: "series",
-  layoutMode: MOBILE_LAYOUT_MEDIA.matches ? "mobile" : "desktop",
+  layoutMode: getLayoutMode(),
   activeMobileSectionId: "",
   mobilePreviewControlsScrollLeft: 0,
   focusedChartType: "",
@@ -1239,7 +1237,7 @@ function $(id) {
 }
 
 function getLayoutMode() {
-  return MOBILE_LAYOUT_MEDIA.matches ? "mobile" : "desktop";
+  return window.innerWidth > window.innerHeight ? "desktop" : "mobile";
 }
 
 function isMobileLayout() {
@@ -3788,14 +3786,16 @@ function wireCopyButtons() {
 
 function wirePreviewControls() {
   window.addEventListener("resize", () => {
+    const nextLayoutMode = getLayoutMode();
+    if (nextLayoutMode !== appState.layoutMode) {
+      switchLayoutMode(nextLayoutMode);
+      return;
+    }
     syncPreviewCanvasDimensions();
     const previewChart = window.echarts?.getInstanceByDom($(getActivePreviewContainerId()));
     if (previewChart) {
       previewChart.resize();
     }
-  });
-  MOBILE_LAYOUT_MEDIA.addEventListener("change", (event) => {
-    switchLayoutMode(event.matches ? "mobile" : "desktop");
   });
 }
 

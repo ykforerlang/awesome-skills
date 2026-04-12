@@ -80,17 +80,6 @@
               </div>
 
               <div class="output-column">
-                <section class="completion-card">
-                  <div class="completion-card-copy">
-                    <p class="completion-card-eyebrow">完成动作</p>
-                    <h3>复制配置到 Agent 对话</h3>
-                    <p>调完后把这段导出命令粘贴回当前对话，Agent 会继续沿用这份样式。</p>
-                  </div>
-                  <button class="secondary-button completion-card-button" data-copy-target="style-output" type="button">
-                    复制配置到 Agent 对话
-                  </button>
-                </section>
-
                 <section class="subpanel preview-panel">
                   <div class="subpanel-head">
                     <h3>预览</h3>
@@ -115,6 +104,16 @@
         </div>
       </main>
 
+      <section class="desktop-bottom-bar">
+        <div class="desktop-bottom-bar-copy">
+          <p class="desktop-bottom-bar-title">复制配置到 Agent 对话</p>
+          <p class="desktop-bottom-bar-note">调完后复制，粘贴回当前对话。</p>
+        </div>
+        <button class="secondary-button desktop-bottom-copy-button" data-copy-target="style-output" type="button">
+          复制配置到 Agent 对话
+        </button>
+      </section>
+
       <main id="mobile-layout" class="mobile-layout hidden">
         <div id="mobile-preview-sticky" class="mobile-preview-sticky">
           <section class="mobile-card mobile-preview-card">
@@ -131,7 +130,7 @@
                 </button>
               </div>
             </div>
-            <p class="mobile-copy-hint">调整完成后，复制导出命令并粘贴回当前 Agent 对话。</p>
+            <p class="mobile-copy-hint">调完后复制配置，粘贴回对话。</p>
 
             <div id="mobile-preview-controls" class="mobile-preview-config-panel hidden"></div>
 
@@ -171,7 +170,7 @@
         <section class="mobile-bottom-bar">
           <div class="mobile-bottom-bar-copy">
             <p class="mobile-bottom-bar-title">调完后复制配置</p>
-            <p class="mobile-bottom-bar-note">复制导出命令后粘贴回当前 Agent 对话继续生效。</p>
+            <p class="mobile-bottom-bar-note">复制后粘贴回当前对话。</p>
           </div>
           <button class="mobile-copy-button mobile-bottom-copy-button" data-copy-target="style-output" type="button">
             复制配置
