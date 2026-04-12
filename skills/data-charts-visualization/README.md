@@ -1,7 +1,6 @@
 # Data Charts Visualization
-A lightweight charting skill that aligns with ECharts visual styles and outputs static images directly via a streamlined CLI. 
-Browser-independent and built for fast, reliable agent workflows without a browser stack, 
-it supports a rich set of chart types—including line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, and funnel—while offering flexible styling and configuration to take charts from basic rendering to production-ready quality.
+A lightweight charting skill built on ECharts that outputs static images directly. Browser-independent and designed for fast, reliable agent workflows without a browser stack, it supports a rich set of chart types—including line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, 
+and funnel—while providing flexible configuration, abundant styling options, and [a dedicated styling configuration page](https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html)
 
 ## Install
 
