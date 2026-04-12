@@ -4,6 +4,28 @@ Turn structured data into polished static charts through one lightweight CLI.
 
 This skill is built for agent workflows that need chart output fast, reliably, and without dragging in a browser stack. It gives you broad chart coverage, an agent-friendly `data / config / variant` contract, and enough styling power to move from "just render it" to "make it production-ready".
 
+## Install
+
+Install this skill from GitHub with the Skills CLI:
+
+```bash
+npx skills add ykforerlang/awesome-skills --skill data-charts-visualization
+```
+
+For OpenClaw users, install directly into the OpenClaw global skills directory:
+
+```bash
+npx skills add ykforerlang/awesome-skills --skill data-charts-visualization -a openclaw -g --copy -y
+```
+
+Quick start after install:
+
+1. Ask your agent to generate or refine a chart.
+2. Fine-tune the chart style in natural language first, such as palette, layout, typography, legend position, or overall visual tone.
+3. For more precise visual tuning, open the config page:
+   `https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html`
+4. After adjusting the style in the config page, copy the generated config and paste it back into the current chat.
+
 ## Why This Skill
 
 - Rich chart support: line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, and funnel.
