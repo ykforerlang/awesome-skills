@@ -24,11 +24,22 @@ Long-lived axis behavior such as `common.axes.y.scale` belongs in config.
 ## Usage
 
 ```bash
-npx -y @areslabs/data-charts-visualization@1.0.2 \
+./node_modules/.bin/areslabs-data-charts \
   --chart-type line \
-  --config-file skills/data-charts-visualization/config/line_style.json \
+  --config-file ./config/line_style.json \
   --data-file /tmp/line_basic_single_series.json \
-  --out skills-scripts/data-charts-visualization/test/manual
+  --out ../../skills-scripts/data-charts-visualization/test/manual
+```
+
+Run that command in the skill directory.
+If the current working directory is the repository root, the equivalent command is:
+
+```bash
+cd skills/data-charts-visualization && ./node_modules/.bin/areslabs-data-charts \
+  --chart-type line \
+  --config-file ./config/line_style.json \
+  --data-file /tmp/line_basic_single_series.json \
+  --out ../../skills-scripts/data-charts-visualization/test/manual
 ```
 
 Default demo data should come from:

@@ -22,6 +22,18 @@ For OpenClaw users, install directly into the OpenClaw global skills directory:
 npx clawhub@latest install data-charts-visualization
 ```
 
+After the skill files are present, install the local chart runtime in the skill directory:
+
+```bash
+npm install
+```
+
+If the current working directory is the repository root, the equivalent command is:
+
+```bash
+cd skills/data-charts-visualization && npm install
+```
+
 ## Quick start 
 
 1. Ask your agent to generate or refine a chart.
@@ -104,8 +116,9 @@ npx clawhub@latest install data-charts-visualization
 
 This skill is aimed at OpenClaw-like agents and other automation flows that need deterministic chart rendering instead of interactive BI sessions.
 
-- One CLI for all supported chart families: `npx -y @areslabs/data-charts-visualization@1.0.2`
-- No global install required; avoid documenting the bare `areslabs-data-charts` binary as the default entrypoint
+- One local CLI for all supported chart families after setup: `./node_modules/.bin/areslabs-data-charts` from the skill directory
+- Runtime installation is explicit and happens once through the skill-local `package.json`
+- Avoid documenting runtime `npx -y @areslabs/data-charts-visualization...` as the default entrypoint
 - Static image output by default, ideal for reports, dashboards, tickets, and generated assets
 - No browser dependency, which keeps environments simpler and cheaper to run
 - A small, explicit contract that makes chart generation easier to reason about than passing arbitrary raw styling blocks

@@ -1,30 +1,54 @@
 # CLI And Config Contract
 
-Read this file before calling `npx -y @areslabs/data-charts-visualization@1.0.2`.
+Read this file before calling the local `areslabs-data-charts` runtime.
 
 ## Audience
 
 This document is written for OpenClaw-like agents.
-It explains the public contract of the published `@areslabs/data-charts-visualization` CLI.
+It explains the public contract of the published `@areslabs/data-charts-visualization` CLI as installed into this skill directory.
 
 ## One Command To Use
 
 Prefer:
 
 ```bash
-npx -y @areslabs/data-charts-visualization@1.0.2 \
+./node_modules/.bin/areslabs-data-charts \
   --chart-type <chartType> \
-  --config-file skills/data-charts-visualization/config/<chart>_style.json \
+  --config-file ./config/<chart>_style.json \
   --data '<json>' \
   --out <output.png>
 ```
 
-This is the default entrypoint because it does not require a global install of `areslabs-data-charts`.
+Run that command in the skill directory.
+If the current working directory is the repository root, the equivalent command is:
+
+```bash
+cd skills/data-charts-visualization && ./node_modules/.bin/areslabs-data-charts \
+  --chart-type <chartType> \
+  --config-file ./config/<chart>_style.json \
+  --data '<json>' \
+  --out <output.png>
+```
+
+Before first use, initialize the local runtime:
+
+```bash
+npm install
+```
+
+Run that command in the skill directory.
+If the current working directory is the repository root, the equivalent command is:
+
+```bash
+cd skills/data-charts-visualization && npm install
+```
+
+This is the default entrypoint because it installs dependencies once and then executes the local CLI without a runtime network fetch.
 
 CLI shape:
 
 ```bash
-npx -y @areslabs/data-charts-visualization@1.0.2 --chart-type <type> (--data <json> | --data-file <file>) (--config <json> | --config-file <file>) [--variant <json>] [--width <px>] [--height <px>] [--out <dir|file>]
+./node_modules/.bin/areslabs-data-charts --chart-type <type> (--data <json> | --data-file <file>) (--config <json> | --config-file <file>) [--variant <json>] [--width <px>] [--height <px>] [--out <dir|file>]
 ```
 
 ## Supported Top-Level Flags
