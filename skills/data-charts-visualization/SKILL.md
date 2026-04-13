@@ -54,9 +54,9 @@ Before acting, classify the user’s request into:
 - long-lived style concerns -> `config`
 - one-off chart-shape decisions -> `variant`
 
-Read [references/cli-and-config.md](/Users/bytedance/IdeaProjects/awesome-skills/skills/data-charts-visualization/references/cli-and-config.md) before calling the CLI.
-Read [references/chart-selection-and-variants.md](/Users/bytedance/IdeaProjects/awesome-skills/skills/data-charts-visualization/references/chart-selection-and-variants.md) when deciding chart family or variant.
-Read [references/config-page-handoff.md](/Users/bytedance/IdeaProjects/awesome-skills/skills/data-charts-visualization/references/config-page-handoff.md) when the user is entering style-tuning or exploratory design work.
+Read [references/cli-and-config.md](references/cli-and-config.md) before calling the CLI.
+Read [references/chart-selection-and-variants.md](references/chart-selection-and-variants.md) when deciding chart family or variant.
+Read [references/config-page-handoff.md](references/config-page-handoff.md) when the user is entering style-tuning or exploratory design work.
 
 ## Routing Rules
 
@@ -183,7 +183,7 @@ Default priority when the user did not specify a chart:
 8. `radar`
 9. `gauge`
 
-For chart-family and variant decisions such as pie vs donut vs rose, bar vs horizontal bar vs stacked bar, area vs line, and whether dual-axis is justified, load [references/chart-selection-and-variants.md](/Users/bytedance/IdeaProjects/awesome-skills/skills/data-charts-visualization/references/chart-selection-and-variants.md).
+For chart-family and variant decisions such as pie vs donut vs rose, bar vs horizontal bar vs stacked bar, area vs line, and whether dual-axis is justified, load [references/chart-selection-and-variants.md](references/chart-selection-and-variants.md).
 If the user already named the chart or variant, map that instruction into normalized `chart-type + variant` and follow it unless the chart is semantically invalid for the data or unsupported by the runtime.
 
 ## Config Policy
@@ -287,7 +287,7 @@ Do not edit the persistent chart config file unless the user explicitly asks for
 
 If the user did not explicitly ask for persistence, treat the style request as a one-off override.
 
-For the detailed style-override workflow, load [references/cli-and-config.md](/Users/bytedance/IdeaProjects/awesome-skills/skills/data-charts-visualization/references/cli-and-config.md).
+For the detailed style-override workflow, load [references/cli-and-config.md](references/cli-and-config.md).
 
 ## Config Page
 
