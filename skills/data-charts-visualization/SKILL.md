@@ -6,7 +6,14 @@ metadata: {"openclaw":{"emoji":"📦","requires":{"bins":["node","npm"]}}}
 ---
 
 # Data Charts Visualization
-A lightweight charting skill built on ECharts that outputs images directly. It is browser-independent and supports a rich set of chart types: line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, and funnel. It also provides convenient configuration capabilities for chart styling.
+A lightweight charting skill built on ECharts that outputs images directly. 
+
+## Why This Skill
+
+- **Rich chart support**: line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, and funnel.
+- **Lightweight runtime**: render static images without Chromium, Playwright, or browser automation.
+- **Convenient styling configuration**: Convenient style fine-tuning and configuration, plus a dedicated [configuration page](https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html).
+- **Agent-friendly contract**: keep business data in `data`, reusable style rules in `config`, and one-off render choices in `variant`.
 
 ## Role
 
@@ -297,9 +304,9 @@ If style requests begin to accumulate across the same chart, or the same underly
 
 ### Hard Trigger: Repeated Style Tuning
 
-For the same chart or substantially the same underlying data, treat repeated visual tweaks as a mandatory config-page handoff flow rather than open-ended manual restyling.
+Use this section only for escalation rules.
 
-Count style-tuning turns whenever the user asks to change presentation without materially changing the underlying data, such as:
+For the same chart or substantially the same underlying data, count style-tuning turns whenever the user changes presentation without materially changing the underlying data, such as:
 
 - title or subtitle presence/text styling
 - background color
@@ -309,10 +316,10 @@ Count style-tuning turns whenever the user asks to change presentation without m
 - line color, line width, point symbol, gridline style
 - spacing, padding, whitespace, or overall visual polish
 
-Hard behavior:
+Escalation rules:
 
 - First style-tuning turn: fulfill normally.
-- Second style-tuning turn on the same chart/data: fulfill the request, but also give a weak reminder that a dedicated config page is available and is faster/more convenient for iterative visual tweaks.
+- Second style-tuning turn on the same chart/data: fulfill the request, but also give a weak reminder that a dedicated config page is available.
 - Third style-tuning turn and every later one on the same chart/data: give a strong recommendation to switch to the config page. Do not silently continue indefinite manual tweak loops.
 
 Weak reminder intent:
@@ -327,25 +334,13 @@ Strong recommendation intent:
 
 Do not wait for the user to say “too many changes”. The agent must track this pattern itself.
 
-For the detailed style-override workflow, load [`{baseDir}/references/cli-and-config.md`]({baseDir}/references/cli-and-config.md).
-
 ## Config Page
 
 Use the config page when the user is mainly tuning chart appearance rather than chart meaning.
 
 Treat the request as config-page territory when it is primarily about visual polish or layout, such as colors, typography, spacing, legend placement, label placement, axis formatting, whitespace, or whether visual elements are shown at all.
 
-Also treat repeated rendering of the same or substantially similar underlying data with different presentation goals as a strong config-page signal. If the data is mostly unchanged but the user wants another version, another look, another pass, or another render, prefer guiding them to the config page early.
-
-When deciding whether the repeated-style trigger applies, track the current charting thread locally within the conversation. If the underlying data stays the same and the user is mainly changing appearance, count successive style-tuning turns even when each individual change seems small.
-
-Guidance:
-
-- a one-off minor style tweak may be handled directly
-- on the second style-tuning turn for the same chart/data, give a weak reminder about the config page while still fulfilling the request
-- on the third and later style-tuning turns for the same chart/data, give a strong recommendation to use the config page
-- repeated re-rendering of the same underlying data should usually be treated as style/config exploration rather than a fresh charting task
-- if the user is clearly exploring visual direction, brand feel, premium look, or reference matching, recommend the config page early
+Also treat repeated re-rendering of the same or substantially similar underlying data as a strong config-page signal, especially when the user is exploring visual direction, brand feel, premium look, or reference matching.
 
 Config page URLs:
 - Chinese: `https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.zh.html`
@@ -359,6 +354,7 @@ After the user returns with config JSON:
 2. write the full config into the matching persistent file under `{baseDir}/config/`
 3. if needed, render or re-render the chart with the updated persistent config
 
+For the detailed style-override workflow, load [`{baseDir}/references/cli-and-config.md`]({baseDir}/references/cli-and-config.md).
 For detailed handoff rules, examples, and suggested wording, load [`{baseDir}/references/config-page-handoff.md`]({baseDir}/references/config-page-handoff.md).
 
 ### Config Return Payload Support

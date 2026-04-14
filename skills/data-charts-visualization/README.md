@@ -44,12 +44,10 @@ cd skills/data-charts-visualization && npm install
 
 ## Why This Skill
 
-- Rich chart support: line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, and funnel.
-- Lightweight runtime: render static images without Chromium, Playwright, or browser automation.
-- Powerful configuration: per-chart persistent presets, inline config overrides, and one-off variants for shape decisions.
-- Agent-friendly contract: keep business data in `data`, reusable style rules in `config`, and one-off render choices in `variant`.
-- ECharts-friendly input model: supports familiar structures such as `series`, `xAxis`, `yAxis`, `dataset.source`, and `series.encode`.
-- Predictable output: stable CLI behavior, static assets, and test-generated sample images for every major chart family.
+- **Rich chart support**: line, bar, pie, donut, rose, gauge, area, dual-axis, scatter, bubble, radar, and funnel.
+- **Lightweight runtime**: render static images without Chromium, Playwright, or browser automation.
+- **Convenient styling configuration**: Convenient style fine-tuning and configuration, plus a dedicated [configuration page](https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html).
+- **Agent-friendly contract**: keep business data in `data`, reusable style rules in `config`, and one-off render choices in `variant`.
 
 ## Showcase
 
