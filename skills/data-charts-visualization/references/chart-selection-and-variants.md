@@ -7,6 +7,8 @@ Use this file when the agent needs to decide both:
 
 The goal is not visual novelty. The goal is to maximize interpretability with the lowest necessary complexity.
 
+If the underlying data and chart family remain essentially stable and the user is mainly iterating on appearance, presentation feel, or repeated re-renders of the same data, this is no longer chart-selection work. In that case, prefer the config-page handoff rules in `{baseDir}/references/config-page-handoff.md`.
+
 ## What To Do When The User Already Names A Chart Or Variant
 
 If the user explicitly names a chart family or variant, default to honoring that instruction instead of re-running chart selection from scratch.
@@ -299,11 +301,11 @@ Pass this by keeping `--chart-type pie` with no special pie variant.
 
 Choose donut when:
 
-- you still want part-to-whole, but with a cleaner or more modern business look
-- center whitespace helps the layout feel less dense
+- you still want part-to-whole, but with a cleaner and less dense presentation
+- center whitespace improves readability or layout balance
 - the user did not insist on a classic full pie
 
-This is the safest default pie-family variant for business reporting.
+This is the safest default pie-family variant for many business-reporting scenarios.
 
 Pass this as:
 
@@ -316,7 +318,7 @@ Pass this as:
 Choose rose only when:
 
 - the user wants stronger visual distinction between categories
-- presentation impact matters more than strict analytical precision
+- expressive differentiation matters more than strict analytical precision
 - category count is still small enough to stay readable
 
 Avoid rose when:

@@ -12,35 +12,20 @@ It explains the public contract of the published `@areslabs/data-charts-visualiz
 Prefer:
 
 ```bash
-./node_modules/.bin/areslabs-data-charts \
+{baseDir}/node_modules/.bin/areslabs-data-charts \
   --chart-type <chartType> \
-  --config-file ./config/<chart>_style.json \
+  --config-file {baseDir}/config/<chart>_style.json \
   --data '<json>' \
   --out <output.png>
 ```
 
-Run that command in the skill directory.
-If the current working directory is the repository root, the equivalent command is:
+Run that command from the skill directory `{baseDir}`, or use the absolute `{baseDir}` paths directly.
+
+Before first use, or whenever the local CLI may not be initialized yet, verify that `{baseDir}/node_modules/.bin/areslabs-data-charts` exists.
+If it does not exist, initialize the local runtime with:
 
 ```bash
-cd skills/data-charts-visualization && ./node_modules/.bin/areslabs-data-charts \
-  --chart-type <chartType> \
-  --config-file ./config/<chart>_style.json \
-  --data '<json>' \
-  --out <output.png>
-```
-
-Before first use, initialize the local runtime:
-
-```bash
-npm install
-```
-
-Run that command in the skill directory.
-If the current working directory is the repository root, the equivalent command is:
-
-```bash
-cd skills/data-charts-visualization && npm install
+cd {baseDir} && npm install
 ```
 
 This is the default entrypoint because it installs dependencies once and then executes the local CLI without a runtime network fetch.
@@ -48,7 +33,7 @@ This is the default entrypoint because it installs dependencies once and then ex
 CLI shape:
 
 ```bash
-./node_modules/.bin/areslabs-data-charts --chart-type <type> (--data <json> | --data-file <file>) (--config <json> | --config-file <file>) [--variant <json>] [--width <px>] [--height <px>] [--out <dir|file>]
+{baseDir}/node_modules/.bin/areslabs-data-charts --chart-type <type> (--data <json> | --data-file <file>) (--config <json> | --config-file <file>) [--variant <json>] [--width <px>] [--height <px>] [--out <dir|file>]
 ```
 
 ## Supported Top-Level Flags
@@ -379,7 +364,7 @@ When the user explicitly requests styles such as:
 - “change label color to light gray”
 - “set the background to white”
 
-do not directly edit the persistent files under `skills/data-charts-visualization/config/*.json` by default.
+do not directly edit the persistent files under `{baseDir}/config/*.json` by default.
 
 The correct workflow is:
 
@@ -401,7 +386,7 @@ Only edit the persistent chart config file when the user explicitly asks for per
 - “update the default config”
 - “persist this config”
 
-If the user starts asking for many style changes or clearly enters iterative visual tuning, guide them to the config page:
+If the user starts asking for many style changes, clearly enters iterative visual tuning, or keeps re-rendering the same underlying data with different presentation goals, guide them to the config page:
 
 中文地址：`https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.zh.html`
 英文地址：`https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html`
@@ -473,9 +458,13 @@ Do not treat `variant` as a generic ECharts patch channel.
 
 Default presets live under:
 
-- `skills/data-charts-visualization/config/`
+- `{baseDir}/config/`
 
 The visual config page is available at:
+
+中文地址：`https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.zh.html`
+英文地址：`https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html`
+ual config page is available at:
 
 中文地址：`https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.zh.html`
 英文地址：`https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html`

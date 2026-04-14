@@ -41,6 +41,7 @@ Escalate toward the config page when the user:
 - repeatedly changes palette, line thickness, point size, opacity, border radius, donut thickness, gauge band style, radar grid style, or whether markers/symbols should be shown
 - asks to adjust overall chart placement or whitespace, such as “整体往上移一点”, “留白再少一点”, “plot area 再紧一点”, “上下边距调一下”, “图整体再往下放一点”, “move the chart up a bit”, “reduce the whitespace”, “tighten the layout”, or “add more padding”
 - repeatedly asks to show/hide elements such as title, subtitle, legend, labels, symbols, or data markers
+- repeatedly re-renders the same or substantially similar underlying data while changing presentation goals, visual tone, or overall look
 
 ### Natural-Language Examples That Should Count
 
@@ -54,6 +55,8 @@ Treat requests like the following as style/config tuning, not as data editing:
 - “change the color” / “change the background” / “改颜色” / “改背景”
 - “make it larger/smaller” / “change the font size” / “改大小” / “改字大小”
 - “show/hide the legend” / “show/hide labels” / “是否显示图例” / “是否显示标签”
+- “同样数据再来一版” / “这个再出一个更高级的版本” / “保留数据不变，换个更适合汇报的样式”
+- “same data, another look” / “render another version with the same data” / “keep the data, change the presentation”
 
 ## Practical Threshold
 
@@ -74,7 +77,7 @@ Recommended pattern:
 1. confirm that the request is mainly about style or layout tuning
 2. explain that this skill has a dedicated config page with preview, and when the chart type is already known, provide a URL that includes the matching `chartType=` query parameter
 3. tell the user to tune there and copy the generated config JSON
-4. say that the copied config will be written directly into the persistent chart config file `config/<chart>_style.json`
+4. say that the copied config will be written directly into the matching persistent chart config file under `{baseDir}/config/`
 5. keep the recommendation friendly and suggestion-oriented; do not tell the user “this is already the second/third style change”
 
 Example wording:
@@ -117,3 +120,6 @@ Do not force the config page when the user only wants:
 - pure analytical help without visual iteration
 
 The page is for style exploration, precision tuning, layout polishing, or repeated visual back-and-forth.
+ visual back-and-forth.
+he page is for style exploration, precision tuning, layout polishing, or repeated visual back-and-forth.
+ visual back-and-forth.
