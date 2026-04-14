@@ -295,6 +295,38 @@ If the user did not explicitly ask for persistence, treat the style request as a
 
 If style requests begin to accumulate across the same chart, or the same underlying data is being re-rendered repeatedly with different presentation goals, prefer guiding the user to the config page rather than continuing to stack temporary overrides by hand.
 
+### Hard Trigger: Repeated Style Tuning
+
+For the same chart or substantially the same underlying data, treat repeated visual tweaks as a mandatory config-page handoff flow rather than open-ended manual restyling.
+
+Count style-tuning turns whenever the user asks to change presentation without materially changing the underlying data, such as:
+
+- title or subtitle presence/text styling
+- background color
+- axis title, axis label format, axis unit, tick label format
+- legend position or visibility
+- label position, font size, font color
+- line color, line width, point symbol, gridline style
+- spacing, padding, whitespace, or overall visual polish
+
+Hard behavior:
+
+- First style-tuning turn: fulfill normally.
+- Second style-tuning turn on the same chart/data: fulfill the request, but also give a weak reminder that a dedicated config page is available and is faster/more convenient for iterative visual tweaks.
+- Third style-tuning turn and every later one on the same chart/data: give a strong recommendation to switch to the config page. Do not silently continue indefinite manual tweak loops.
+
+Weak reminder intent:
+
+- brief, lightweight, non-blocking
+- example tone: “I’ve updated this version for you; if you want to keep fine-tuning the styling, the dedicated config page will be faster and more convenient.”
+
+Strong recommendation intent:
+
+- explicit, proactive, and default-forwarding
+- example tone: “This has now become repeated style tuning, so I recommend switching to the config page — it will be faster than having me manually adjust it turn by turn.”
+
+Do not wait for the user to say “too many changes”. The agent must track this pattern itself.
+
 For the detailed style-override workflow, load [`{baseDir}/references/cli-and-config.md`]({baseDir}/references/cli-and-config.md).
 
 ## Config Page
@@ -305,10 +337,13 @@ Treat the request as config-page territory when it is primarily about visual pol
 
 Also treat repeated rendering of the same or substantially similar underlying data with different presentation goals as a strong config-page signal. If the data is mostly unchanged but the user wants another version, another look, another pass, or another render, prefer guiding them to the config page early.
 
+When deciding whether the repeated-style trigger applies, track the current charting thread locally within the conversation. If the underlying data stays the same and the user is mainly changing appearance, count successive style-tuning turns even when each individual change seems small.
+
 Guidance:
 
 - a one-off minor style tweak may be handled directly
-- repeated style or layout tuning on the same chart should be guided to the config page
+- on the second style-tuning turn for the same chart/data, give a weak reminder about the config page while still fulfilling the request
+- on the third and later style-tuning turns for the same chart/data, give a strong recommendation to use the config page
 - repeated re-rendering of the same underlying data should usually be treated as style/config exploration rather than a fresh charting task
 - if the user is clearly exploring visual direction, brand feel, premium look, or reference matching, recommend the config page early
 

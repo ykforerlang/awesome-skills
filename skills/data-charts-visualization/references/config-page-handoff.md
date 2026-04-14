@@ -31,6 +31,7 @@ Suggest the config page immediately when the user:
 ### Escalation Triggers Across Turns
 
 Treat repeated style/layout requests across the same chart in the same conversation as cumulative handoff signals.
+Track them locally within the current conversation thread: if the underlying data is unchanged and the user is mainly changing appearance, count successive small tweaks as part of the same style-tuning sequence.
 
 Escalate toward the config page when the user:
 
@@ -60,11 +61,11 @@ Treat requests like the following as style/config tuning, not as data editing:
 
 ## Practical Threshold
 
-Use this simple operating rule:
+Use this operating rule:
 
 - first minor style edit: direct manual adjustment is fine
-- second consecutive style/layout edit: start proactively recommending the config page as the more efficient path if more tuning is likely
-- third style/layout edit or later: default to guiding the user to the config page instead of continuing to hand-edit JSON
+- second consecutive style/layout edit on the same chart/data: fulfill the request, but add a weak reminder that the dedicated config page exists and is faster/more convenient for continued tweaking
+- third style/layout edit or later on the same chart/data: give a strong recommendation to switch to the config page instead of continuing indefinite hand-edited JSON loops
 
 Only continue manual editing beyond that point when the user explicitly asks the agent to keep doing it by hand.
 
@@ -74,19 +75,41 @@ Keep the handoff short and practical.
 
 Recommended pattern:
 
-1. confirm that the request is mainly about style or layout tuning
+1. fulfill the current request when appropriate
 2. explain that this skill has a dedicated config page with preview, and when the chart type is already known, provide a URL that includes the matching `chartType=` query parameter
 3. tell the user to tune there and copy the generated config JSON
 4. say that the copied config will be written directly into the matching persistent chart config file under `{baseDir}/config/`
-5. keep the recommendation friendly and suggestion-oriented; do not tell the user “this is already the second/third style change”
+5. match the tone to the escalation level: weak reminder on the second style turn, strong recommendation on the third and later ones
 
-Example wording:
+### Weak Reminder Template
 
-> This charting skill also provides a dedicated config page. For fine-grained style tuning, adjusting it there will be faster and more convenient. Open `https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html`, tune the chart, then send me the copied config JSON. I will write it into the matching persistent chart config file and can also re-render the chart with the updated config.
+Use on the second style/layout tuning turn for the same chart/data.
 
-Suggested Chinese wording:
+Intent:
 
-> 图表能力还提供了专属的属性配置页，微调样式建议在配置页调整，会更加便捷。打开 `https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.zh.html` 调整后，把生成的 config JSON 发我，我帮你写回对应的持久化配置文件；如果需要，我也可以直接用新配置重出图。
+- friendly
+- lightweight
+- non-blocking
+- still complete the requested tweak in the same turn
+
+English example:
+
+> I’ve updated this version. If you want to keep tweaking the style, there’s also a config page for this skill — it’s usually quicker and easier for fine-tuning. Open `https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html?chartType=line`, adjust it there, then send me the config JSON and I can save it for this chart.
+
+### Strong Recommendation Template
+
+Use on the third and later style/layout tuning turns for the same chart/data.
+
+Intent:
+
+- proactive
+- explicit
+- default-forwarding toward the config page
+- avoid silently continuing open-ended manual restyling
+
+English example:
+
+> This is turning into repeated style tweaking on the same chart, so I’d recommend switching to the config page — it’ll be faster than doing this one edit at a time here. Open `https://ykforerlang.github.io/awesome-skills/skills-helpler/data-charts-visualization/web/index.html?chartType=line`, adjust it there, then send me the config JSON and I can save it and re-render the chart from that.
 
 ## Config Page URLs
 
@@ -120,6 +143,3 @@ Do not force the config page when the user only wants:
 - pure analytical help without visual iteration
 
 The page is for style exploration, precision tuning, layout polishing, or repeated visual back-and-forth.
- visual back-and-forth.
-he page is for style exploration, precision tuning, layout polishing, or repeated visual back-and-forth.
- visual back-and-forth.
