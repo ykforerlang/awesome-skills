@@ -133,10 +133,13 @@ This skill renders charts through a local runtime installed in the skill directo
 - Use `{baseDir}/node_modules/.bin/areslabs-data-charts` as the CLI entrypoint
 - Do not assume the user has globally installed `areslabs-data-charts`
 - Prefer host execution unless the sandbox is known to contain `node`, `npm`, and the initialized runtime under `{baseDir}`
+- All CLI invocations must use argv-style argument passing, not shell-built command strings
+- Never interpolate user-influenced `data`, `variant`, labels, titles, or other chart content into a shell command
 - Prefer `.png` unless the user explicitly asks for `.svg`
 - Prefer `--config-file` for the base chart config
 - Prefer inline JSON for `data` and `variant`
 - Use `--data-file` only when the user already provided a data-file path or the payload is better handled as a file
+- The default use of inline `--data` and `--variant` is allowed only when passed as structured argv arguments rather than shell text
 - Unless the user requests another path, write rendered charts to a stable temporary output directory
 - On Unix-like systems, prefer `/tmp/openclaw/data-charts-visualization/`
 - On Windows, prefer the platform temporary directory with a `data-charts-visualization` subdirectory
@@ -348,13 +351,6 @@ Config page URLs:
 
 When the chart type is known, include the matching `chartType=` query parameter in the URL.
 
-After the user returns with config JSON:
-
-1. identify the chart type
-2. write the full config into the matching persistent file under `{baseDir}/config/`
-3. if needed, render or re-render the chart with the updated persistent config
-
-For the detailed style-override workflow, load [`{baseDir}/references/cli-and-config.md`]({baseDir}/references/cli-and-config.md).
 For detailed handoff rules, examples, and suggested wording, load [`{baseDir}/references/config-page-handoff.md`]({baseDir}/references/config-page-handoff.md).
 
 ### Config Return Payload Support
@@ -374,9 +370,12 @@ Default handling behavior:
 
 1. identify the chart type from `type`
 2. resolve the persistent target config file from the chart type instead of relying on a user-supplied relative path
-3. overwrite the target config file directly with the provided full JSON config under `{baseDir}/config/`
-4. tell the user the config update succeeded and that future charts of this type will use this config by default
-5. if appropriate, ask whether the user wants the chart rendered or re-rendered with the updated config
+3. before writing, validate that the provided JSON is a legal chart config structure and that all fields used are allowed by the config contract documented in `{baseDir}/references/cli-and-config.md`
+4. keep this validation intentionally lightweight: field legality only; do not require type validation unless the user explicitly asks for stricter validation
+5. reject unknown fields or unsupported nested paths, do not write the file when validation fails, and tell the user which field path was invalid
+6. overwrite the target config file directly with the provided full JSON config under `{baseDir}/config/` only after validation passes
+7. tell the user the config update succeeded and that future charts of this type will use this config by default
+8. if appropriate, ask whether the user wants the chart rendered or re-rendered with the updated config
 
 Chart type to config file mapping:
 
